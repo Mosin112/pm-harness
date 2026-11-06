@@ -120,7 +120,7 @@ CI runs the same checks on every push.
 
 ## Credits
 
-Built at Fasset by Mohsin Hafeez with Claude. Ideas borrowed with thanks from
+Built by Mohsin Hafeez with Claude. Ideas borrowed with thanks from
 [Anthropic's Product Management plugin](https://github.com/anthropics/knowledge-work-plugins/tree/main/product-management),
 [Superpowers](https://github.com/obra/superpowers),
 [Teresa Torres's context library](https://www.chatprd.ai/how-i-ai/teresa-torres-claude-code-obsdian-task-management),
