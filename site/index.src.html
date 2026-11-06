@@ -325,6 +325,76 @@ details.skill-card[open] { border-color: var(--ink); }
 details[open] .chev { transform: rotate(90deg); }
 .empty-note { color: var(--ink-3); font-size: .9375rem; }
 
+/* ---------- layout refinements ---------- */
+:root { --deep: #13201a; --deep-ink: #e8efe9; --deep-2: rgba(232,239,233,.72); --deep-line: rgba(232,239,233,.18); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --deep: #1a2620; } }
+:root[data-theme="dark"] { --deep: #1a2620; }
+
+/* section heads: title left, lede right on wide screens */
+@media (min-width: 960px) {
+  .section-head { max-width: none; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: 1fr auto; column-gap: 56px; align-items: end; }
+  .section-head > .eyebrow { grid-column: 1; grid-row: 1; align-self: end; }
+  .section-head > h2 { grid-column: 1; grid-row: 2; }
+  .section-head > .lede { grid-column: 2; grid-row: 1 / span 2; align-self: end; max-width: 56ch; }
+}
+
+/* alternating bands give the long page a rhythm */
+.band { background: var(--surface); }
+.band .layer, .band .doc, .band .box, .band .skill-card, .band .play-out, .band .tcard { background: var(--paper); }
+.band .chip, .band .filter, .band .skill-search, .band .tab .n { background: var(--paper); }
+.band .filter[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.band .tab[aria-selected="true"] .n { background: var(--accent); border-color: var(--accent); color: #1b1300; }
+
+/* hero: copy left, a run transcript right */
+.hero-top { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 48px; align-items: center; }
+@media (max-width: 960px) { .hero-top { grid-template-columns: minmax(0, 1fr); gap: 32px; } }
+.hero-copy { display: grid; gap: 24px; min-width: 0; }
+.hero-card { margin: 0; border-radius: 12px; overflow: hidden; border: 1px solid #23302a; box-shadow: 0 24px 60px rgba(19,32,26,.22); background: #0b110e; min-width: 0; }
+.hero-card figcaption { display: flex; align-items: center; gap: 10px; padding: 10px 14px; font: 500 .75rem/1 var(--mono); color: #93a69b; border-bottom: 1px solid #1f2b25; }
+.dots { display: inline-flex; gap: 6px; }
+.dots i { width: 9px; height: 9px; border-radius: 50%; background: #2b3a33; }
+.dots i:first-child { background: var(--accent); }
+.hero-log { margin: 0; border-radius: 0; font-size: .78rem; line-height: 1.75; padding: 16px 18px; }
+.hero-log .gl, .sim-log .gl { color: #f2c14e; font-weight: 600; }
+.hero-log .pm, .sim-log .pm { color: #8fc1ff; }
+@media (prefers-reduced-motion: no-preference) {
+  .hero-log > * { animation: rise .5s ease-out both; }
+  @keyframes rise { from { opacity: .35; } }
+}
+
+/* why: equal-height lanes with verdicts aligned at the bottom */
+.lane { display: flex; flex-direction: column; }
+.lane .verdict { margin-top: auto; padding-top: 14px; border-top: 1px solid var(--line); }
+.eq-row { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 16px 40px; align-items: center; margin-top: 36px; padding: 24px; border: 1px dashed var(--line); border-radius: var(--radius); }
+.eq-row .equation, .eq-row .equation-note { margin: 0; }
+@media (max-width: 820px) { .eq-row { grid-template-columns: minmax(0, 1fr); } }
+
+/* the handoff: a dark band, with the flow drawn as arrows */
+.band-deep { background: var(--deep); color: var(--deep-ink); border-top: 0; }
+.band-deep .eyebrow { color: #f2c14e; }
+.band-deep .lede { color: var(--deep-2); }
+.band-deep .lstep { background: transparent; border-color: var(--deep-line); color: var(--deep-ink); }
+.band-deep .lstep.pm { border-color: #f2c14e; }
+.band-deep .lstep.eng { background: rgba(232,239,233,.07); border-color: transparent; }
+.band-deep .lstep .who { color: var(--deep-2); }
+.band-deep .lstep.pm .who { color: #f2c14e; }
+.band-deep .lstep p { color: var(--deep-2); }
+.loop { gap: 28px; }
+.lstep { height: 100%; }
+.lstep:not(:last-child)::after { content: "→"; position: absolute; right: -22px; top: 50%; transform: translateY(-50%); font: 700 1rem/1 var(--mono); color: #f2c14e; }
+@media (max-width: 900px) {
+  .loop { gap: 26px; }
+  .lstep:not(:last-child)::after { content: "↓"; right: auto; left: 22px; top: auto; bottom: -22px; transform: none; }
+}
+.band-deep + .section { border-top: 0; }
+
+/* get started: commands wrap instead of being clipped */
+.start .slip { white-space: pre-wrap; word-break: break-word; }
+
+/* footer */
+.foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; }
+.foot p { font-size: .875rem; color: var(--ink-2); }
+
 footer { border-top: 1px solid var(--line); padding-block: 40px 56px; }
 footer .wrap { display: grid; gap: 16px; }
 footer ul { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 8px 18px; }
@@ -345,13 +415,31 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
 
 <header class="hero" id="top">
   <div class="wrap hero-grid">
+   <div class="hero-top">
+   <div class="hero-copy">
     <div class="eyebrow">Product · Claude · Harness</div>
     <h1>PM Harness<span class="sub">From a one-line idea to engineering-ready tickets in one sitting.</span></h1>
     <p class="lede">A harness is everything you build around an AI model so it can do real work reliably: the context it reads, the procedures it follows, the tools it can reach, and the checks it must pass. This one is built for product management. It takes an idea through five steps, and a person approves every step before the next one starts.</p>
     <div class="hero-meta"><span><b>15</b> skills</span><span><b>5</b> independent reviewers</span><span><b>3</b> automated checks</span><span><b>5</b> human approval gates</span></div>
+    <div class="cta-row"><a class="btn primary" href="#pipeline">Run it yourself</a><a class="btn" href="#example">See the outputs</a><a class="btn" href="#start">Install it</a></div>
+   </div>
+   <figure class="hero-card" aria-label="An example run, abridged">
+    <figcaption><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>one-shot · price-alerts</figcaption>
+<pre class="console hero-log"><span class="dim">$ /pm-harness:one-shot price alerts</span>
+▸ reading context library · 10 files
+▸ evidence: 6 calls, 23 tickets · grade: some
+<span class="gl">◆ Gate 1 · continue to concept?</span>      <span class="pm">PM ✓</span>
+▸ 5 reviewers · 2 blocking found, resolved
+<span class="gl">◆ Gate 2 · approve concept?</span>          <span class="pm">PM ✓</span>
+<span class="pass">PASS</span> trees       16 testable outcomes
+<span class="pass">PASS</span> prototype   16/16 demonstrated
+<span class="pass">PASS</span> tickets     nothing missing or invented
+<span class="gl">◆ Gate 5 · create 4 tickets?</span>        <span class="pm">PM ✓</span>
+<span class="pass">✓ PA-1 … PA-4 created · handed to engineering</span></pre>
+   </figure>
+   </div>
     <div class="rail" id="hero-rail" aria-label="The five pipeline steps"></div>
     <div class="rail-legend"><span><i class="gk" aria-hidden="true"></i> Approval gate: the PM signs off before the next step</span><span>Click a step to see what happens inside it</span></div>
-    <div class="cta-row"><a class="btn primary" href="#example">See one idea go through</a><a class="btn" href="#start">Install it</a></div>
   </div>
 </header>
 
@@ -397,12 +485,14 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
         </div>
       </div>
     </div>
+    <div class="eq-row">
     <div class="equation" aria-label="Agent equals model plus harness"><span class="term">Agent</span><span>=</span><span class="term">Model</span><span>+</span><span class="term amber">Harness</span></div>
     <p class="equation-note">The model is the engine. The harness is the rest of the car: steering, brakes, dashboard and GPS. A great engine with no car goes nowhere. Swapping in a smarter model helps, but most of the difference in day-to-day results comes from the harness.</p>
+    </div>
   </div>
 </section>
 
-<section class="section" id="inside">
+<section class="section band" id="inside">
   <div class="wrap">
     <div class="section-head">
       <div class="eyebrow">What's inside</div>
@@ -452,7 +542,7 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
   </div>
 </section>
 
-<section class="section" id="example">
+<section class="section band" id="example">
   <div class="wrap">
     <div class="section-head">
       <div class="eyebrow">Worked example</div>
@@ -614,7 +704,7 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
   </div>
 </section>
 
-<section class="section" id="try">
+<section class="section band" id="try">
   <div class="wrap">
     <div class="section-head">
       <div class="eyebrow">Try the checker</div>
@@ -641,7 +731,7 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
   </div>
 </section>
 
-<section class="section" id="engineering">
+<section class="section band-deep" id="engineering">
   <div class="wrap">
     <div class="section-head">
       <div class="eyebrow">The handoff</div>
@@ -680,7 +770,7 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
   </div>
 </section>
 
-<section class="section" id="skills">
+<section class="section band" id="skills">
   <div class="wrap">
     <div class="section-head">
       <div class="eyebrow">Skill catalogue</div>
@@ -714,16 +804,9 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
 </main>
 
 <footer>
-  <div class="wrap">
-    <p><b>PM Harness</b> was built by Mohsin Hafeez with Claude. Source: <a href="https://github.com/__REPO__" rel="noopener">github.com/__REPO__</a>. The worked example uses illustrative sample data.</p>
-    <p class="small">Ideas borrowed with thanks from:</p>
-    <ul>
-      <li><a href="https://github.com/anthropics/knowledge-work-plugins/tree/main/product-management" rel="noopener">Anthropic's Product Management plugin</a></li>
-      <li><a href="https://github.com/obra/superpowers" rel="noopener">Superpowers</a></li>
-      <li><a href="https://www.chatprd.ai/how-i-ai/teresa-torres-claude-code-obsdian-task-management" rel="noopener">Teresa Torres's context library</a></li>
-      <li><a href="https://github.com/deanpeters/Product-Manager-Skills" rel="noopener">Product-Manager-Skills</a></li>
-      <li><a href="https://github.com/phuryn/pm-skills" rel="noopener">pm-skills</a></li>
-    </ul>
+  <div class="wrap foot">
+    <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true"></span>PM Harness</a>
+    <p>Built by Mohsin Hafeez with Claude · <a href="https://github.com/__REPO__" rel="noopener">github.com/__REPO__</a> · The worked example uses illustrative sample data.</p>
   </div>
 </footer>
 
