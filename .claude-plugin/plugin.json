@@ -1,0 +1,17 @@
+{
+  "name": "pm-harness",
+  "version": "0.1.0",
+  "description": "A product-management harness for Claude. Takes an idea to a concept doc with jobs-to-be-done, testable behaviour trees, a clickable prototype and engineering-ready tickets, with evidence rules, independent review and human approval gates at every step.",
+  "author": {
+    "name": "Mohsin Hafeez"
+  },
+  "license": "MIT",
+  "keywords": [
+    "product-management",
+    "prd",
+    "jobs-to-be-done",
+    "behaviour-trees",
+    "prototyping",
+    "harness"
+  ]
+}

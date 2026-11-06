@@ -1,0 +1,17 @@
+{
+  "name": "pm-harness",
+  "owner": {
+    "name": "Mohsin Hafeez"
+  },
+  "metadata": {
+    "description": "Marketplace for the PM Harness plugin."
+  },
+  "plugins": [
+    {
+      "name": "pm-harness",
+      "source": "./",
+      "description": "Idea → concept + JTBD → behaviour trees → prototype → engineering-ready tickets, with review and approval gates.",
+      "version": "0.1.0"
+    }
+  ]
+}
