@@ -270,6 +270,61 @@ td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
 .start .box .slip { font-size: .8125rem; }
 .copy { justify-self: start; border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 5px 9px; cursor: pointer; font-size: .75rem; color: var(--ink-2); }
 
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+/* nav: active section + reading progress */
+.nav-links a.active { color: var(--ink); background: var(--sunk); }
+.progress { position: absolute; left: 0; bottom: -1px; height: 2px; width: 100%; background: var(--accent); transform-origin: 0 50%; transform: scaleX(0); }
+
+/* pipeline simulator */
+.station.is-done .node { background: var(--go); border-color: var(--go); color: #fff; }
+.station.is-active .node { background: var(--accent); color: #1b1300; border-color: var(--ink); }
+@media (prefers-reduced-motion: no-preference) {
+  .station.is-active .node { animation: pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 var(--hl); } 50% { box-shadow: 0 0 0 8px var(--hl); } }
+}
+.sim { border: 1px solid var(--ink); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); overflow: hidden; }
+.sim-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.sim-bar label { font: 600 .6875rem/1 var(--mono); text-transform: uppercase; letter-spacing: .1em; color: var(--ink-3); }
+.sim-prompt { flex: 1 1 260px; min-width: 0; font: 500 .875rem/1.2 var(--mono); padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--code-bg); color: var(--ink); }
+.sim-log { margin: 0; border-radius: 0; height: 300px; overflow-y: auto; white-space: pre-wrap; word-break: break-word; }
+.sim-log .gl { color: #f2c14e; font-weight: 600; }
+.sim-log .pm { color: #8fc1ff; }
+.sim-gate { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 12px 14px; border-top: 1px solid var(--line); background: var(--hl); }
+.sim-gate p { flex: 1 1 240px; font-weight: 600; }
+.sim-gate .btn { padding: 8px 12px; }
+.sim-status { font: 500 .75rem/1.3 var(--mono); color: var(--ink-2); padding: 10px 14px; border-top: 1px solid var(--line); }
+
+/* checker playground */
+.play { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 860px) { .play { grid-template-columns: minmax(0, 1fr); } }
+.play-edit { display: grid; gap: 10px; min-width: 0; }
+.play textarea { width: 100%; min-height: 300px; resize: vertical; font: 400 .8125rem/1.65 var(--mono); padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--code-bg); color: var(--code-ink); tab-size: 2; white-space: pre; overflow-x: auto; }
+.play-out { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.verdict-badge { display: inline-flex; align-items: center; gap: 8px; font: 700 .875rem/1 var(--mono); padding: 7px 10px; border-radius: 6px; justify-self: start; }
+.verdict-badge.pass { background: color-mix(in srgb, var(--go) 16%, transparent); color: var(--go); }
+.verdict-badge.fail { background: color-mix(in srgb, var(--stop) 16%, transparent); color: var(--stop); }
+.findings { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.findings li { display: grid; grid-template-columns: 22px 54px minmax(0, 1fr); gap: 6px; font-size: .875rem; align-items: baseline; }
+.findings .ln { font: 500 .75rem/1 var(--mono); color: var(--ink-3); }
+.findings .e { color: var(--stop); font-weight: 700; }
+.findings .w { color: var(--accent-ink); font-weight: 700; }
+.play-stats { display: flex; flex-wrap: wrap; gap: 6px 16px; font: 500 .75rem/1.4 var(--mono); color: var(--ink-2); }
+
+/* skills: search + expandable cards */
+.skill-tools { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 20px; }
+.skill-tools .filters { margin: 0; }
+.skill-search { flex: 1 1 220px; max-width: 320px; font: inherit; font-size: .9375rem; padding: 8px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); }
+details.skill-card { padding: 0; }
+details.skill-card > summary { list-style: none; cursor: pointer; padding: 16px; display: grid; gap: 8px; }
+details.skill-card > summary::-webkit-details-marker { display: none; }
+details.skill-card > summary:hover { background: var(--sunk); border-radius: var(--radius); }
+details.skill-card[open] { border-color: var(--ink); }
+.skill-more { padding: 0 16px 16px; display: grid; gap: 8px; }
+.skill-more .kv .v { font-size: .875rem; }
+.chev { font: 600 .75rem/1 var(--mono); color: var(--ink-3); transition: transform .2s; }
+details[open] .chev { transform: rotate(90deg); }
+.empty-note { color: var(--ink-3); font-size: .9375rem; }
+
 footer { border-top: 1px solid var(--line); padding-block: 40px 56px; }
 footer .wrap { display: grid; gap: 16px; }
 footer ul { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 8px 18px; }
@@ -281,10 +336,11 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
   <div class="wrap">
     <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true"></span>PM Harness</a>
     <div class="nav-links">
-      <a href="#why">Why</a><a href="#inside">Inside</a><a href="#pipeline">Pipeline</a><a href="#example">Example</a><a href="#trace">Traceability</a><a href="#benefits">Benefits</a><a href="#skills">Skills</a><a href="#start">Get started</a>
+      <a href="#why">Why</a><a href="#inside">Inside</a><a href="#pipeline">Pipeline</a><a href="#example">Example</a><a href="#trace">Traceability</a><a href="#try">Try the checker</a><a href="#benefits">Benefits</a><a href="#skills">Skills</a><a href="#start">Get started</a>
     </div>
     <button class="theme-btn" id="theme-btn" type="button" aria-label="Switch colour theme">Theme</button>
   </div>
+  <div class="progress" id="progress" aria-hidden="true"></div>
 </nav>
 
 <header class="hero" id="top">
@@ -372,6 +428,21 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
       <p class="lede">The core of the harness is a one-shot pipeline. Each step is a skill that can run on its own; <code>/pm-harness:one-shot</code> runs them in order and stops at every gate.</p>
     </div>
     <div class="rail" id="pipe-rail" aria-label="Pipeline steps"></div>
+    <div class="sim" id="sim">
+      <div class="sim-bar">
+        <label for="sim-prompt">Simulate a run</label>
+        <input class="sim-prompt" id="sim-prompt" value="/pm-harness:one-shot price alerts" spellcheck="false" autocomplete="off">
+        <button class="btn primary" id="sim-run" type="button">Run</button>
+        <button class="btn" id="sim-reset" type="button">Reset</button>
+      </div>
+      <pre class="console sim-log" id="sim-log" aria-live="polite"><span class="dim">You play the PM. Press Run, then approve or push back at each gate.</span></pre>
+      <div class="sim-gate" id="sim-gate" hidden>
+        <p id="sim-gate-q"></p>
+        <button class="btn primary" id="sim-yes" type="button"></button>
+        <button class="btn" id="sim-no" type="button"></button>
+      </div>
+      <div class="sim-status" id="sim-status">Idle · 0 of 5 gates approved</div>
+    </div>
     <div class="detail" id="detail" aria-live="polite"></div>
     <div class="around">
       <div><span class="eyebrow">Before the pipeline</span><h3>Find what's worth doing</h3><ul><li><code>synthesize-signals</code> turns calls, tickets and chat into themes with evidence counts.</li><li><code>opportunity-brief</code> sizes an idea with governed metrics and a RICE score.</li></ul></div>
@@ -543,6 +614,33 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
   </div>
 </section>
 
+<section class="section" id="try">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Try the checker</div>
+      <h2>Write a behaviour tree and watch it get checked</h2>
+      <p class="lede">This is the same set of rules the harness runs before a PM ever sees a tree, ported to run in your browser. Edit the text, or load the weak draft and see what gets caught.</p>
+    </div>
+    <div class="play">
+      <div class="play-edit">
+        <div class="filters" role="group" aria-label="Load an example" style="margin:0">
+          <button type="button" class="filter" data-preset="good">Good tree</button>
+          <button type="button" class="filter" data-preset="weak">Weak draft</button>
+          <button type="button" class="filter" data-preset="blank">Start blank</button>
+        </div>
+        <label class="sr-only" for="play-text">Behaviour tree</label>
+        <textarea id="play-text" spellcheck="false" autocomplete="off"></textarea>
+        <p class="note">Start lines with <code>when</code>, <code>while</code>, <code>if</code>, <code>then</code> or <code>and</code>, and indent two spaces per level.</p>
+      </div>
+      <div class="play-out" aria-live="polite">
+        <span class="verdict-badge pass" id="play-verdict">PASS</span>
+        <div class="play-stats" id="play-stats"></div>
+        <ul class="findings" id="play-findings"></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="section" id="engineering">
   <div class="wrap">
     <div class="section-head">
@@ -589,7 +687,11 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
       <h2>Fifteen skills, each short enough to read in five minutes</h2>
       <p class="lede">Skills load automatically when a request matches their description. Skills marked <span class="manual">manual</span> only run when a PM types the command, because they act outside the workspace or run the whole pipeline.</p>
     </div>
-    <div class="filters" id="filters" role="group" aria-label="Filter skills by stage"></div>
+    <div class="skill-tools">
+      <label class="sr-only" for="skill-search">Search skills</label>
+      <input class="skill-search" id="skill-search" type="search" placeholder="Search skills, e.g. prototype" autocomplete="off">
+      <div class="filters" id="filters" role="group" aria-label="Filter skills by stage"></div>
+    </div>
     <div class="skills" id="skill-grid"></div>
   </div>
 </section>
@@ -819,15 +921,206 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
     ["Workspace", "setup", "Creates the context library, approval rules and checker, then fills the context by interview.", true],
     ["Workspace", "update-context", "Proposes small edits to context files and the decision log; applies only approved ones.", false]
   ];
-  var groups = ["All", "Pipeline", "Discover", "Deliver & learn", "Everyday", "Workspace"], current = "All";
+  var more = {
+    "capture-idea": ["a new idea, a feature request or \"what if we…\"", "work/<item>/01-idea.md"],
+    "write-concept": ["a concept doc, PRD, problem statement or job to be done", "02-concept.md"],
+    "spec-review": ["feedback or a critique before a document is shared", "02-concept-review.md"],
+    "write-behaviour-trees": ["acceptance criteria, requirements or edge cases", "03-trees/journey/ and 03-trees/functional/"],
+    "build-prototype": ["a prototype, mockup or clickable demo", "04-prototype/index.html"],
+    "create-eng-tickets": ["only when the PM types the command", "05-tickets.md, then the tracker after approval"],
+    "one-shot": ["only when the PM types the command", "every file in work/<item>/"],
+    "synthesize-signals": ["\"what are customers saying?\", interview or ticket synthesis", "signals/<date>-<topic>.md"],
+    "opportunity-brief": ["sizing or prioritising, RICE or ICE", "an Opportunity section in 01-idea.md"],
+    "stakeholder-update": ["a weekly, status or roadmap update", "updates/<date>-<audience>.md (never sent alone)"],
+    "launch-readout": ["\"did it work?\", a post-launch review", "06-launch-readout.md"],
+    "meeting-prep": ["\"prep me for…\" a meeting or 1:1", "meetings/<date>-<meeting>-brief.md"],
+    "meeting-to-decisions": ["turning notes or a transcript into decisions and actions", "meetings/<date>-<meeting>-decisions.md"],
+    "setup": ["only when the PM types the command", "the whole workspace: context/, decisions/, work/…"],
+    "update-context": ["the end of a session, or \"remember this\"", "context/ and decisions/, only after approval"]
+  };
+  var groups = ["All", "Pipeline", "Discover", "Deliver & learn", "Everyday", "Workspace"], current = "All", query = "";
   function renderSkills() {
     $("filters").innerHTML = groups.map(function (g) { return '<button type="button" class="filter" aria-pressed="' + (g === current) + '">' + esc(g) + "</button>"; }).join("");
     document.querySelectorAll("#filters .filter").forEach(function (b) { b.addEventListener("click", function () { current = b.textContent; renderSkills(); }); });
-    $("skill-grid").innerHTML = skills.filter(function (s) { return current === "All" || s[0] === current; }).map(function (s) {
-      return '<div class="skill-card"><span class="stage">' + esc(s[0]) + '</span><div class="top"><code>/pm-harness:' + esc(s[1]) + "</code>" + (s[3] ? '<span class="manual">manual</span>' : "") + "</div><p>" + esc(s[2]) + "</p></div>";
-    }).join("");
+    var q = query.trim().toLowerCase();
+    var list = skills.filter(function (s) {
+      return (current === "All" || s[0] === current) && (!q || (s[1] + " " + s[2] + " " + more[s[1]].join(" ")).toLowerCase().indexOf(q) !== -1);
+    });
+    $("skill-grid").innerHTML = list.length ? list.map(function (s) {
+      var m = more[s[1]];
+      return '<details class="skill-card"><summary><span class="stage">' + esc(s[0]) + '</span><span class="top"><code>/pm-harness:' + esc(s[1]) + "</code>" +
+        (s[3] ? '<span class="manual">manual</span>' : '<span class="chev" aria-hidden="true">›</span>') + "</span><p>" + esc(s[2]) + "</p></summary>" +
+        '<div class="skill-more"><div class="kv"><span class="k">Loads when you ask for</span><span class="v">' + esc(m[0]) + '</span></div>' +
+        '<div class="kv"><span class="k">Writes</span><span class="v mono">' + esc(m[1]) + "</span></div></div></details>";
+    }).join("") : '<p class="empty-note">No skill matches "' + esc(query) + '". Try "tickets", "meeting" or "metrics".</p>';
   }
+  $("skill-search").addEventListener("input", function (e) { query = e.target.value; renderSkills(); });
   renderSkills();
+
+  /* nav: active section + reading progress */
+  (function () {
+    var links = {}, bar = $("progress");
+    document.querySelectorAll(".nav-links a").forEach(function (a) { links[a.getAttribute("href").slice(1)] = a; });
+    if ("IntersectionObserver" in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting && links[en.target.id]) {
+            Object.keys(links).forEach(function (k) { links[k].classList.toggle("active", k === en.target.id); });
+            var a = links[en.target.id], row = a.parentElement;
+            if (row.scrollWidth > row.clientWidth) row.scrollLeft = a.offsetLeft - row.offsetLeft - 40;
+          }
+        });
+      }, { rootMargin: "-45% 0px -50% 0px" });
+      Object.keys(links).forEach(function (id) { var s = document.getElementById(id); if (s) io.observe(s); });
+    }
+    function onScroll() {
+      var h = document.documentElement, max = h.scrollHeight - h.clientHeight;
+      bar.style.transform = "scaleX(" + (max > 0 ? Math.min(1, h.scrollTop / max) : 0) + ")";
+    }
+    addEventListener("scroll", onScroll, { passive: true }); onScroll();
+  })();
+
+  /* pipeline simulator: the visitor plays the PM and answers each gate */
+  (function () {
+    var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var log = $("sim-log"), gate = $("sim-gate"), status = $("sim-status"), runBtn = $("sim-run");
+    var run = 0, approved = 0;
+    var script = [
+      { lines: [["dim", "▸ reading context/strategy.md, context/users.md, context/constraints.md"], ["", "▸ searching meeting notes for price targets … 6 customer calls"], ["", "▸ searching support tickets … 23 matching tickets (8 weeks)"], ["", "▸ checking decision log … no earlier decision on this idea"], ["pass", "✓ wrote work/price-alerts/01-idea.md · evidence: some"]],
+        q: "Gate 1 · Continue to a concept?", yes: "Continue", no: "Size it first",
+        redo: [["pm", "PM: size it first"], ["", "▸ reach from governed metric: 18,000 investors / month"], ["pass", "✓ RICE 4,800 added to 01-idea.md"]] },
+      { lines: [["", "▸ drafting job: When I'm waiting for a price I've decided on, I want to be told the moment it gets there…"], ["", "▸ success metrics from context/metrics.md: adoption, alert-to-action, opt-out guardrail"], ["dim", "▸ launching 5 reviewers in fresh contexts"], ["fail", "  ✗ blocking · risk: \"buy now?\" reads as advice"], ["fail", "  ✗ blocking · engineering: repeat notifications not ruled out"], ["", "  ! important · design, customer advocate, exec, engineering: 4 findings"], ["", "▸ revising concept"], ["pass", "✓ 2 blocking + 4 important findings resolved"]],
+        q: "Gate 2 · Approve the concept?", yes: "Approve", no: "Request changes",
+        redo: [["pm", "PM: scope it to verified investors only"], ["", "▸ concept updated, risk reviewer re-run"], ["pass", "✓ 0 open blocking findings"]] },
+      { lines: [["", "▸ 1 Journey tree for the job, 2 Functional trees for the capabilities"], ["", "▸ every state, condition and failure case written as when / while / if / then"], ["dim", "$ pm_check.py trees work/price-alerts/03-trees"], ["pass", "PASS  32 lines, 16 outcomes, 0 errors, 0 warnings"]],
+        q: "Gate 3 · Approve the behaviour trees?", yes: "Approve", no: "Add a case",
+        redo: [["pm", "PM: what if they already have 20 alerts?"], ["", "▸ added: if the investor already has 20 active price alerts → rejected with a message"], ["pass", "PASS  tree checker re-run, 0 errors"]] },
+      { lines: [["", "▸ building 04-prototype/index.html with scenario switches for every condition"], ["dim", "$ pm_check.py prototype … 04-prototype/index.html"], ["pass", "PASS  5 screens, 16/16 tree outcomes demonstrated or justified"]],
+        q: "Gate 4 · Approve the prototype?", yes: "Approve", no: "Change the copy",
+        redo: [["pm", "PM: say \"price alert\", not \"alert\""], ["", "▸ trees updated first, then the prototype"], ["pass", "PASS  coverage re-checked, 16/16"]] },
+      { lines: [["", "▸ drafting epic + 4 stories; acceptance criteria copied verbatim from the trees"], ["dim", "$ pm_check.py tickets … 05-tickets.md"], ["pass", "PASS  16 outcomes traced, nothing missing, nothing invented"]],
+        q: "Gate 5 · Create 4 tickets in the tracker?", yes: "Create tickets", no: "Not yet",
+        redo: [["pm", "PM: not yet, I'll share the draft first"], ["", "▸ draft kept in 05-tickets.md; nothing written to the tracker"]] }
+    ];
+    function sleep(ms) { return new Promise(function (r) { setTimeout(r, reduce ? 0 : ms); }); }
+    function add(cls, text) {
+      var s = document.createElement("span"); if (cls) s.className = cls; s.textContent = text + "\n";
+      log.appendChild(s); log.scrollTop = log.scrollHeight;
+    }
+    function rail(i, done) {
+      document.querySelectorAll("#pipe-rail .station").forEach(function (b) {
+        var k = +b.getAttribute("data-step");
+        b.classList.toggle("is-done", k < done);
+        b.classList.toggle("is-active", k === i);
+      });
+    }
+    function setStatus(text) { status.textContent = text + " · " + approved + " of 5 gates approved"; }
+    function ask(step) {
+      return new Promise(function (resolve) {
+        $("sim-gate-q").textContent = step.q; $("sim-yes").textContent = step.yes; $("sim-no").textContent = step.no;
+        gate.hidden = false; $("sim-yes").focus({ preventScroll: true });
+        $("sim-yes").onclick = function () { gate.hidden = true; resolve(true); };
+        $("sim-no").onclick = function () { gate.hidden = true; resolve(false); };
+      });
+    }
+    async function go() {
+      var me = ++run; approved = 0; log.textContent = ""; gate.hidden = true; runBtn.disabled = true;
+      add("dim", "$ " + ($("sim-prompt").value.trim() || "/pm-harness:one-shot price alerts"));
+      for (var i = 0; i < script.length; i++) {
+        var st = script[i]; rail(i, i); select(i); setStatus("Step " + (i + 1) + " of 5 · " + steps[i].label);
+        add("gl", "\n── Step " + (i + 1) + " · " + steps[i].label + " ──");
+        for (var j = 0; j < st.lines.length; j++) { await sleep(420); if (me !== run) return; add(st.lines[j][0], st.lines[j][1]); }
+        await sleep(300); if (me !== run) return;
+        add("gl", "◆ " + st.q); setStatus("Waiting for you at gate " + (i + 1));
+        var ok = await ask(st); if (me !== run) return;
+        if (!ok) {
+          for (var r = 0; r < st.redo.length; r++) { await sleep(420); if (me !== run) return; add(st.redo[r][0], st.redo[r][1]); }
+          if (i === script.length - 1) { rail(-1, 4); setStatus("Stopped at gate 5 · draft kept, nothing created"); runBtn.disabled = false; return; }
+          await sleep(300); if (me !== run) return;
+          add("gl", "◆ " + st.q); setStatus("Waiting for you at gate " + (i + 1));
+          await ask({ q: st.q, yes: st.yes, no: "Still no" }).then(function (y) { ok = y; });
+          if (me !== run) return;
+          if (!ok) { add("pm", "PM: park it"); add("", "▸ decision logged with a \"revisit if\" condition"); rail(-1, i); setStatus("Parked at gate " + (i + 1)); runBtn.disabled = false; return; }
+        }
+        approved++; add("pm", "PM: " + st.yes.toLowerCase() + " ✓");
+      }
+      rail(-1, 5);
+      add("pass", "\n✓ PA-1 … PA-4 created · trees handed to engineering · stage: tickets");
+      add("dim", "Next: stakeholder-update now, launch-readout after launch.");
+      setStatus("Done"); runBtn.disabled = false;
+    }
+    runBtn.addEventListener("click", go);
+    $("sim-prompt").addEventListener("keydown", function (e) { if (e.key === "Enter" && !runBtn.disabled) go(); });
+    $("sim-reset").addEventListener("click", function () {
+      run++; approved = 0; gate.hidden = true; runBtn.disabled = false; rail(-1, 0); select(2);
+      log.innerHTML = '<span class="dim">You play the PM. Press Run, then approve or push back at each gate.</span>';
+      setStatus("Idle");
+    });
+  })();
+
+  /* checker playground: a browser port of pm_check.py's tree rules */
+  (function () {
+    var KW = ["when", "while", "if", "then", "and"], LEAF = ["then", "and"];
+    var VAGUE = ["should", "properly", "correctly", "appropriately", "fast", "quickly", "easily", "user-friendly", "intuitive", "seamless", "etc"];
+    var presets = {
+      good: trees.creation.join("\n"),
+      weak: "Functional: price-alert-creation (src: none; functional: none)\n  when a user sets an alert\n    if the price is valid\n      then it should work properly\n        and the user is happy\n    if the price is invalid\n  if notifications are on\n    then alerts are sent fast",
+      blank: "Functional: my-feature (src: none; functional: none)\n  when "
+    };
+    function lint(text) {
+      var errors = [], warns = [], nodes = [], lines = text.split("\n");
+      lines.forEach(function (raw, i) {
+        var ln = i + 1;
+        if (!raw.trim()) return;
+        if (/^(Functional|Journey|Integration|Unit):/.test(raw)) {
+          if (!/^(Functional|Journey|Integration|Unit): [a-z0-9]+(-[a-z0-9]+)* \(.+\)$/.test(raw.trim())) errors.push([ln, "first line must be '<Kind>: <kebab-subject> (<coverage>)'"]);
+          return;
+        }
+        if (/^\s*\t/.test(raw)) { errors.push([ln, "use spaces, not tabs"]); return; }
+        var indent = raw.length - raw.replace(/^ +/, "").length;
+        if (indent % 2) { errors.push([ln, "indent by multiples of two spaces"]); return; }
+        var text2 = raw.trim(), word = text2.split(/\s+/)[0];
+        if (KW.indexOf(word) === -1) { errors.push([ln, "start the line with when, while, if, then or and"]); return; }
+        if (text2.split(/\s+/).length < 3) errors.push([ln, "clause is too short to be meaningful"]);
+        nodes.push({ ln: ln, indent: indent, word: word, text: text2 });
+      });
+      if (!nodes.length) return { errors: errors.concat([[1, "no requirement lines yet"]]), warns: warns, lines: 0, outcomes: 0 };
+      var base = Math.min.apply(null, nodes.map(function (n) { return n.indent; }));
+      nodes.forEach(function (n) { n.depth = (n.indent - base) / 2; });
+      nodes.forEach(function (n, i) {
+        var prev = nodes[i - 1];
+        if (n.depth === 0 && n.word !== "when") errors.push([n.ln, "top-level lines must start with 'when'"]);
+        if (prev && n.depth > prev.depth + 1) errors.push([n.ln, "indented more than one level below the line above"]);
+        if (prev && n.depth > prev.depth && LEAF.indexOf(prev.word) !== -1) errors.push([n.ln, "nothing may nest under a '" + prev.word + "' line"]);
+        if (n.word === "and" && !(prev && prev.depth === n.depth && LEAF.indexOf(prev.word) !== -1)) errors.push([n.ln, "'and' must directly follow a 'then' at the same depth"]);
+        if (LEAF.indexOf(n.word) !== -1) VAGUE.forEach(function (v) { if (new RegExp("\\b" + v + "\\b", "i").test(n.text)) warns.push([n.ln, "'" + v + "' is hard to test; name the observable result"]); });
+        if (LEAF.indexOf(n.word) === -1) {
+          var reached = false;
+          for (var k = i + 1; k < nodes.length && nodes[k].depth > n.depth; k++) if (nodes[k].word === "then") { reached = true; break; }
+          if (!reached) errors.push([n.ln, "this branch never reaches a 'then' outcome"]);
+        }
+      });
+      errors.sort(function (a, b) { return a[0] - b[0]; }); warns.sort(function (a, b) { return a[0] - b[0]; });
+      return { errors: errors, warns: warns, lines: nodes.length, outcomes: nodes.filter(function (n) { return LEAF.indexOf(n.word) !== -1; }).length };
+    }
+    var ta = $("play-text"), t;
+    function render() {
+      var r = lint(ta.value), v = $("play-verdict");
+      v.className = "verdict-badge " + (r.errors.length ? "fail" : "pass");
+      v.textContent = r.errors.length ? "FAIL" : "PASS";
+      $("play-stats").innerHTML = "<span>" + r.lines + " requirement lines</span><span>" + r.outcomes + " testable outcomes</span><span>" + r.errors.length + " errors</span><span>" + r.warns.length + " warnings</span>";
+      var items = r.errors.map(function (e) { return '<li><span class="e">✗</span><span class="ln">line ' + e[0] + "</span><span>" + esc(e[1]) + "</span></li>"; })
+        .concat(r.warns.map(function (w) { return '<li><span class="w">!</span><span class="ln">line ' + w[0] + "</span><span>" + esc(w[1]) + "</span></li>"; }));
+      $("play-findings").innerHTML = items.length ? items.join("") : '<li><span class="ok">✓</span><span class="ln"></span><span>Every branch ends in a testable outcome. Ready for PM review.</span></li>';
+    }
+    function load(name) {
+      ta.value = presets[name]; render();
+      document.querySelectorAll("[data-preset]").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-preset") === name ? "true" : "false"); });
+    }
+    document.querySelectorAll("[data-preset]").forEach(function (b) { b.addEventListener("click", function () { load(b.getAttribute("data-preset")); if (b.getAttribute("data-preset") === "blank") { ta.focus(); ta.selectionStart = ta.selectionEnd = ta.value.length; } }); });
+    ta.addEventListener("input", function () { clearTimeout(t); t = setTimeout(render, 120); document.querySelectorAll("[data-preset]").forEach(function (b) { b.setAttribute("aria-pressed", "false"); }); });
+    load("weak");
+  })();
 
   /* copy buttons */
   document.querySelectorAll("[data-copy]").forEach(function (b) {
