@@ -8,7 +8,7 @@ Idea → Concept + JTBD → Behaviour trees → Prototype → Eng-ready tickets
        (5 independent reviewers)   (checked)     (checked)     (checked)
 ```
 
-**Website and live demo:** https://__OWNER__.github.io/pm-harness/
+**Website and live demo:** https://mosin112.github.io/pm-harness/
 
 ## What is a harness?
 
@@ -66,12 +66,12 @@ See [`reference/tree-grammar.md`](reference/tree-grammar.md).
 **Claude Code**
 
 ```
-/plugin marketplace add __OWNER__/pm-harness
+/plugin marketplace add mosin112/pm-harness
 /plugin install pm-harness@pm-harness
 ```
 
 **Claude desktop app (Cowork):** Customize → Browse plugins → Add marketplace from GitHub →
-`__OWNER__/pm-harness`.
+`mosin112/pm-harness`.
 
 Then, in the folder you want to use as your PM workspace:
 
