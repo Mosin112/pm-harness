@@ -13,21 +13,25 @@
 /* Layout: a long-form explainer on a cool "spec paper" ground. One highlighter-amber accent marks
    what the harness checks and traces; trees and checker output sit in mono "spec slips". */
 :root {
-  --paper: #f3f5f2;
+  --paper: #eef2ef;
   --surface: #ffffff;
-  --sunk: #e9eee9;
-  --ink: #13201a;
-  --ink-2: #4a5a52;
-  --ink-3: #6f7f77;
-  --line: #d6ded8;
+  --sunk: #e3eae5;
+  --ink: #0e1a14;
+  --ink-2: #3a4a42;
+  --ink-3: #52635a;
+  --line: #c9d4cd;
+  --line-strong: #9fb0a6;
   --accent: #f0b429;
-  --accent-ink: #855700;
-  --hl: rgba(240, 180, 41, .38);
-  --go: #1f7a4b;
-  --stop: #b23f2b;
-  --code-bg: #f8faf7;
-  --code-ink: #1d2a23;
-  --shadow: 0 1px 0 rgba(19,32,26,.04), 0 8px 24px rgba(19,32,26,.06);
+  --accent-ink: #7a4f00;
+  --hl: rgba(240, 180, 41, .42);
+  --brand: #0c6a4a;
+  --brand-ink: #ffffff;
+  --brand-soft: #d5ebe0;
+  --go: #14724a;
+  --stop: #ad321e;
+  --code-bg: #f7faf8;
+  --code-ink: #14211b;
+  --shadow: 0 1px 0 rgba(14,26,20,.05), 0 10px 28px rgba(14,26,20,.08);
   --display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
   --body: "Public Sans", "Helvetica Neue", Arial, system-ui, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
@@ -37,16 +41,18 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: #0d1310; --surface: #141c18; --sunk: #18221d; --ink: #e5ece7; --ink-2: #a4b3ab; --ink-3: #7f8f87;
-    --line: #26332c; --accent: #f2c14e; --accent-ink: #f2c14e; --hl: rgba(242, 193, 78, .24);
-    --go: #4cc287; --stop: #ff8a73; --code-bg: #0a100d; --code-ink: #d6e2db;
+    --paper: #0a0f0c; --surface: #131b17; --sunk: #1a241f; --ink: #ecf2ee; --ink-2: #b8c6be; --ink-3: #97a89f;
+    --line: #2c3a33; --line-strong: #46574e; --accent: #f5c451; --accent-ink: #f5c451; --hl: rgba(245, 196, 81, .26);
+    --brand: #45d39e; --brand-ink: #06211a; --brand-soft: #12342a;
+    --go: #52d69d; --stop: #ff917c; --code-bg: #080c0a; --code-ink: #dbe7e0;
     --shadow: 0 1px 0 rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35); color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --paper: #0d1310; --surface: #141c18; --sunk: #18221d; --ink: #e5ece7; --ink-2: #a4b3ab; --ink-3: #7f8f87;
-  --line: #26332c; --accent: #f2c14e; --accent-ink: #f2c14e; --hl: rgba(242, 193, 78, .24);
-  --go: #4cc287; --stop: #ff8a73; --code-bg: #0a100d; --code-ink: #d6e2db;
+  --paper: #0a0f0c; --surface: #131b17; --sunk: #1a241f; --ink: #ecf2ee; --ink-2: #b8c6be; --ink-3: #97a89f;
+  --line: #2c3a33; --line-strong: #46574e; --accent: #f5c451; --accent-ink: #f5c451; --hl: rgba(245, 196, 81, .26);
+  --brand: #45d39e; --brand-ink: #06211a; --brand-soft: #12342a;
+  --go: #52d69d; --stop: #ff917c; --code-bg: #080c0a; --code-ink: #dbe7e0;
   --shadow: 0 1px 0 rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35); color-scheme: dark;
 }
 
@@ -331,9 +337,9 @@ details[open] .chev { transform: rotate(90deg); }
 .empty-note { color: var(--ink-3); font-size: .9375rem; }
 
 /* ---------- layout refinements ---------- */
-:root { --deep: #13201a; --deep-ink: #e8efe9; --deep-2: rgba(232,239,233,.72); --deep-line: rgba(232,239,233,.18); }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --deep: #1a2620; } }
-:root[data-theme="dark"] { --deep: #1a2620; }
+:root { --deep: #0f3a2b; --deep-ink: #eaf5ef; --deep-2: #b9cec4; --deep-line: rgba(234,245,239,.22); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --deep: #0f2c21; } }
+:root[data-theme="dark"] { --deep: #0f2c21; }
 
 /* section heads: title left, lede right on wide screens */
 @media (min-width: 960px) {
@@ -400,7 +406,68 @@ details[open] .chev { transform: rotate(90deg); }
 .foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; }
 .foot p { font-size: .875rem; color: var(--ink-2); }
 
-footer { border-top: 1px solid var(--line); padding-block: 40px 56px; }
+/* ---------- colour roles ----------
+   brand green = the harness and its actions; amber = gates and highlights; red/green = check results */
+a { text-decoration-color: color-mix(in srgb, var(--brand) 55%, transparent); }
+a:hover { color: var(--brand); text-decoration-color: currentColor; }
+:focus-visible { outline-color: var(--brand); }
+.eyebrow, .layer .k { color: var(--brand); }
+.btn { border-color: var(--line-strong); }
+.btn:hover { border-color: var(--ink); }
+.btn.primary { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
+.btn.primary:hover { opacity: 1; filter: brightness(1.08); }
+.theme-btn { border-color: var(--line-strong); color: var(--ink-2); }
+.nav { border-bottom-color: var(--line); }
+.nav-links a { color: var(--ink-2); }
+.nav-links a.active { color: var(--brand); background: var(--brand-soft); font-weight: 600; }
+.progress { background: linear-gradient(90deg, var(--brand), var(--accent)); height: 3px; }
+.brand-mark { border-color: var(--brand); }
+.hero { background: radial-gradient(900px 420px at 88% 18%, var(--brand-soft), transparent 70%), var(--paper); }
+.hero h1 { color: var(--ink); }
+.hero h1 .sub { color: var(--brand); }
+.hero-meta b { color: var(--brand); font-size: 1.05em; }
+.station .node { border-color: var(--ink); }
+.station.is-done .node { background: var(--brand); border-color: var(--brand); color: var(--brand-ink); }
+.station .skill { color: var(--ink-3); }
+.rail::before { background: var(--line-strong); }
+.lane { border-color: var(--line-strong); }
+.lane.ours { border: 2px solid var(--brand); }
+.lane.ours .flow li::before { background: var(--brand); color: var(--brand-ink); }
+.lane.ours .lane-head .tag.amber { background: var(--brand-soft); color: var(--brand); }
+.flow li { border-bottom-color: var(--line); }
+.equation .term.amber { box-shadow: 0 6px 18px rgba(240,180,41,.35); }
+.eq-row { border-color: var(--line-strong); background: var(--surface); }
+.layers { background: var(--line-strong); border-color: var(--line-strong); }
+.layer .eg { background: var(--brand-soft); color: var(--ink); }
+.detail, .sim { border-color: var(--line-strong); }
+.sim { border: 2px solid var(--brand); }
+.sim-bar label { color: var(--brand); }
+.chip { border-color: var(--line-strong); }
+.around > div { border-top: 3px solid var(--brand); }
+.tab { color: var(--ink-2); }
+.tab[aria-selected="true"] { color: var(--brand); border-bottom: 3px solid var(--brand); }
+.tab[aria-selected="true"] .n, .band .tab[aria-selected="true"] .n { background: var(--brand); border-color: var(--brand); color: var(--brand-ink); }
+.doc, .tcard, .box, .skill-card, .play-out, .lstep { border-color: var(--line-strong); }
+th { color: var(--ink-2); }
+.filter { border-color: var(--line-strong); color: var(--ink-2); }
+.filter[aria-pressed="true"], .band .filter[aria-pressed="true"] { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
+.pick { border-color: var(--line-strong); }
+.pick[aria-pressed="true"] { border-color: var(--accent-ink); }
+.tcard .check { color: var(--go); }
+.benefit .icon { background: var(--brand-soft); }
+.benefit .icon svg { stroke: var(--brand); }
+details.skill-card[open] { border-color: var(--brand); }
+.chev { color: var(--brand); }
+.skill-search { border-color: var(--line-strong); }
+.play textarea { border-color: var(--line-strong); }
+.start .box .eyebrow { color: var(--brand); }
+.copy { border-color: var(--line-strong); color: var(--ink); }
+.copy:hover { border-color: var(--brand); color: var(--brand); }
+.band { background: var(--surface); border-top-color: var(--line); }
+.band-deep { background: radial-gradient(800px 300px at 15% 0%, rgba(69,211,158,.18), transparent 70%), var(--deep); }
+.band-deep h2, .band-deep h3 { color: var(--deep-ink); }
+.foot .brand { color: var(--ink); text-decoration: none; }
+footer { border-top: 1px solid var(--line); padding-block: 40px 56px; background: var(--surface); }
 footer .wrap { display: grid; gap: 16px; }
 footer ul { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 8px 18px; }
 footer li, footer p { font-size: .875rem; color: var(--ink-2); }
