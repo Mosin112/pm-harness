@@ -548,16 +548,16 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
         </div>
       </div>
       <div class="lane ours">
-        <div class="lane-head"><h3>How we use it</h3><span class="tag amber">Harness</span></div>
+        <div class="lane-head"><h3>How I use it</h3><span class="tag amber">Harness</span></div>
         <ol class="flow">
           <li><span><b>Type one line:</b> <code>/pm-harness:one-shot price alerts</code></span></li>
-          <li><span><b>It reads our context library</b> (strategy, users, metric definitions, constraints) and pulls real evidence from our meeting notes, chat, support and analytics.</span></li>
-          <li><span><b>It follows our procedure:</b> concept and job to be done, then testable behaviour trees, then a clickable prototype, then tickets.</span></li>
+          <li><span><b>It reads my context library</b> (strategy, users, metric definitions, constraints) and pulls real evidence from my meeting notes, chat, support and analytics.</span></li>
+          <li><span><b>It follows my procedure:</b> concept and job to be done, then testable behaviour trees, then a clickable prototype, then tickets.</span></li>
           <li><span><b>It gets checked:</b> five reviewers in fresh contexts critique the concept, and scripts verify the trees, prototype and tickets.</span></li>
           <li><span><b>The PM approves each step</b>, and what was learned is saved for next time.</span></li>
         </ol>
         <div class="verdict">
-          <div><span class="ok">✓</span><span>Grounded in our goals, users and data</span></div>
+          <div><span class="ok">✓</span><span>Grounded in my goals, users and data</span></div>
           <div><span class="ok">✓</span><span>Same quality bar for every PM, every time</span></div>
           <div><span class="ok">✓</span><span>Mistakes caught before engineering sees them</span></div>
           <div><span class="ok">✓</span><span>Gets better as the context library grows</span></div>
@@ -579,9 +579,9 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
       <p class="lede">Every part is a plain file you can read: Markdown instructions, a small Python checker and a JSON hook. There's no server and no build step.</p>
     </div>
     <div class="layers">
-      <div class="layer"><div class="k">Context</div><h3>A filing cabinet the AI reads first</h3><p>Small, focused files about our company, strategy, users, metric definitions, stakeholders and constraints. An index tells the AI which file to open for which task, so it reads only what it needs.</p><div class="eg">context/metrics.md → "every number comes from a governed definition"</div></div>
+      <div class="layer"><div class="k">Context</div><h3>A filing cabinet the AI reads first</h3><p>Small, focused files about my company, strategy, users, metric definitions, stakeholders and constraints. An index tells the AI which file to open for which task, so it reads only what it needs.</p><div class="eg">context/metrics.md → "every number comes from a governed definition"</div></div>
       <div class="layer"><div class="k">Skills</div><h3>Written procedures for repeat work</h3><p>Each skill is a short instruction manual: when to use it, the steps, the output format and the gate. The AI loads a skill only when the task matches, which keeps it focused and cheap to run.</p><div class="eg">skills/write-behaviour-trees/SKILL.md</div></div>
-      <div class="layer"><div class="k">Connectors</div><h3>Access to the tools we already use</h3><p>Meeting notes, team chat, support, product analytics, our data warehouse, the issue tracker, the wiki and design files. The AI works from real evidence instead of guessing.</p><div class="eg">"6 customer calls, 23 support tickets" — not "users want"</div></div>
+      <div class="layer"><div class="k">Connectors</div><h3>Access to the tools I already use</h3><p>Meeting notes, team chat, support, product analytics, my data warehouse, the issue tracker, the wiki and design files. The AI works from real evidence instead of guessing.</p><div class="eg">"6 customer calls, 23 support tickets" — not "users want"</div></div>
       <div class="layer"><div class="k">Review</div><h3>Critics who didn't write the draft</h3><p>Five reviewer agents (engineering, design, risk, executive, customer advocate) each read the concept in a fresh context, so none of them is defending its own work.</p><div class="eg">blocking · risk · "buy now?" reads as advice</div></div>
       <div class="layer"><div class="k">Checks and gates</div><h3>Machines check form, people check judgement</h3><p>Scripts verify that trees are testable, that the prototype shows every outcome and that tickets match the trees exactly. Then the PM approves before the next step. Nothing is posted to Jira, Slack or email without approval.</p><div class="eg">PASS · 16/16 tree outcomes demonstrated</div></div>
       <div class="layer"><div class="k">Memory</div><h3>It remembers what it learned</h3><p>Each idea's state lives in its own folder, so any session can pick up where the last one stopped. A decision log and approved context updates mean next week's work starts smarter.</p><div class="eg">decisions/decision-log.md · "revisit if…"</div></div>
@@ -647,7 +647,7 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
         <ul>
           <li>Investors ask to be told when a price is reached <span class="mono">(6 customer calls, 23 support tickets, 8 weeks)</span>: "I keep the app open all day just to catch the dip."</li>
           <li>Investors view assets many times a day without trading <span class="mono">(product analytics)</span>.</li>
-          <li>Some use a separate alerts app, then switch to us to trade <span class="mono">(3 calls)</span>.</li>
+          <li>Some use a separate alerts app, then switch to the app to trade <span class="mono">(3 calls)</span>.</li>
         </ul>
         <h4>Opportunity</h4>
         <div class="table-wrap"><table><thead><tr><th>Input</th><th>Value</th><th>Source</th></tr></thead><tbody>
@@ -815,10 +815,10 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
     <div class="section-head">
       <div class="eyebrow">The handoff</div>
       <h2>Where product ends, engineering's harness begins</h2>
-      <p class="lede">Our engineers already work with their own harness, an internal Claude Code plugin that writes tests before code. It reads behaviour trees in exactly this format. So the PM harness doesn't just hand over a document; it hands over the tests.</p>
+      <p class="lede">The engineers I work with already use their own harness, an internal Claude Code plugin that writes tests before code. It reads behaviour trees in exactly this format. So the PM harness doesn't just hand over a document; it hands over the tests.</p>
     </div>
     <div class="loop">
-      <div class="lstep pm"><span class="who">PM harness</span><h3>Evidence → concept</h3><p>Why it's worth doing, for whom, and how we'll know it worked.</p></div>
+      <div class="lstep pm"><span class="who">PM harness</span><h3>Evidence → concept</h3><p>Why it's worth doing, for whom, and how I'll know it worked.</p></div>
       <div class="lstep pm"><span class="who">PM harness</span><h3>Trees + prototype</h3><p>What it must do, every branch, shown in a clickable prototype.</p></div>
       <div class="lstep eng"><span class="who">Engineering harness</span><h3>Test first</h3><p>Each tree line becomes a failing test, then the smallest code that passes it.</p></div>
       <div class="lstep eng"><span class="who">Engineering harness</span><h3>Verified software</h3><p>Tests, lint and architecture checks run automatically on every change.</p></div>
@@ -830,7 +830,7 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
 <section class="section" id="benefits">
   <div class="wrap">
     <div class="section-head">
-      <div class="eyebrow">How it helps us</div>
+      <div class="eyebrow">How it helps me</div>
       <h2>Faster, without skipping the steps that matter</h2>
       <p class="lede">The aim isn't to replace product judgement. The harness takes over the mechanical parts of the job and holds every piece of work to the same standard, so PMs spend their time on decisions and customers.</p>
     </div>
@@ -840,11 +840,11 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
       <div class="benefit"><div class="icon"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg></div><h3>Nothing lost in translation</h3><p>Acceptance criteria are the tree lines, word for word, and a script proves it. Engineers build exactly what was agreed, and edge cases are written down before anyone codes.</p></div>
       <div class="benefit"><div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg></div><h3>Risk checked every time</h3><p>Regulatory and wording constraints live in one file that a dedicated risk reviewer checks on every concept. It's part of the procedure, not something someone has to remember.</p></div>
       <div class="benefit"><div class="icon"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div><h3>Evidence over opinion</h3><p>Claims carry source counts, quotes are real, and every number names its query. A hunch is allowed, but it has to be labelled as one.</p></div>
-      <div class="benefit"><div class="icon"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></div><h3>It compounds</h3><p>Decisions, context updates and launch readouts feed back into the library, so the harness knows more about our product each month. Improving one skill improves it for every PM.</p></div>
+      <div class="benefit"><div class="icon"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></div><h3>It compounds</h3><p>Decisions, context updates and launch readouts feed back into the library, so the harness knows more about my product each month. Improving one skill improves it for every PM.</p></div>
     </div>
     <div class="twocol">
       <div class="box"><h3>What stays with people</h3><ul><li><b>Intent:</b> which problems are worth solving.</li><li><b>Approval</b> at every gate, including every write to Jira, Slack or email.</li><li><b>Talking to customers.</b> The harness organises evidence; it doesn't replace collecting it.</li><li><b>Trade-offs</b> between goals, teams and timing.</li></ul></div>
-      <div class="box"><h3>Limits we plan around</h3><ul><li><b>Thin evidence stays thin.</b> The harness labels it, but it can't create more of it.</li><li><b>Connectors sometimes disconnect.</b> Skills must report a missing source instead of working around it.</li><li><b>Long sessions drift.</b> State lives in files, so work resumes cleanly in a fresh session.</li><li><b>Context goes stale.</b> The harness flags context files that haven't been updated in 90 days.</li></ul></div>
+      <div class="box"><h3>Limits I plan around</h3><ul><li><b>Thin evidence stays thin.</b> The harness labels it, but it can't create more of it.</li><li><b>Connectors sometimes disconnect.</b> Skills must report a missing source instead of working around it.</li><li><b>Long sessions drift.</b> State lives in files, so work resumes cleanly in a fresh session.</li><li><b>Context goes stale.</b> The harness flags context files that haven't been updated in 90 days.</li></ul></div>
     </div>
   </div>
 </section>
@@ -1084,7 +1084,7 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
     ["Workspace", "update-context", "Proposes small edits to context files and the decision log; applies only approved ones.", false]
   ];
   var more = {
-    "capture-idea": ["a new idea, a feature request or \"what if we…\"", "work/<item>/01-idea.md"],
+    "capture-idea": ["a new idea, a feature request or \"what if…\"", "work/<item>/01-idea.md"],
     "write-concept": ["a concept doc, PRD, problem statement or job to be done", "02-concept.md"],
     "spec-review": ["feedback or a critique before a document is shared", "02-concept-review.md"],
     "write-behaviour-trees": ["acceptance criteria, requirements or edge cases", "03-trees/journey/ and 03-trees/functional/"],
