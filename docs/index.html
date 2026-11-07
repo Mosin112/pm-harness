@@ -303,6 +303,15 @@ td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
 .sim-gate { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 12px 14px; border-top: 1px solid var(--line); background: var(--hl); }
 .sim-gate p { flex: 1 1 240px; font-weight: 600; }
 .sim-gate .btn { padding: 8px 12px; }
+.sim-screen { position: relative; }
+.sim-start { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 18px; padding: 16px; text-align: center; background: #0b1022; }
+.sim-start p { margin: 0; font: 400 .875rem/1.5 var(--mono); color: #8b94b8; max-width: 64ch; }
+.sim-play { border: 0; border-radius: 999px; padding: 14px 28px; font: 600 1.0625rem/1 var(--body); background: #93a8ff; color: #0a1030; cursor: pointer; box-shadow: 0 0 0 10px rgba(147,168,255,.14); transition: transform .15s, box-shadow .15s; }
+.sim-play:hover { transform: translateY(-1px); box-shadow: 0 0 0 12px rgba(147,168,255,.2); }
+.sim-play:focus-visible { outline: 2px solid #ffad75; outline-offset: 6px; }
+#sim-pause { min-width: 8.5em; justify-content: center; }
+.btn[disabled] { opacity: .45; cursor: not-allowed; }
+.btn[disabled]:hover { border-color: var(--line-strong); }
 .sim-status { font: 500 .75rem/1.3 var(--mono); color: var(--ink-2); padding: 10px 14px; border-top: 1px solid var(--line); }
 
 /* checker playground */
@@ -601,10 +610,16 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
       <div class="sim-bar">
         <label for="sim-prompt">Simulate a run</label>
         <input class="sim-prompt" id="sim-prompt" value="/pm-harness:one-shot price alerts" spellcheck="false" autocomplete="off">
-        <button class="btn primary" id="sim-run" type="button">Run</button>
+        <button class="btn" id="sim-pause" type="button" aria-pressed="false" disabled>❚❚ Pause</button>
         <button class="btn" id="sim-reset" type="button">Reset</button>
       </div>
-      <pre class="console sim-log" id="sim-log" aria-live="polite"><span class="dim">You play the PM. Press Run, then approve or push back at each gate.</span></pre>
+      <div class="sim-screen">
+        <pre class="console sim-log" id="sim-log" aria-live="polite"></pre>
+        <div class="sim-start" id="sim-start">
+          <button class="sim-play" id="sim-play" type="button">▶ Start the run</button>
+          <p>You play the PM: approve or push back at each of the five gates.</p>
+        </div>
+      </div>
       <div class="sim-gate" id="sim-gate" hidden>
         <p id="sim-gate-q"></p>
         <button class="btn primary" id="sim-yes" type="button"></button>
@@ -1142,11 +1157,11 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
     addEventListener("scroll", onScroll, { passive: true }); onScroll();
   })();
 
-  /* pipeline simulator: the visitor plays the PM and answers each gate */
+  /* pipeline simulator: the visitor plays the PM, can pause and resume, and answers each gate */
   (function () {
     var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    var log = $("sim-log"), gate = $("sim-gate"), status = $("sim-status"), runBtn = $("sim-run");
-    var run = 0, approved = 0;
+    var log = $("sim-log"), gate = $("sim-gate"), status = $("sim-status"), start = $("sim-start"), pauseBtn = $("sim-pause");
+    var STOP = {}, run = 0, approved = 0, mode = "idle", paused = false, wake = null, stepText = "Idle";
     var script = [
       { lines: [["dim", "▸ reading context/strategy.md, context/users.md, context/constraints.md"], ["", "▸ searching meeting notes for price targets … 6 customer calls"], ["", "▸ searching support tickets … 23 matching tickets (8 weeks)"], ["", "▸ checking decision log … no earlier decision on this idea"], ["pass", "✓ wrote work/price-alerts/01-idea.md · evidence: some"]],
         q: "Gate 1 · Continue to a concept?", yes: "Continue", no: "Size it first",
@@ -1164,60 +1179,88 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
         q: "Gate 5 · Create 4 tickets in the tracker?", yes: "Create tickets", no: "Not yet",
         redo: [["pm", "PM: not yet, I'll share the draft first"], ["", "▸ draft kept in 05-tickets.md; nothing written to the tracker"]] }
     ];
-    function sleep(ms) { return new Promise(function (r) { setTimeout(r, reduce ? 0 : ms); }); }
+
     function add(cls, text) {
       var s = document.createElement("span"); if (cls) s.className = cls; s.textContent = text + "\n";
       log.appendChild(s); log.scrollTop = log.scrollHeight;
     }
-    function rail(i, done) {
+    function rail(active, done) {
       document.querySelectorAll("#pipe-rail .station").forEach(function (b) {
         var k = +b.getAttribute("data-step");
         b.classList.toggle("is-done", k < done);
-        b.classList.toggle("is-active", k === i);
+        b.classList.toggle("is-active", k === active);
       });
     }
-    function setStatus(text) { status.textContent = text + " · " + approved + " of 5 gates approved"; }
-    function ask(step) {
-      return new Promise(function (resolve) {
-        $("sim-gate-q").textContent = step.q; $("sim-yes").textContent = step.yes; $("sim-no").textContent = step.no;
+    /* one place controls the buttons, overlay and status line */
+    function setMode(m, text) {
+      mode = m; if (text) stepText = text;
+      start.hidden = m !== "idle";
+      pauseBtn.disabled = m === "idle" || m === "gate";
+      pauseBtn.textContent = m === "paused" ? "▶ Resume" : m === "done" ? "↻ Run again" : "❚❚ Pause";
+      pauseBtn.setAttribute("aria-pressed", m === "paused" ? "true" : "false");
+      status.textContent = (m === "paused" ? "Paused · " : "") + stepText + " · " + approved + " of 5 gates approved";
+    }
+    /* waits, holds while paused, and stops if the run was reset */
+    function wait(ms) {
+      var me = run;
+      return new Promise(function (r) { setTimeout(r, reduce ? 0 : ms); })
+        .then(function () { return paused ? new Promise(function (r) { wake = r; }) : null; })
+        .then(function () { if (me !== run) throw STOP; });
+    }
+    async function stream(lines) { for (var k = 0; k < lines.length; k++) { await wait(420); add(lines[k][0], lines[k][1]); } }
+    async function ask(st, n, noLabel) {
+      await wait(300);
+      add("gl", "◆ " + st.q); setMode("gate", "Waiting for you at gate " + n);
+      var me = run;
+      var ok = await new Promise(function (res) {
+        $("sim-gate-q").textContent = st.q; $("sim-yes").textContent = st.yes; $("sim-no").textContent = noLabel;
         gate.hidden = false; $("sim-yes").focus({ preventScroll: true });
-        $("sim-yes").onclick = function () { gate.hidden = true; resolve(true); };
-        $("sim-no").onclick = function () { gate.hidden = true; resolve(false); };
+        $("sim-yes").onclick = function () { res(true); };
+        $("sim-no").onclick = function () { res(false); };
       });
+      gate.hidden = true;
+      if (me !== run) throw STOP;
+      setMode("running", "Step " + n + " of 5 · " + steps[n - 1].label);
+      return ok;
     }
+    function finish(done, text) { rail(-1, done); setMode("done", text); }
     async function go() {
-      var me = ++run; approved = 0; log.textContent = ""; gate.hidden = true; runBtn.disabled = true;
-      add("dim", "$ " + ($("sim-prompt").value.trim() || "/pm-harness:one-shot price alerts"));
-      for (var i = 0; i < script.length; i++) {
-        var st = script[i]; rail(i, i); select(i); setStatus("Step " + (i + 1) + " of 5 · " + steps[i].label);
-        add("gl", "\n── Step " + (i + 1) + " · " + steps[i].label + " ──");
-        for (var j = 0; j < st.lines.length; j++) { await sleep(420); if (me !== run) return; add(st.lines[j][0], st.lines[j][1]); }
-        await sleep(300); if (me !== run) return;
-        add("gl", "◆ " + st.q); setStatus("Waiting for you at gate " + (i + 1));
-        var ok = await ask(st); if (me !== run) return;
-        if (!ok) {
-          for (var r = 0; r < st.redo.length; r++) { await sleep(420); if (me !== run) return; add(st.redo[r][0], st.redo[r][1]); }
-          if (i === script.length - 1) { rail(-1, 4); setStatus("Stopped at gate 5 · draft kept, nothing created"); runBtn.disabled = false; return; }
-          await sleep(300); if (me !== run) return;
-          add("gl", "◆ " + st.q); setStatus("Waiting for you at gate " + (i + 1));
-          await ask({ q: st.q, yes: st.yes, no: "Still no" }).then(function (y) { ok = y; });
-          if (me !== run) return;
-          if (!ok) { add("pm", "PM: park it"); add("", "▸ decision logged with a \"revisit if\" condition"); rail(-1, i); setStatus("Parked at gate " + (i + 1)); runBtn.disabled = false; return; }
+      ++run; approved = 0; paused = false; log.textContent = ""; gate.hidden = true;
+      setMode("running", "Starting");
+      try {
+        add("dim", "$ " + ($("sim-prompt").value.trim() || "/pm-harness:one-shot price alerts"));
+        for (var i = 0; i < script.length; i++) {
+          var st = script[i], n = i + 1;
+          rail(i, i); select(i); setMode("running", "Step " + n + " of 5 · " + steps[i].label);
+          add("gl", "\n── Step " + n + " · " + steps[i].label + " ──");
+          await stream(st.lines);
+          if (!(await ask(st, n, st.no))) {
+            await stream(st.redo);
+            if (n === script.length) return finish(i, "Stopped at gate 5 · draft kept, nothing created");
+            if (!(await ask(st, n, "Still no"))) {
+              await stream([["pm", "PM: park it"], ["", "▸ decision logged with a \"revisit if\" condition"]]);
+              return finish(i, "Parked at gate " + n);
+            }
+          }
+          approved++; add("pm", "PM: " + st.yes.toLowerCase() + " ✓");
         }
-        approved++; add("pm", "PM: " + st.yes.toLowerCase() + " ✓");
-      }
-      rail(-1, 5);
-      add("pass", "\n✓ PA-1 … PA-4 created · trees handed to engineering · stage: tickets");
-      add("dim", "Next: stakeholder-update now, launch-readout after launch.");
-      setStatus("Done"); runBtn.disabled = false;
+        await stream([["pass", "\n✓ PA-1 … PA-4 created · trees handed to engineering · stage: tickets"], ["dim", "Next: stakeholder-update now, launch-readout after launch."]]);
+        finish(script.length, "Done");
+      } catch (e) { if (e !== STOP) throw e; }
     }
-    runBtn.addEventListener("click", go);
-    $("sim-prompt").addEventListener("keydown", function (e) { if (e.key === "Enter" && !runBtn.disabled) go(); });
-    $("sim-reset").addEventListener("click", function () {
-      run++; approved = 0; gate.hidden = true; runBtn.disabled = false; rail(-1, 0); select(2);
-      log.innerHTML = '<span class="dim">You play the PM. Press Run, then approve or push back at each gate.</span>';
-      setStatus("Idle");
+    function resume() { paused = false; if (wake) { var w = wake; wake = null; w(); } }
+    $("sim-play").addEventListener("click", go);
+    pauseBtn.addEventListener("click", function () {
+      if (mode === "done") go();
+      else if (mode === "running") { paused = true; setMode("paused"); }
+      else if (mode === "paused") { resume(); setMode("running"); }
     });
+    $("sim-prompt").addEventListener("keydown", function (e) { if (e.key === "Enter" && (mode === "idle" || mode === "done")) go(); });
+    $("sim-reset").addEventListener("click", function () {
+      run++; approved = 0; resume(); gate.hidden = true; log.textContent = "";
+      rail(-1, 0); select(2); setMode("idle", "Idle");
+    });
+    setMode("idle", "Idle");
   })();
 
   /* checker playground: a browser port of pm_check.py's tree rules */
