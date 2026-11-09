@@ -61,15 +61,16 @@ metric dictionaries) over asking: ask the PM where those live and read them.
 | `product.md` | Product areas, platforms, key flows, what shipped recently, design tokens |
 | `strategy.md` | Current goals or OKRs, this quarter's bets, what is explicitly not a priority |
 | `users.md` | Segments, top jobs-to-be-done already known, key pains |
-| `metrics.md` | Each metric: plain definition, owner, where its governed definition or query lives |
+| `metrics.md` | The hierarchy (north star, L1, L2), and for each metric its plain definition, owner, target and where its governed definition or query lives |
 | `stakeholders.md` | Who decides what, who must review what, how each person likes updates |
 | `constraints.md` | Regulatory, risk, legal, brand and platform constraints every PRD must respect |
 | `tools.md` | Which connector to use for meetings, chat, analytics, research, warehouse, tracker, wiki, design |
 | `glossary.md` | Internal terms and acronyms, and the words to avoid |
 | `writing-style.md` | Tone, length limits, formats the team expects |
 | `definition-of-done.md` | The team's checklist for a finished engineering story; start from the template and ask engineering what to add |
+| `../DESIGN.md` (workspace root) | The product's design system in the DESIGN.md format: colour, type, radius and spacing tokens, components and their states, do's and don'ts. Fill it from the design source rather than by hand: Figma variables and styles through the design connector, the app's theme or CSS token files, or the brand guide. Keep values exact; leave a section out rather than invent it. Check with `python3 .pm-harness/pm_check.py design DESIGN.md`. |
 
-Keep each file under ~150 lines. If a file grows past that, split it and add the new file to
+Keep each file under ~150 lines (`DESIGN.md` may be longer). If a file grows past that, split it and add the new file to
 the routing index in `AGENTS.md` (above the managed block).
 
 ## 4. Connectors and approval rules

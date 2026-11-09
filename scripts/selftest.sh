@@ -15,6 +15,11 @@ $C prototype $E/03-trees $E/04-prototype/index.html
 $C tickets $E/03-trees $E/05-tickets.md $E/02-prd.md
 $C item $E | tail -n 1
 $C board templates/workspace >/dev/null
+$C design templates/workspace/DESIGN.md >/dev/null
+if $C prototype $E/03-trees $E/04-prototype/index.html | grep -q '^  ! '; then
+  echo "FAIL  the worked example prototype has craft or coverage warnings"; exit 1
+fi
+echo "PASS  worked example prototype has no warnings"
 
 tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
 
@@ -52,6 +57,7 @@ grep -v 'alert adoption' $E/05-tickets.md > "$tmp/tickets-no-metric.md"
 sed 's/"chosen": "guided",/"chosen": "quick",/' $E/04-prototype/index.html > "$tmp/price-alerts/04-prototype/index.html"
 
 expect_fail "a known-bad tree" $C trees $F/bad-trees
+expect_fail "a DESIGN.md with broken token references and section order" $C design $F/bad-design.md
 expect_fail "a known-bad PRD" $C prd $F/bad-prd.md $E/03-trees
 expect_fail "a prototype missing a variant's screen and with open amendments" \
   $C prototype $E/03-trees $F/bad-prototype/index.html

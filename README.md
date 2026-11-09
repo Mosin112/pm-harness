@@ -48,8 +48,13 @@ Around the pipeline:
 - **Share:** `publish` puts the PRD on Confluence and the prototype and trees view up as Claude
   artifacts, and brings comments back as proposed changes
 - **Discover:** `synthesize-signals` (your customers' evidence), `desktop-research` (the web:
-  communities, app reviews, competitors, news, regulators), `opportunity-brief` (sizing)
-- **Deliver and learn:** `stakeholder-update`, `launch-readout`
+  communities, app reviews, competitors, news, regulators), `opportunity-brief` (sizing), and
+  `product-grill`, which explores an open problem (How Might We, opportunity solution tree,
+  riskiest assumption) before it converges
+- **Plan:** `roadmap` keeps a Now / Next / Later view in step with the items, their evidence and
+  stages, and logs every move as a decision
+- **Deliver and learn:** `stakeholder-update`, `metrics-review` (weekly, monthly or quarterly
+  review of the metric hierarchy from governed numbers), `launch-readout`
 - **Everyday:** `meeting-prep`, `meeting-to-decisions`
 - **Workspace:** `setup`, `update-context`, `done` (a session retrospective that turns repeated
   corrections into context and skill fixes)
@@ -118,6 +123,15 @@ Screens keep the same id across variants, so switching variants keeps your place
 has a deep link (`index.html#guided--set-alert--err-full`). Every prototype starts from the shell
 in `templates/prototype/`, whose shared runtime handles variants, deep links, the coverage panel
 and review notes, so only the screens and their behaviour are written per item.
+
+**Designed, not generated.** Prototypes take their colours, type and components from the
+workspace's `DESIGN.md` (the [DESIGN.md format](https://github.com/google-labs-code/design.md),
+filled at setup from Figma, the app's theme or the brand guide) and follow
+[`reference/prototype-craft.md`](reference/prototype-craft.md), adapted from
+[Impeccable](https://github.com/pbakaus/impeccable): screens built for a task, variants that differ
+in their hypothesis rather than decoration, a craft floor and a list of generated-design tells to
+refuse. Each variant gets a heuristic design review before the PM sees it
+(`design-review.md`), and the checker flags emoji icons, gradient text and missing focus styles.
 
 Reviewers leave notes from inside the prototype: as a Claude artifact, **Comment on this screen**
 sends the note to Claude; from a file, the review card copies an amendment. Each note is pinned
@@ -205,12 +219,12 @@ names in that file to match yours.
 
 ```
 .claude-plugin/        plugin.json and marketplace.json
-skills/<name>/SKILL.md 20 skills
+skills/<name>/SKILL.md 22 skills
 agents/                5 reviewer definitions used by spec-review
 hooks/                 SessionStart hook: pipeline board + keeps .pm-harness/ current
 scripts/pm_check.py    the checker behind the gates, plus the trees view, contracts and artifact generators (stdlib Python)
 bin/pm-harness.mjs     the installer for any AI tool (no dependencies)
-reference/             PRD guide, phases, tree grammar, evidence rules, JTBD cheat sheet
+reference/             PRD guide, phases, prototype craft, tree grammar, evidence rules, JTBD cheat sheet
 templates/workspace/   the PM workspace that setup and the installer create
 templates/prototype/   the prototype shell with the shared runtime
 examples/price-alerts/ a complete worked example through all five steps
@@ -231,14 +245,17 @@ CI runs both on every push.
 ## Credits
 
 Built by Mohsin Hafeez with Claude. Ideas borrowed with thanks from
-[Anthropic's Product Management plugin](https://github.com/anthropics/knowledge-work-plugins/tree/main/product-management),
+[Anthropic's product-management plugin](https://github.com/anthropics/knowledge-work-plugins/tree/main/product-management)
+(the roadmap, metrics review and explore mode, Apache-2.0),
+Paul Bakaus's [Impeccable](https://github.com/pbakaus/impeccable) (the prototype craft rules and
+design review, Apache-2.0),
+David Henry's [Product Owner Toolkit](https://github.com/davidjwhenry/productownertoolkit) (product
+grill, phase-aware PRDs, prototype variants and amendments, the session retrospective, desktop
+research and the multi-tool installer),
 [Superpowers](https://github.com/obra/superpowers),
 [Teresa Torres's context library](https://www.chatprd.ai/how-i-ai/teresa-torres-claude-code-obsdian-task-management),
-[Product-Manager-Skills](https://github.com/deanpeters/Product-Manager-Skills),
-[pm-skills](https://github.com/phuryn/pm-skills) and David Henry's
-[Product Owner Toolkit](https://github.com/davidjwhenry/productownertoolkit) (product grill,
-phase-aware PRDs, prototype variants and amendments, the session retrospective, desktop research
-and the multi-tool installer).
+[Product-Manager-Skills](https://github.com/deanpeters/Product-Manager-Skills) and
+[pm-skills](https://github.com/phuryn/pm-skills).
 
 The worked example uses illustrative sample data.
 

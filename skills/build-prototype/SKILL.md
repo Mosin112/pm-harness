@@ -9,9 +9,9 @@ The prototype lets stakeholders *feel* the behaviour trees before engineering st
 settles the PRD's prototype decision by putting two designs side by side. It must show every
 branch, including errors and edge cases, in every variant, not just the happy path.
 
-Read first: the approved trees in `work/<item>/03-trees/`, the PRD (especially §5, §6.2 and
-§6.3), `../../reference/phases.md`, `context/product.md` and `context/writing-style.md`. Start
-from the shell `../../templates/prototype/index.html`; the worked example
+Read first: the approved trees in `work/<item>/03-trees/`, the PRD (especially §2, §5, §6.2
+and §6.3), `../../reference/phases.md`, `../../reference/prototype-craft.md`, the workspace's
+`DESIGN.md` (the product's design system) and `context/writing-style.md`. Start from the shell `../../templates/prototype/index.html`; the worked example
 `../../examples/price-alerts/04-prototype/index.html` shows a finished prototype built on it.
 
 ## 1. Brief gate
@@ -27,6 +27,8 @@ Before building, show the PM a five-line brief and wait for approval:
 - **Scenarios:** every `while` state and `if` condition from the trees that the scenario
   controls will switch.
 - **Fidelity:** by phase (`phases.md`); MLP prototypes use the real design tokens and copy.
+- **Design source:** `DESIGN.md`, or "neutral and provisional" if it is still the blank
+  template (say so; the PM may want it filled first).
 
 ## 2. Build: `work/<item>/04-prototype/index.html`
 
@@ -61,12 +63,23 @@ so every prototype behaves the same and the checker can rely on it. You write fo
    variant's screen with `PMH.part(screen, class)`, and call `PMH.userAction()` when a
    scenario control changes.
 
-Rules: use the exact messages from the trees in every variant, and mark sample data. Follow any
-design tokens in `context/product.md`; otherwise a neutral, accessible style. Works at phone
-width; keyboard focus visible. Deep links look like `index.html#guided--set-alert--err-full`
+Rules: follow `prototype-craft.md` (adapted from Impeccable): `DESIGN.md` tokens become CSS
+custom properties for the product screens, the screens are designed for a task (Operate mode),
+variants differ in their hypothesis rather than decoration, and none of the tells in its refuse
+list appear (no emoji or symbols as icons: draw them as inline SVG). Use the exact messages from
+the trees in every variant, and mark sample data. Deep links look like `index.html#guided--set-alert--err-full`
 (variant, screen, demo): plain names, so they also work in a Claude artifact link.
 
-## 3. Check
+## 3. Design review
+
+Before the PM sees it, review every variant in play against `prototype-craft.md` §7: score the
+ten heuristics, check cognitive load, go through the craft floor, the harden list (the PRD's
+markets and languages: right-to-left and longer translations) and the refuse list, then rank
+findings P0–P3. Fix every P0 and P1, and write the scores, fixes and what remains to
+`04-prototype/design-review.md`. The review covers the product screens, not the side panel. For
+an MLP, P2 findings are fixed too.
+
+## 4. Check
 
 Run `python3 .pm-harness/pm_check.py prototype work/<item>/03-trees work/<item>/04-prototype/index.html`.
 It fails if the variants manifest is incomplete, a tree line is missing from the coverage map,
@@ -75,7 +88,7 @@ variant, or an amendment is malformed or still open. Then open the
 file in a browser and click through every coverage line in every variant; the checker proves
 structure, not that the design works.
 
-## 4. Gate: walkthrough, review notes, choice
+## 5. Gate: walkthrough, review notes, choice
 
 1. Walk the PM through the Journey tree in each variant, then any branch they choose.
 2. Record every piece of feedback in `work/<item>/04-prototype/amendments.md`: the PM's,

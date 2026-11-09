@@ -77,7 +77,11 @@ button, input { font: inherit; }
 .notif .sub { color: rgba(242,245,248,.75); }
 .nonotif { text-align: center; color: rgba(242,245,248,.6); }
 .center { text-align: center; display: flex; flex-direction: column; gap: 12px; align-items: center; margin: auto 0; }
-.badge-big { width: 56px; height: 56px; border-radius: 50%; background: var(--app-soft); display: grid; place-items: center; font-size: 26px; }
+.badge-big { width: 56px; height: 56px; border-radius: 50%; background: var(--app-soft); display: grid; place-items: center; color: var(--brand); }
+/* icons: inline SVG with class="icon", one stroke weight; never emoji or symbols (prototype-craft.md) */
+.icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.icon-lg { width: 28px; height: 28px; }
+.with-icon { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 
 /* panel */
 .panel { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
@@ -128,6 +132,8 @@ button, input { font: inherit; }
         differs by variant is written once per variant with the same id plus data-variant="<id>".
      2. Fill the scenario toggles, the prototype-variants manifest and the tree-coverage map.
      3. Write the product code in the last <script>: reset, render and one demo per outcome.
+     4. Take colours, type, radii and components from the workspace's DESIGN.md (as CSS custom
+        properties) and follow .pm-harness/reference/prototype-craft.md.
      Leave the pm-runtime script exactly as it is; it is shared by every prototype.
      Product-only styles go at the end of the <style> block. Use the exact copy from the trees. -->
 <div class="wrap">

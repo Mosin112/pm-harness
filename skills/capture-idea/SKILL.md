@@ -61,8 +61,9 @@ phase: <MVP | MMP | MLP | Enhancement>             (optional, settled in the PRD
 
 Ask the PM which way to go:
 
-- **Continue:** run the `product-grill` skill if the actors, states, scope or trade-offs are
-  still fuzzy, otherwise go straight to the `write-prd` skill.
+- **Continue:** run the `product-grill` skill if the problem is still open (it explores first)
+  or the actors, states, scope or trade-offs are fuzzy; otherwise go straight to the `write-prd`
+  skill. Offer the `roadmap` skill to place the new item.
 - **Size it first** with the `opportunity-brief` skill, or **research it** with the
   `desktop-research` skill.
 - **Park it:** log a decision with a "revisit if" condition and set `stage: parked`.

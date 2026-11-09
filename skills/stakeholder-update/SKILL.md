@@ -12,6 +12,8 @@ description: Use when the user wants a status update, weekly update, roadmap upd
    and open findings; ticket progress from the tracker connector; new decisions in the
    decision log; launch readouts and gate results; the chosen prototype variant; and blockers.
    Link the published PRD (Confluence) and prototype (artifact) from each PRD's `Links:` line.
+   Use `roadmap.md` for what moved between Now, Next and Later, and the latest metrics review
+   in `updates/` for the numbers.
 3. **Keep stages true:** if the tracker shows work started on an item at `tickets`, propose
    `stage: building`; if its epic has shipped, propose `stage: launched` and a date for the
    launch readout (the end of the gate window in PRD §7). Change `01-idea.md` only on approval.

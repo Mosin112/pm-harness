@@ -77,7 +77,10 @@ button, input { font: inherit; }
 .notif .sub { color: rgba(242,245,248,.75); }
 .nonotif { text-align: center; color: rgba(242,245,248,.6); }
 .center { text-align: center; display: flex; flex-direction: column; gap: 12px; align-items: center; margin: auto 0; }
-.badge-big { width: 56px; height: 56px; border-radius: 50%; background: var(--app-soft); display: grid; place-items: center; font-size: 26px; }
+.badge-big { width: 56px; height: 56px; border-radius: 50%; background: var(--app-soft); display: grid; place-items: center; color: var(--brand); }
+.icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.icon-lg { width: 28px; height: 28px; }
+.with-icon { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 
 /* panel */
 .panel { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
@@ -134,7 +137,7 @@ button, input { font: inherit; }
         <polyline fill="none" stroke="var(--up)" stroke-width="2.5" points="0,92 20,88 40,95 60,80 80,84 100,70 120,74 140,60 160,66 180,52 200,58 220,44 240,50 260,38 280,46 300,30 320,34"></polyline>
       </svg>
       <div class="sub">Sample price data for the prototype.</div>
-      <button class="btn ghost full" id="open-set">🔔 Set price alert</button>
+      <button class="btn ghost full with-icon" id="open-set"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>Set price alert</button>
       <div class="actions"><button class="btn primary" disabled>Buy</button><button class="btn ghost" disabled>Sell</button></div>
     </section>
 
@@ -181,7 +184,7 @@ button, input { font: inherit; }
     <section class="screen" data-screen="verify" hidden>
       <div class="topbar"><button class="iconbtn" data-go="asset">‹ Back</button><h1>Verification needed</h1><span></span></div>
       <div class="center">
-        <div class="badge-big" aria-hidden="true">🪪</div>
+        <div class="badge-big"><svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.8-1.6 2-2.3 3-2.3s2.2.7 3 2.3M14 10h4M14 13h3"/></svg></div>
         <b>Complete verification to set price alerts</b>
         <div class="sub">It takes about five minutes. You'll need an ID document.</div>
         <button class="btn primary">Start verification</button>
@@ -507,7 +510,7 @@ button, input { font: inherit; }
     var act = state.alerts.filter(function (a) { return a.status === "active"; });
     var trg = state.alerts.filter(function (a) { return a.status === "triggered"; });
     var row = function (a) {
-      var arrow = a.direction === "above" ? "▲ above" : "▼ below";
+      var arrow = a.direction === "above" ? "above" : "below";
       return '<div class="row"><div><b>Bitcoin ' + arrow + " " + fmt(a.target) + '</b><div class="sub">Set at ' + fmt(a.setAt) + '</div></div><span class="pill ' + a.status + '">' + a.status + "</span></div>";
     };
     $("active-list").innerHTML = act.length ? act.map(row).join("") : '<div class="empty">No active price alerts.</div>';
@@ -539,7 +542,7 @@ button, input { font: inherit; }
   }
   function updateHint() {
     var t = parse(part("target").value);
-    part("direction-hint").textContent = !t ? "Enter a target price." : t > state.price ? "▲ Alert when the price rises above this." : t < state.price ? "▼ Alert when the price falls below this." : "That is the current price.";
+    part("direction-hint").textContent = !t ? "Enter a target price." : t > state.price ? "Alerts you when the price rises to this." : t < state.price ? "Alerts you when the price falls to this." : "That is the current price.";
     var pv = part("preview-text");
     if (pv) pv.textContent = t > 0 ? "Bitcoin reached " + fmt(t) : "Bitcoin reached …";
   }
