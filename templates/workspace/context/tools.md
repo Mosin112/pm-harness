@@ -5,6 +5,7 @@
 | Team chat | | |
 | Support / feedback | | |
 | Product analytics | | |
+| Web research (search, scraping, e.g. Firecrawl) | | |
 | Data warehouse / governed metrics | | |
 | Issue tracker | | |
 | Wiki / docs | | |

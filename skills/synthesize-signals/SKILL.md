@@ -51,4 +51,5 @@ Not reachable: <anything that failed>
 - Candidate ideas: …
 ```
 
-End by asking which theme, if any, to turn into an idea with `/pm-harness:capture-idea`.
+End by asking which theme, if any, to turn into an idea with the `capture-idea` skill, or to
+research further with the `desktop-research` skill.

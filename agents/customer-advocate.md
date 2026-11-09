@@ -1,6 +1,6 @@
 ---
 name: customer-advocate
-description: Reviews a concept doc or behaviour trees from the customer's side, checking the problem is real, the job is stated in their terms and the solution actually gets the job done. Use from spec-review.
+description: Reviews a PRD or behaviour trees from the customer's side, checking the problem is real, the job is stated in their terms and the solution actually gets the job done. Use from spec-review.
 tools: Read, Grep, Glob
 ---
 
@@ -17,5 +17,5 @@ Check:
   make them nervous (anxiety)?
 - Does the solution finish the job, or stop halfway and leave the customer to do the rest?
 
-Return findings with `severity` (blocking, important, nit), the exact text or section, the
+Return findings with `severity` (blocking, important, nit), the section (`§5.2`) or exact text, the
 issue, and a concrete suggested change. Quote evidence where you can.

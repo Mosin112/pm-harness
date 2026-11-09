@@ -10,4 +10,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
       - run: bash scripts/selftest.sh
+      - run: npm test
+      - name: Installer runs from a packed copy
+        run: |
+          npm pack --silent
+          ws=$(mktemp -d)
+          npx --yes ./pm-harness-*.tgz init --dir "$ws" --tools codex,cursor,gemini --yes
+          npx --yes ./pm-harness-*.tgz doctor --dir "$ws"
