@@ -40,6 +40,10 @@ Closes the loop: did the thing we built do the job we said it would? Read
 Then propose a decision-log entry and context updates (via the `update-context` skill), set
 `stage: launched` in `01-idea.md` if it is not already, and add `readout: YYYY-MM-DD`.
 
+Until the gate window ends, `metrics-review` tracks the item against its targets; this readout
+makes the call at the end. Afterwards, offer the `roadmap` skill to move the item and any next
+phase to the right column.
+
 **If the gate says continue** to the next phase, offer to start it as a new linked item with the
 `capture-idea` skill (`work/<item>-<phase>/`, `lineage: <item>`). Its PRD starts from this
 readout and from the previous PRD's §4 *Later* list and §8.3 open questions. If the gate says

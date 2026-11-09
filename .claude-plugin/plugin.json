@@ -1,6 +1,6 @@
 {
   "name": "pm-harness",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "A product-management harness for Claude and other AI tools. Takes an idea to a phase-aware PRD, testable behaviour trees, a clickable prototype with design variants and engineering-ready tickets, with evidence rules, independent review, a prototype review loop, a Definition of done and human approval gates at every step.",
   "author": {
     "name": "Mohsin Hafeez"

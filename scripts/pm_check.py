@@ -8,6 +8,7 @@ Usage:
   pm_check.py prototype <trees-dir> <prototype.html>     variants, tree coverage, review amendments
   pm_check.py tickets <trees-dir> <tickets.md> [prd.md]  tickets trace to trees, metrics, Definition of done
   pm_check.py workspace <workspace-dir>                  workspace layout and item stages
+  pm_check.py design <DESIGN.md>                         design tokens, references and section order
   pm_check.py board <workspace-dir>                      pipeline board for the start of a session
   pm_check.py plugin <plugin-dir>                        skills, agents, manifests and installer
 
@@ -23,6 +24,7 @@ from __future__ import annotations
 
 import contextlib
 import hashlib
+import html.parser as html_parser
 import io
 import json
 import re
@@ -580,6 +582,55 @@ def check_amendments(path: Path, variants: list, shared: set, by_variant: dict,
                      "cannot be approved while any is open")
 
 
+class _ScreenText(html_parser.HTMLParser):
+    """Collect the text inside [data-screen] elements: the product UI, not the side panel."""
+    VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"}
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.depth = 0
+        self.text: list[str] = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag in self.VOID:
+            return
+        if self.depth or any(k == "data-screen" for k, _ in attrs):
+            self.depth += 1
+
+    def handle_endtag(self, tag):
+        if self.depth and tag not in self.VOID:
+            self.depth -= 1
+
+    def handle_data(self, data):
+        if self.depth:
+            self.text.append(data)
+
+
+ICON_GLYPHS = re.compile("[\U0001F000-\U0001FAFF\u2600-\u27BF\u25A0-\u25FF\u2B00-\u2BFF]")
+
+
+def craft_warnings(html: str, report: Report) -> None:
+    """Cheap, static checks for the most common tells (reference/prototype-craft.md §6)."""
+    parser = _ScreenText()
+    try:
+        parser.feed(html)
+    except Exception:  # an unparsable page is reported elsewhere
+        return
+    glyphs = sorted(set(ICON_GLYPHS.findall("".join(parser.text))))
+    if glyphs:
+        report.warn(f"product screens use emoji or symbols as icons ({' '.join(glyphs)}): draw them "
+                    "as inline SVG (prototype-craft.md §6)")
+    styles = "\n".join(re.findall(r"<style[^>]*>(.*?)</style>", html, re.S | re.I))
+    if re.search(r"background-clip\s*:\s*text", styles):
+        report.warn("gradient text (background-clip: text): use weight or size for emphasis")
+    if re.search(r"outline\s*:\s*(none|0)\b", styles) and ":focus-visible" not in styles:
+        report.warn("focus outlines are removed with no :focus-visible style: keyboard users lose their place")
+    if ":focus-visible" not in styles and ":focus" not in styles:
+        report.warn("no focus style: add a visible :focus-visible ring from the palette")
+    if re.search(r"border-(left|right)\s*:\s*([2-9]|\d{2,})px", styles):
+        report.warn("a coloured side border thicker than 1px reads as a generated-design tell")
+
+
 def cmd_prototype(trees_dir: str, html_path: str) -> int:
     report = Report(f"prototype {html_path}")
     trees = load_trees(Path(trees_dir), Report("(tree parse)"))
@@ -589,6 +640,7 @@ def cmd_prototype(trees_dir: str, html_path: str) -> int:
         return report.finish()
     html = read(html_file)
     variants, chosen = check_variants(html, report)
+    craft_warnings(html, report)
     archived = [v for v in variants if v and chosen and v != chosen]
     if chosen:
         variants = [chosen]
@@ -818,6 +870,18 @@ def cmd_workspace(ws: str) -> int:
                 report.error(f"missing context file: context/{f}.md")
         elif len(read(p).splitlines()) > 150:
             report.warn(f"context/{f}.md is over 150 lines; consider splitting it")
+    roadmap = root / "roadmap.md"
+    if roadmap.is_file():
+        text = read(roadmap)
+        for idea in sorted((root / "work").glob("*/01-idea.md")):
+            st = LEGACY_STAGES.get(item_stage(idea) or "", item_stage(idea) or "")
+            if st not in ("parked", "launched") and idea.parent.name not in text:
+                report.warn(f"work/{idea.parent.name} ({st}) is not on roadmap.md: run the roadmap skill")
+    design = root / "DESIGN.md"
+    if not design.is_file():
+        report.warn("missing DESIGN.md: prototypes have no design system (run setup in repair mode)")
+    elif "<Product name>" in read(design):
+        report.warn("DESIGN.md is still the blank template: run the setup skill to fill it")
     for idea in sorted((root / "work").glob("*/01-idea.md")):
         item = idea.parent.name
         stage = item_stage(idea)
@@ -912,6 +976,82 @@ def cmd_board(ws: str) -> int:
     print("Reminders: follow AGENTS.md and the evidence rules; never write to an external tool "
           "without the PM's approval; run done at the end of a useful session.")
     return 0
+
+
+# ---------------------------------------------------------------- design (DESIGN.md)
+
+DESIGN_SECTIONS = ("Overview", "Colors", "Typography", "Layout", "Elevation & Depth", "Shapes",
+                   "Components", "Do's and Don'ts")
+
+
+def design_tokens(text: str) -> tuple[dict, list[str]] | None:
+    """Read DESIGN.md's YAML frontmatter into dotted token paths. Small subset: nested maps of
+    scalars, which is all the format uses."""
+    m = re.match(r"^---\n(.*?)\n---\n", text, re.S)
+    if not m:
+        return None
+    tokens: dict[str, str] = {}
+    problems: list[str] = []
+    stack: list[tuple[int, str]] = []
+    for raw in m.group(1).splitlines():
+        if not raw.strip() or raw.lstrip().startswith("#"):
+            continue
+        indent = len(raw) - len(raw.lstrip(" "))
+        if ":" not in raw:
+            problems.append(f"frontmatter line is not 'key: value': {raw.strip()}")
+            continue
+        key, value = raw.strip().split(":", 1)
+        key = key.strip().strip("'\"")
+        while stack and stack[-1][0] >= indent:
+            stack.pop()
+        path = ".".join([k for _, k in stack] + [key])
+        value = value.split(" #", 1)[0].strip().strip("'\"")
+        if value:
+            tokens[path] = value
+        else:
+            stack.append((indent, key))
+    return tokens, problems
+
+
+def cmd_design(design_path: str) -> int:
+    path = Path(design_path)
+    report = Report(f"design system {design_path}")
+    if not path.is_file():
+        report.error(f"{design_path} not found")
+        return report.finish()
+    text = read(path)
+    parsed = design_tokens(text)
+    if parsed is None:
+        report.warn("no YAML frontmatter: prototypes have no tokens to use")
+        tokens = {}
+    else:
+        tokens, problems = parsed
+        for pr in problems:
+            report.error(pr)
+        placeholders = [k for k, v in tokens.items() if "<" in v and ">" in v]
+        if placeholders:
+            report.warn(f"{len(placeholders)} token(s) still hold template placeholders (e.g. "
+                        f"{placeholders[0]}): run the setup skill to fill DESIGN.md")
+        for k, v in tokens.items():
+            for ref in re.findall(r"\{([\w.-]+)\}", v):
+                if ref not in tokens:
+                    report.error(f"{k}: refers to {{{ref}}}, which is not defined")
+        for k in tokens:
+            if k.startswith("colors.") and "<" not in tokens[k] and not re.match(
+                    r"^(#[0-9a-fA-F]{3,8}|(rgb|rgba|hsl|hsla|oklch|oklab|lab|lch|color)\(.*\))$", tokens[k]):
+                report.warn(f"{k}: '{tokens[k]}' does not look like a CSS colour")
+    found = [h for h in re.findall(r"^## (.+?)\s*$", text, re.M) if h in DESIGN_SECTIONS]
+    order = [DESIGN_SECTIONS.index(h) for h in found]
+    if order != sorted(order):
+        report.error("sections must keep the canonical order: " + ", ".join(DESIGN_SECTIONS))
+    empty = [h for h in found
+             if not re.sub(r"<!--.*?-->", "", re.split(rf"^## {re.escape(h)}\s*$", text, flags=re.M)[1]
+                           .split("\n## ", 1)[0], flags=re.S).strip()]
+    if empty:
+        report.warn(f"empty section(s): {', '.join(empty)}")
+    groups = sorted({k.split(".", 1)[0] for k in tokens if "." in k})
+    report.note(f"{len(tokens)} tokens ({', '.join(groups) or 'none'}), {len(found)} sections")
+    return report.finish()
 
 
 # ---------------------------------------------------------------- item
@@ -1536,6 +1676,7 @@ def main(argv: list[str]) -> int:
         "prototype": (cmd_prototype, (2,)),
         "tickets": (cmd_tickets, (2, 3)),
         "workspace": (cmd_workspace, (1,)),
+        "design": (cmd_design, (1,)),
         "board": (cmd_board, (1,)),
         "plugin": (cmd_plugin, (1,)),
     }

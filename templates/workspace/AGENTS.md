@@ -20,7 +20,8 @@ pipeline, one folder per idea under `work/`:
 | When the task involves… | Read |
 |---|---|
 | Company, market, business model | `context/company.md` |
-| Product areas, flows, recent launches, design tokens | `context/product.md` |
+| Product areas, flows, recent launches | `context/product.md` |
+| Visual design system: colours, type, components, rules | `DESIGN.md` |
 | Goals, OKRs, priorities | `context/strategy.md` |
 | Users, segments, known jobs and pains | `context/users.md` |
 | Any number or metric | `context/metrics.md` |
@@ -31,6 +32,7 @@ pipeline, one folder per idea under `work/`:
 | Tone, length, formats | `context/writing-style.md` |
 | What "done" means for engineering tickets | `context/definition-of-done.md` |
 | Past decisions | `decisions/decision-log.md` |
+| What is now, next and later | `roadmap.md` |
 | Past session reviews | `sessions/` |
 
 ## Rules
@@ -65,8 +67,9 @@ to "use the <skill> skill"). If a tool does not load skills, read
 | Pipeline | `capture-idea` → `product-grill` (optional) → `write-prd` + `spec-review` → `write-behaviour-trees` → `build-prototype` + `review-prototype` → `create-eng-tickets` |
 | Share | `publish`: PRD to Confluence; prototype and trees view as Claude artifacts; comments come back as changes |
 | Whole pipeline | `one-shot`: runs the steps in order and stops at every gate |
-| Discover | `synthesize-signals`, `desktop-research`, `opportunity-brief` |
-| Deliver and learn | `stakeholder-update`, `launch-readout` |
+| Discover | `synthesize-signals`, `desktop-research`, `opportunity-brief`; `product-grill` also explores |
+| Plan | `roadmap` (Now / Next / Later from the items) |
+| Deliver and learn | `stakeholder-update`, `metrics-review`, `launch-readout` |
 | Everyday | `meeting-prep`, `meeting-to-decisions` |
 | Workspace | `setup`, `update-context`, `done` |
 
