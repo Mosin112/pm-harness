@@ -1383,6 +1383,9 @@ def cmd_contracts(item_dir: str) -> int:
     """Write work/<item>/05-contracts/<subject>.contract.md for the engineering harness."""
     folder = Path(item_dir)
     report = Report(f"contracts for {folder.name}")
+    if not folder.is_dir():
+        report.error(f"{folder} is not an item folder")
+        return report.finish()
     files = item_files(folder)
     trees = load_trees(files["trees"], report)
     prd = parse_prd(files["prd"], Report("(prd parse)")) if files["prd"].is_file() else None

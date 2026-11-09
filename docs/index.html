@@ -273,6 +273,10 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .around ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
 .around li { font-size: .9375rem; color: var(--ink-2); }
 .around li code { color: var(--ink); }
+.conn-steps { margin-bottom: 24px; }
+.conn-grid { display: grid; gap: 16px; }
+.conn-table td:first-child { white-space: nowrap; }
+.skill-more .nb { white-space: nowrap; }
 
 /* example */
 .tabs { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--line); scrollbar-width: none; }
@@ -632,7 +636,7 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
   <div class="wrap">
     <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true"></span>PM Harness</a>
     <div class="nav-links">
-      <a href="#why">Why</a><a href="#inside">Inside</a><a href="#pipeline">Pipeline</a><a href="#example">Example</a><a href="#trace">Traceability</a><a href="#try">Try the checker</a><a href="#benefits">Benefits</a><a href="#skills">Skills</a><a href="#start">Get started</a>
+      <a href="#why">Why</a><a href="#inside">Inside</a><a href="#pipeline">Pipeline</a><a href="#connectors">Connectors</a><a href="#example">Example</a><a href="#trace">Traceability</a><a href="#try">Try the checker</a><a href="#benefits">Benefits</a><a href="#skills">Skills</a><a href="#start">Get started</a>
     </div>
     <a class="nav-cta" href="#start">Install</a>
     <button class="theme-btn" id="theme-btn" type="button" aria-label="Colour theme: dark. Click to switch." title="Theme: dark"></button>
@@ -646,12 +650,12 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
     <h1 class="hero-title"><span class="t-dim">From a one-line idea</span><br> to engineering-ready tickets.</h1>
     <div class="hero-body">
       <div class="hero-copy">
-        <p class="lede">PM Harness takes an idea through a concept, behaviour trees, a clickable prototype and engineering tickets in one sitting. Scripts and five independent reviewers check every step, and nothing moves on until a PM approves it.</p>
+        <p class="lede">PM Harness takes an idea through an eight-section PRD, behaviour trees, clickable prototype variants and engineering tickets in one sitting. Every skill checks its data sources before it starts, scripts and five independent reviewers check every step, and nothing moves on until a PM approves it.</p>
         <div class="cta-row"><a class="btn primary" href="#pipeline">Simulate a run</a><a class="btn" href="#example">See the outputs</a></div>
         <ul class="hero-stats">
-          <li><b>15</b><span>skills</span></li>
+          <li><b>22</b><span>skills</span></li>
           <li><b>5</b><span>independent reviewers</span></li>
-          <li><b>3</b><span>automated checks</span></li>
+          <li><b>7</b><span>automated checks</span></li>
           <li><b>5</b><span>approval gates</span></li>
         </ul>
       </div>
@@ -659,24 +663,24 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
         <div class="run-head"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="run-title">one-shot · price-alerts</span><span class="run-status"><i aria-hidden="true"></i><span id="run-status">done</span></span></div>
         <ol class="run-steps" id="run-steps" aria-label="Pipeline steps">
           <li class="is-done"><button type="button" data-step="0" aria-label="Step 1: Idea. Show what happens in this step"><span class="bar"></span><span class="lbl"><b>1</b>Idea</span></button></li>
-          <li class="is-done"><button type="button" data-step="1" aria-label="Step 2: Concept. Show what happens in this step"><span class="bar"></span><span class="lbl"><b>2</b>Concept</span></button></li>
+          <li class="is-done"><button type="button" data-step="1" aria-label="Step 2: PRD. Show what happens in this step"><span class="bar"></span><span class="lbl"><b>2</b>PRD</span></button></li>
           <li class="is-done"><button type="button" data-step="2" aria-label="Step 3: Trees. Show what happens in this step"><span class="bar"></span><span class="lbl"><b>3</b>Trees</span></button></li>
           <li class="is-done"><button type="button" data-step="3" aria-label="Step 4: Prototype. Show what happens in this step"><span class="bar"></span><span class="lbl"><b>4</b>Prototype</span></button></li>
           <li class="is-done"><button type="button" data-step="4" aria-label="Step 5: Tickets. Show what happens in this step"><span class="bar"></span><span class="lbl"><b>5</b>Tickets</span></button></li>
         </ol>
 <pre class="console run-log" id="run-log"><span class="dim">$ /pm-harness:one-shot price alerts</span>
-▸ reading context library · 10 files
+▸ 10 context files · 9 tools answer
 ▸ evidence: 6 calls, 23 tickets · grade: some
-<span class="gl">◆ Gate 1 · continue to concept?   </span><span class="pm">PM ✓</span>
+<span class="gl">◆ Gate 1 · continue to a PRD?     </span><span class="pm">PM ✓</span>
 ▸ 5 reviewers · 2 blocking found, resolved
-<span class="gl">◆ Gate 2 · approve concept?       </span><span class="pm">PM ✓</span>
+<span class="gl">◆ Gate 2 · approve the PRD?       </span><span class="pm">PM ✓</span>
 <span class="pass">PASS</span> trees        16 testable outcomes
 <span class="gl">◆ Gate 3 · approve the trees?     </span><span class="pm">PM ✓</span>
-<span class="pass">PASS</span> prototype    16/16 outcomes shown
-<span class="gl">◆ Gate 4 · approve the prototype? </span><span class="pm">PM ✓</span>
+<span class="pass">PASS</span> prototype    2 variants · 16/16 shown
+<span class="gl">◆ Gate 4 · choose a variant?      </span><span class="pm">PM ✓</span>
 <span class="pass">PASS</span> tickets      nothing missing or invented
 <span class="gl">◆ Gate 5 · create 4 tickets?      </span><span class="pm">PM ✓</span>
-<span class="pass">✓ PA-1 … PA-4 created · handed to engineering</span></pre>
+<span class="pass">✓ PA-1 … PA-4 created · contracts handed over</span></pre>
         <div class="run-foot"><span id="run-count">5 of 5 gates approved</span><button class="run-replay" id="run-replay" type="button">Replay</button></div>
       </figure>
     </div>
@@ -713,8 +717,8 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
         <ol class="flow">
           <li><span><b>Type one line:</b> <code>/pm-harness:one-shot price alerts</code></span></li>
           <li><span><b>It reads my context library</b> (strategy, users, metric definitions, constraints) and pulls real evidence from my meeting notes, chat, support and analytics.</span></li>
-          <li><span><b>It follows my procedure:</b> concept and job to be done, then testable behaviour trees, then a clickable prototype, then tickets.</span></li>
-          <li><span><b>It gets checked:</b> five reviewers in fresh contexts critique the concept, and scripts verify the trees, prototype and tickets.</span></li>
+          <li><span><b>It follows my procedure:</b> an eight-section PRD, then testable behaviour trees, then clickable prototype variants, then tickets.</span></li>
+          <li><span><b>It gets checked:</b> five reviewers in fresh contexts critique the PRD, and scripts verify the PRD, trees, prototype and tickets.</span></li>
           <li><span><b>The PM approves each step</b>, and what was learned is saved for next time.</span></li>
         </ol>
         <div class="verdict">
@@ -742,10 +746,10 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
     <div class="layers">
       <div class="layer"><div class="k">Context</div><h3>A filing cabinet the AI reads first</h3><p>Small, focused files about my company, strategy, users, metric definitions, stakeholders and constraints. An index tells the AI which file to open for which task, so it reads only what it needs.</p><div class="eg">context/metrics.md → "every number comes from a governed definition"</div></div>
       <div class="layer"><div class="k">Skills</div><h3>Written procedures for repeat work</h3><p>Each skill is a short instruction manual: when to use it, the steps, the output format and the gate. The AI loads a skill only when the task matches, which keeps it focused and cheap to run.</p><div class="eg">skills/write-behaviour-trees/SKILL.md</div></div>
-      <div class="layer"><div class="k">Connectors</div><h3>Access to the tools I already use</h3><p>Meeting notes, team chat, support, product analytics, my data warehouse, the issue tracker, the wiki and design files. The AI works from real evidence instead of guessing.</p><div class="eg">"6 customer calls, 23 support tickets" — not "users want"</div></div>
-      <div class="layer"><div class="k">Review</div><h3>Critics who didn't write the draft</h3><p>Five reviewer agents (engineering, design, risk, executive, customer advocate) each read the concept in a fresh context, so none of them is defending its own work.</p><div class="eg">blocking · risk · "buy now?" reads as advice</div></div>
-      <div class="layer"><div class="k">Checks and gates</div><h3>Machines check form, people check judgement</h3><p>Scripts verify that trees are testable, that the prototype shows every outcome and that tickets match the trees exactly. Then the PM approves before the next step. Nothing is posted to Jira, Slack or email without approval.</p><div class="eg">PASS · 16/16 tree outcomes demonstrated</div></div>
-      <div class="layer"><div class="k">Memory</div><h3>It remembers what it learned</h3><p>Each idea's state lives in its own folder, so any session can pick up where the last one stopped. A decision log and approved context updates mean next week's work starts smarter.</p><div class="eg">decisions/decision-log.md · "revisit if…"</div></div>
+      <div class="layer"><div class="k">Connectors</div><h3>Access to the tools I already use</h3><p>Skills say what they need (governed metrics, analytics, meeting notes, a design source) and one registry says which of my tools serves each need, several if I use several. Every skill checks its sources before it starts.</p><div class="eg">product-analytics → Mixpanel, Amplitude</div></div>
+      <div class="layer"><div class="k">Review</div><h3>Critics who didn't write the draft</h3><p>Five reviewer agents (engineering, design, risk, executive, customer advocate) each read the PRD in a fresh context, so none of them is defending its own work.</p><div class="eg">blocking · risk · "buy now?" reads as advice</div></div>
+      <div class="layer"><div class="k">Checks and gates</div><h3>Machines check form, people check judgement</h3><p>Scripts check the PRD's structure, that trees are testable, that the prototype shows every outcome in every variant and that tickets match the trees exactly. Then the PM approves before the next step. Nothing is posted to Jira, Slack or email without approval.</p><div class="eg">PASS · 16/16 tree outcomes demonstrated</div></div>
+      <div class="layer"><div class="k">Memory</div><h3>It remembers what it learned</h3><p>Each idea's state lives in its own folder, so any session can pick up where the last one stopped. A decision log, approved context updates and an end-of-session retrospective mean next week's work starts smarter.</p><div class="eg">decisions/decision-log.md · "revisit if…"</div></div>
     </div>
   </div>
 </section>
@@ -755,7 +759,7 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
     <div class="section-head" style="margin-bottom:0">
       <div class="eyebrow">The pipeline</div>
       <h2>Five steps, five gates, one sitting</h2>
-      <p class="lede">The core of the harness is a one-shot pipeline. Each step is a skill that can run on its own; <code>/pm-harness:one-shot</code> runs them in order and stops at every gate.</p>
+      <p class="lede">The core of the harness is a one-shot pipeline. Each step is a skill that can run on its own; <code>/pm-harness:one-shot</code> checks every step's sources, runs them in order and stops at every gate.</p>
     </div>
     <div class="rail" id="pipe-rail" aria-label="Pipeline steps"></div>
     <div class="sim" id="sim">
@@ -775,14 +779,75 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
     </div>
     <div class="detail" id="detail" aria-live="polite"></div>
     <div class="around">
-      <div><span class="eyebrow">Before the pipeline</span><h3>Find what's worth doing</h3><ul><li><code>synthesize-signals</code> turns calls, tickets and chat into themes with evidence counts.</li><li><code>opportunity-brief</code> sizes an idea with governed metrics and a RICE score.</li></ul></div>
-      <div><span class="eyebrow">After the pipeline</span><h3>Ship it and check it worked</h3><ul><li><code>stakeholder-update</code> drafts a 200-word update that leads with the ask.</li><li><code>launch-readout</code> compares real results with the concept's success metrics.</li></ul></div>
-      <div><span class="eyebrow">Every day</span><h3>Keep the PM's week running</h3><ul><li><code>meeting-prep</code> and <code>meeting-to-decisions</code> handle the work around meetings.</li><li><code>update-context</code> saves what was learned, with approval.</li></ul></div>
+      <div><span class="eyebrow">Before the pipeline</span><h3>Find what's worth doing</h3><ul><li><code>synthesize-signals</code> turns calls, tickets and chat into themes with evidence counts.</li><li><code>desktop-research</code> researches the public web, with cited sources and stated gaps.</li><li><code>opportunity-brief</code> sizes an idea with governed metrics and a RICE score.</li></ul></div>
+      <div><span class="eyebrow">After the pipeline</span><h3>Share it, ship it, check it worked</h3><ul><li><code>publish</code> puts the PRD in Confluence and the prototype in a Claude artifact; comments come back as changes.</li><li><code>metrics-review</code> scores the product against its targets, guardrails first.</li><li><code>launch-readout</code> compares real results with the PRD's metrics and gate.</li></ul></div>
+      <div><span class="eyebrow">Every day</span><h3>Keep the PM's week running</h3><ul><li><code>meeting-prep</code> and <code>meeting-to-decisions</code> handle the work around meetings.</li><li><code>roadmap</code> keeps Now, Next and Later in sync with the items.</li><li><code>update-context</code> and <code>done</code> save what was learned, with approval.</li></ul></div>
     </div>
   </div>
 </section>
 
-<section class="section band" id="example">
+<section class="section band" id="connectors">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Connectors</div>
+      <h2>Skills ask for what they need, not for a tool</h2>
+      <p class="lede">A metrics review needs governed numbers; a prototype needs a design system. Which tools provide them differs from team to team, so each skill names its needs and one file in the workspace maps every need to your tools, several per need if you use several. The same skill works with Metabase or Looker, Mixpanel or Amplitude, in Claude or in Codex.</p>
+    </div>
+    <div class="around conn-steps">
+      <div><span class="eyebrow">1 · In every skill</span><h3>Needs</h3><ul><li>Each skill lists what it needs, required or optional, and what it uses it for.</li><li>Fourteen needs, from meeting notes and governed metrics to a design source and an issue tracker.</li></ul></div>
+      <div><span class="eyebrow">2 · Once per workspace</span><h3>A tools registry</h3><ul><li><code>context/tools.md</code> maps each need to tools: main, also or fallback; internal or external.</li><li><code>setup</code> fills it from what's connected and suggests what's missing. The plugin bundles no connectors.</li></ul></div>
+      <div><span class="eyebrow">3 · Before every run</span><h3>A preflight</h3><ul><li>The skill confirms each tool answers with one read call and says what's missing before it starts.</li><li><code>one-shot</code> checks every step up front, so a missing tracker shows up before the PRD is written.</li></ul></div>
+    </div>
+    <div class="conn-grid">
+      <article class="doc" style="min-width:0">
+        <div class="docmeta"><span>context/tools.md</span><span>one row per tool</span></div>
+        <div class="table-wrap"><table class="conn-table"><thead><tr><th>Need</th><th>Tool</th><th>Role</th><th>Source</th><th>Trusted for</th></tr></thead><tbody>
+          <tr><td class="mono">governed-metrics</td><td>Metabase</td><td>main</td><td>internal</td><td>every metric in metrics.md</td></tr>
+          <tr><td class="mono">product-analytics</td><td>Mixpanel</td><td>main</td><td>internal</td><td>events, funnels</td></tr>
+          <tr><td class="mono">product-analytics</td><td>Amplitude</td><td>also</td><td>internal</td><td>events before 2025</td></tr>
+          <tr><td class="mono">web-research</td><td>Firecrawl</td><td>main</td><td>external</td><td></td></tr>
+          <tr><td class="mono">web-research</td><td>web search</td><td>fallback</td><td>external</td><td></td></tr>
+          <tr><td class="mono">team-chat</td><td>Slack</td><td>main</td><td>internal</td><td></td></tr>
+          <tr><td class="mono">docs</td><td>Confluence</td><td>main</td><td>internal</td><td>specs, past PRDs</td></tr>
+          <tr><td class="mono">design-source</td><td>Figma</td><td>main</td><td>internal</td><td>tokens, components, screens</td></tr>
+          <tr><td class="mono">design-source</td><td>Google Drive</td><td>also</td><td>internal</td><td>brand guide</td></tr>
+        </tbody></table></div>
+        <p class="note">External numbers, from Firecrawl or any outside source, are benchmarks: cited with their URL and dates, kept in their own section, and never a stand-in for your own metrics or a target without your approval.</p>
+      </article>
+      <p class="muted small">Before a metrics review, the skill resolves its needs against the registry:</p>
+<pre class="console"><span class="dim">$ python3 .pm-harness/pm_check.py needs metrics-review</span>
+<span class="pass">PASS</span>  needs metrics-review
+  · required  governed-metrics             Metabase (main)
+  · optional  market-data or web-research  market-data: no tool · web-research: Firecrawl (main, external), web search (fallback, external)
+  · optional  product-analytics            Mixpanel (main), Amplitude (also)
+  · optional  team-chat or docs            team-chat: Slack (main) · docs: Confluence (main)
+  · next: confirm each tool answers with one read call
+  0 error(s), 0 warning(s)</pre>
+      <div class="split">
+        <div style="display:grid;gap:12px;align-content:start;min-width:0">
+          <p class="muted small">Then it confirms each tool answers and reports its sources in one line. A gap stays visible in the review instead of being worked around:</p>
+<pre class="console">Sources · governed-metrics: Metabase ok
+  · product-analytics: Mixpanel ok,
+    Amplitude not connected
+  · web-research: Firecrawl ok
+  · market-data: none configured</pre>
+        </div>
+        <div style="display:grid;gap:12px;align-content:start;min-width:0">
+          <p class="muted small">A required need with no tool is raised before the work starts, with the step it blocks:</p>
+<pre class="console"><span class="dim">$ pm_check.py needs create-eng-tickets</span>
+<span class="fail">FAIL</span>  needs create-eng-tickets
+  · required  issue-tracker  no tool
+  ✗ required issue-tracker has no tool
+    in context/tools.md: connect one
+    (setup) or plan to finish
+    create-eng-tickets by hand</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="example">
   <div class="wrap">
     <div class="section-head">
       <div class="eyebrow">Worked example</div>
@@ -791,7 +856,7 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
     </div>
     <div class="tabs" role="tablist" aria-label="Pipeline outputs">
       <button class="tab" role="tab" id="tab-idea" aria-controls="p-idea" aria-selected="true"><span class="n">1</span>Idea card</button>
-      <button class="tab" role="tab" id="tab-concept" aria-controls="p-concept" aria-selected="false"><span class="n">2</span>Concept + JTBD</button>
+      <button class="tab" role="tab" id="tab-prd" aria-controls="p-prd" aria-selected="false"><span class="n">2</span>PRD</button>
       <button class="tab" role="tab" id="tab-review" aria-controls="p-review" aria-selected="false"><span class="n">2b</span>Review</button>
       <button class="tab" role="tab" id="tab-trees" aria-controls="p-trees" aria-selected="false"><span class="n">3</span>Behaviour trees</button>
       <button class="tab" role="tab" id="tab-proto" aria-controls="p-proto" aria-selected="false"><span class="n">4</span>Prototype</button>
@@ -818,36 +883,41 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
           <tr><td>Effort</td><td class="num">3 person-weeks</td><td>engineering estimate</td></tr>
           <tr><td><b>RICE</b></td><td class="num"><b>4,800</b></td><td></td></tr>
         </tbody></table></div>
-        <p class="note">Gate 1: the PM chose to continue to a concept.</p>
+        <p class="note">Gate 1: the PM chose to continue. A short product grill settled the phase (MVP) and the prototype decision before the PRD.</p>
       </article>
     </div>
 
-    <div class="panel" role="tabpanel" id="p-concept" aria-labelledby="tab-concept" hidden>
+    <div class="panel" role="tabpanel" id="p-prd" aria-labelledby="tab-prd" hidden>
       <article class="doc">
-        <div class="docmeta"><span>work/price-alerts/02-concept.md</span><span>status: approved</span></div>
-        <h3>Price alerts · Concept</h3>
+        <div class="docmeta"><span>work/price-alerts/02-prd.md</span><span>phase: MVP</span><span>status: approved</span><span>~980 words</span></div>
+        <h3>Price alerts · PRD</h3>
+        <p><b>Eight sections, depth set by the phase:</b> 1 TL;DR · 2 Product shape · 3 Problem and job to be done · 4 Goals and non-goals · 5 Requirements · 6 Experience and journey · 7 Success metrics and launch gates · 8 Risks, constraints and open questions.</p>
         <h4>Job to be done</h4>
         <blockquote><b>When</b> I'm waiting for an asset to reach a price I've decided on, <b>I want to</b> be told the moment it gets there, <b>so I can</b> act on my plan without watching the chart all day.</blockquote>
-        <h4>Forces of progress</h4>
-        <div class="table-wrap"><table><thead><tr><th>Push</th><th>Pull</th><th>Anxiety</th><th>Habit</th></tr></thead><tbody><tr>
-          <td>Watching the chart all day; missing moves while busy</td><td>Peace of mind: "the app will tell me"</td><td>Too many notifications; alerts that fire late</td><td>Keeping the app open; a separate alerts app</td>
-        </tr></tbody></table></div>
-        <h4>Success metrics</h4>
-        <div class="table-wrap"><table><thead><tr><th>Metric</th><th>Definition</th><th>Target</th></tr></thead><tbody>
-          <tr><td><b>Alert adoption</b> (primary)</td><td>% of weekly active investors with an active price alert</td><td class="num">15% in 8 weeks</td></tr>
-          <tr><td>Alert-to-action</td><td>% of triggered alerts followed by opening the asset within 1 hour</td><td class="num">40%</td></tr>
-          <tr><td>Notification opt-out (guardrail)</td><td>% of investors disabling push in a week</td><td class="num">no increase</td></tr>
+        <h4>Requirements, each with its tree</h4>
+        <ul><li><b>5.1 Set a price alert (P0)</b>: verified investors only, target above zero and different from today's price, up to 20 active.<br><span class="mono small">Tree: functional/price-alert-creation</span></li><li><b>5.2 Trigger and notify (P0)</b>: one push notification that states the fact only; with push off, the alert still shows as triggered.<br><span class="mono small">Tree: functional/price-alert-trigger</span></li></ul>
+        <h4>Prototype decision</h4>
+        <p>Setting an alert in one quick step (<b>speed</b>) versus seeing exactly what will be sent before saving (<b>confidence</b>). <b>Chosen at the prototype gate:</b> Guided set.</p>
+        <h4>Success metrics and launch gate</h4>
+        <div class="table-wrap"><table><thead><tr><th>Metric</th><th>Definition</th><th>Baseline</th><th>Target</th></tr></thead><tbody>
+          <tr><td><b>Alert adoption</b> (primary)</td><td>% of weekly active investors with an active price alert</td><td class="num">0%</td><td class="num">15% after 8 weeks</td></tr>
+          <tr><td>Alert-to-action</td><td>% of triggered alerts followed by opening the asset within 1 hour</td><td class="num">n/a</td><td class="num">40%</td></tr>
+          <tr><td>Notification opt-out (guardrail)</td><td>% of investors turning off push in a week</td><td class="num">0.8%</td><td class="num">no increase</td></tr>
         </tbody></table></div>
+        <p><b>Gate:</b> after 8 weeks, continue to an MMP if adoption is 10% or more and alert-to-action 30% or more with no guardrail breach; otherwise stop and record why.</p>
         <h4>Scope</h4>
-        <p><b>In:</b> alerts on any asset, one notification per alert, up to 20 active alerts. <b>Not now:</b> percentage-move alerts, recurring alerts, ordering from the notification.</p>
-        <h4>Constraints checked</h4>
-        <ul><li>Notifications state facts only, never advice.</li><li>Only verified investors can set alerts.</li></ul>
+        <p><b>Not now:</b> percentage-move alerts, recurring alerts, ordering from the notification. <b>Later:</b> limit-order suggestions (own risk review), alert expiry, deleting alerts.</p>
+<pre class="console"><span class="dim">$ python3 .pm-harness/pm_check.py prd work/price-alerts/02-prd.md work/price-alerts/03-trees</span>
+<span class="pass">PASS</span>  PRD work/price-alerts/02-prd.md
+  · phase MVP, status approved, 2 capabilities (P0, P0), ~978 words
+  · 3 of 3 named trees found
+  0 error(s), 0 warning(s)</pre>
       </article>
     </div>
 
     <div class="panel" role="tabpanel" id="p-review" aria-labelledby="tab-review" hidden>
       <article class="doc">
-        <div class="docmeta"><span>work/price-alerts/02-concept-review.md</span><span>5 reviewers · fresh contexts</span></div>
+        <div class="docmeta"><span>work/price-alerts/02-prd-review.md</span><span>5 reviewers · fresh contexts</span></div>
         <h3>Independent review</h3>
         <div class="table-wrap"><table><thead><tr><th>Severity</th><th>Reviewer</th><th>Finding</th><th>Resolution</th></tr></thead><tbody>
           <tr><td><span class="sev blocking">blocking</span></td><td>risk</td><td>Draft text "Bitcoin hit your target, buy now?" reads as advice.</td><td>Changed: facts only</td></tr>
@@ -856,8 +926,9 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
           <tr><td><span class="sev important">important</span></td><td>customer advocate</td><td>Users with push off would never learn an alert fired.</td><td>Changed: shown in alerts list</td></tr>
           <tr><td><span class="sev important">important</span></td><td>engineering</td><td>Unlimited alerts per user is an abuse and cost risk.</td><td>Changed: cap at 20</td></tr>
           <tr><td><span class="sev important">important</span></td><td>exec</td><td>"Adoption" wasn't defined.</td><td>Changed: defined precisely</td></tr>
+          <tr><td><span class="sev important">important</span></td><td>exec</td><td>The draft read like a full rollout on <i>some</i> evidence.</td><td>Changed: an MVP with a continue / stop gate</td></tr>
         </tbody></table></div>
-        <p class="note">Gate 2: a concept can't be approved while any blocking finding is open. Each of these findings became a line in the behaviour trees.</p>
+        <p class="note">Gate 2: a PRD can't be approved while any blocking finding is open. Each of these findings became a line in the behaviour trees. A later change from the prototype review went through the PRD's change log and a second, smaller review round.</p>
       </article>
     </div>
 
@@ -870,6 +941,7 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
           <pre class="slip" id="tree-journey"></pre>
         </div>
         <div style="display:grid;gap:12px;align-content:start;min-width:0">
+          <p class="muted small">The PM reviews the trees as a diagram, drawn left to right, and can comment on any line. <a href="example/trees-view.html" target="_blank" rel="noopener">Open the trees view ↗</a></p>
           <p class="muted small">The tree checker runs before the PM sees the trees. It checks the grammar and flags words a test can't check, such as "should", "properly" or "fast".</p>
 <pre class="console"><span class="dim">$ python3 .pm-harness/pm_check.py trees work/price-alerts/03-trees</span>
 <span class="pass">PASS</span>  behaviour trees in work/price-alerts/03-trees
@@ -890,41 +962,55 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
 
     <div class="panel" role="tabpanel" id="p-proto" aria-labelledby="tab-proto" hidden>
       <div style="display:grid;gap:12px">
-        <p class="muted">A real, clickable prototype generated by <code>build-prototype</code>. Use the scenario switches to reach every branch, or click any tree outcome under "Tree coverage" to jump straight to it. <a href="example/prototype.html" target="_blank" rel="noopener">Open it full screen ↗</a></p>
+        <p class="muted">A real, clickable prototype generated by <code>build-prototype</code>, with two variants that argue the PRD's prototype decision: <b>Quick set</b> (speed) and <b>Guided set</b> (confidence). The PM chose Guided set; Quick set stays viewable, marked archived. Use the scenario switches to reach every branch, or click any tree outcome under "Tree coverage" to jump straight to it. <a href="example/prototype.html" target="_blank" rel="noopener">Open it full screen ↗</a></p>
         <iframe class="proto-frame" src="example/prototype.html" title="Price alerts clickable prototype" loading="lazy"></iframe>
 <pre class="console"><span class="dim">$ python3 .pm-harness/pm_check.py prototype work/price-alerts/03-trees work/price-alerts/04-prototype/index.html</span>
-<span class="pass">PASS</span>  prototype coverage
-  · 5 screens found
-  · 16/16 tree outcomes demonstrated or justified</pre>
+<span class="pass">PASS</span>  prototype work/price-alerts/04-prototype/index.html
+  · 2 variant(s): quick, guided; chosen: guided (others archived)
+  · 16/16 tree outcomes demonstrated or justified in the chosen variant (guided)
+  · amendments: 1 resolved, 1 dismissed, 0 open
+  0 error(s), 0 warning(s)</pre>
+        <p class="muted small">Before the walkthrough, a design review scored both variants on Nielsen's ten heuristics and fixed every P0 and P1 finding: emoji icons redrawn as SVG, arrows replaced with words, and a preview that updates as the investor types.</p>
       </div>
     </div>
 
     <div class="panel" role="tabpanel" id="p-tickets" aria-labelledby="tab-tickets" hidden>
       <div class="split">
         <article class="doc" style="min-width:0">
-          <div class="docmeta"><span>work/price-alerts/05-tickets.md</span><span>created after approval</span></div>
+          <div class="docmeta"><span>work/price-alerts/05-tickets.md</span><span>created after approval</span><span>chosen variant: Guided set</span></div>
           <h3>Epic · Price alerts</h3>
           <div class="table-wrap"><table><thead><tr><th>Key</th><th>Story</th><th>Acceptance criteria</th></tr></thead><tbody>
             <tr><td class="num">PA-1</td><td>Set a price alert</td><td>functional/price-alert-creation, verbatim</td></tr>
-            <tr><td class="num">PA-2</td><td>Trigger and notify</td><td>functional/price-alert-trigger, verbatim</td></tr>
+            <tr><td class="num">PA-2</td><td>Trigger price alerts and notify</td><td>functional/price-alert-trigger, verbatim</td></tr>
             <tr><td class="num">PA-3</td><td>End-to-end journey test</td><td>journey/set-and-receive-price-alert, verbatim</td></tr>
-            <tr><td class="num">PA-4</td><td>Analytics for success metrics</td><td>3 events + guardrail tile</td></tr>
+            <tr><td class="num">PA-4</td><td>Analytics for success metrics</td><td>3 events + guardrail tile, one per PRD metric</td></tr>
           </tbody></table></div>
           <h4>Definition of ready</h4>
-          <ul><li>Trees approved by the PM</li><li>Every tree outcome shown in the prototype</li><li>Blocking review findings resolved</li><li>Open: price feed confirmed by engineering (owner named)</li></ul>
+          <ul><li>Trees approved by the PM</li><li>Every tree outcome shown in the chosen variant, no open amendments</li><li>Blocking review findings resolved</li><li>Open: price feed confirmed by engineering (owner named)</li></ul>
+          <h4>Definition of done</h4>
+          <p>Nine items from the team's <span class="mono">context/definition-of-done.md</span>: a passing test for every acceptance line, copy that matches the chosen variant, analytics events visible, phone width and screen-reader checks, every error and empty state handled, constraints signed off, a feature flag with guardrail monitoring, support notes, and PM acceptance in staging.</p>
         </article>
         <div style="display:grid;gap:12px;align-content:start;min-width:0">
           <p class="muted small">The traceability check works in both directions. Every tree outcome must appear in a ticket, and every requirement in a ticket must exist in a tree, so nothing gets lost and nothing gets made up.</p>
-<pre class="console"><span class="dim">$ python3 .pm-harness/pm_check.py tickets work/price-alerts/03-trees work/price-alerts/05-tickets.md</span>
-<span class="pass">PASS</span>  ticket traceability
+<pre class="console"><span class="dim">$ python3 .pm-harness/pm_check.py tickets work/price-alerts/03-trees work/price-alerts/05-tickets.md work/price-alerts/02-prd.md</span>
+<span class="pass">PASS</span>  tickets work/price-alerts/05-tickets.md
   · 16 tree outcomes, 14 outcome lines in tickets
+  · 3 PRD §7 metric(s) checked against the analytics story
+  · Definition of done: 1 block(s), 9 items
   0 error(s), 0 warning(s)</pre>
           <p class="muted small">Reword a single line in a ticket and it fails:</p>
-<pre class="console"><span class="fail">FAIL</span>  ticket traceability
+<pre class="console"><span class="fail">FAIL</span>  tickets work/price-alerts/05-tickets.md
   ✗ journey/set-and-receive-price-alert: outcome not in any ticket:
       'then the asset page opens'
   ✗ ticket requirement not found in any tree (invented or reworded):
       'then the asset page opens instantly'</pre>
+          <p class="muted small">Then the trees become contracts in the engineering harness's format, one per tree:</p>
+<pre class="console"><span class="dim">$ python3 .pm-harness/pm_check.py contracts work/price-alerts</span>
+<span class="pass">PASS</span>  contracts for price-alerts
+  · 05-contracts/price-alert-creation.contract.md
+  · 05-contracts/price-alert-trigger.contract.md
+  · 05-contracts/set-and-receive-price-alert.contract.md
+  0 error(s), 0 warning(s)</pre>
           <p class="note">Gate 5: nothing is created in the tracker until the PM approves the exact draft.</p>
         </div>
       </div>
@@ -932,7 +1018,7 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
   </div>
 </section>
 
-<section class="section" id="trace">
+<section class="section band" id="trace">
   <div class="wrap">
     <div class="section-head">
       <div class="eyebrow">Traceability</div>
@@ -944,7 +1030,7 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
   </div>
 </section>
 
-<section class="section band" id="try">
+<section class="section" id="try">
   <div class="wrap">
     <div class="section-head">
       <div class="eyebrow">Try the checker</div>
@@ -976,14 +1062,14 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
     <div class="section-head">
       <div class="eyebrow">The handoff</div>
       <h2>Where product ends, engineering's harness begins</h2>
-      <p class="lede">The engineers I work with already use their own harness, an internal Claude Code plugin that writes tests before code. It reads behaviour trees in exactly this format. So the PM harness doesn't just hand over a document; it hands over the tests.</p>
+      <p class="lede">The engineers I work with use their own harness, a Claude Code plugin that writes tests before code (<a href="https://github.com/Mosin112/engineering-harness" rel="noopener">engineering-harness</a>). At hand-off, the PM harness turns every tree into a contract in exactly the format it reads. So it doesn't just hand over a document; it hands over the tests.</p>
     </div>
     <div class="loop">
-      <div class="lstep pm"><span class="who">PM harness</span><h3>Evidence → concept</h3><p>Why it's worth doing, for whom, and how I'll know it worked.</p></div>
-      <div class="lstep pm"><span class="who">PM harness</span><h3>Trees + prototype</h3><p>What it must do, every branch, shown in a clickable prototype.</p></div>
-      <div class="lstep eng"><span class="who">Engineering harness</span><h3>Test first</h3><p>Each tree line becomes a failing test, then the smallest code that passes it.</p></div>
+      <div class="lstep pm"><span class="who">PM harness</span><h3>Evidence → PRD</h3><p>Why it's worth doing, for whom, and how I'll know it worked.</p></div>
+      <div class="lstep pm"><span class="who">PM harness</span><h3>Trees → contracts</h3><p>What it must do, every branch, shown in a clickable prototype and handed over as contracts.</p></div>
+      <div class="lstep eng"><span class="who">Engineering harness</span><h3>Test first</h3><p>Each contract clause becomes a failing test, then the smallest code that passes it.</p></div>
       <div class="lstep eng"><span class="who">Engineering harness</span><h3>Verified software</h3><p>Tests, lint and architecture checks run automatically on every change.</p></div>
-      <div class="lstep pm"><span class="who">PM harness</span><h3>Launch readout</h3><p>Real results against the concept's metrics, then back into the decision log.</p></div>
+      <div class="lstep pm"><span class="who">PM harness</span><h3>Launch readout</h3><p>Real results against the PRD's metrics and gate, then back into the decision log.</p></div>
     </div>
   </div>
 </section>
@@ -997,15 +1083,15 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
     </div>
     <div class="benefits">
       <div class="benefit"><div class="icon"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div><h3>Speed with the checks kept</h3><p>Going from idea to engineering-ready used to mean days of drafts, review meetings and rewrites. The pipeline is designed to do it in one working session, with every gate still in place.</p></div>
-      <div class="benefit"><div class="icon"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div><h3>One quality bar</h3><p>Every PM's concept has a job statement, counted evidence, defined metrics and a risk check. A new PM produces the same structure as a senior one on day one.</p></div>
+      <div class="benefit"><div class="icon"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div><h3>One quality bar</h3><p>Every PM's PRD has the same eight sections, a job statement, counted evidence, defined metrics with a launch gate and a risk check. A new PM produces the same structure as a senior one on day one.</p></div>
       <div class="benefit"><div class="icon"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg></div><h3>Nothing lost in translation</h3><p>Acceptance criteria are the tree lines, word for word, and a script proves it. Engineers build exactly what was agreed, and edge cases are written down before anyone codes.</p></div>
-      <div class="benefit"><div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg></div><h3>Risk checked every time</h3><p>Regulatory and wording constraints live in one file that a dedicated risk reviewer checks on every concept. It's part of the procedure, not something someone has to remember.</p></div>
-      <div class="benefit"><div class="icon"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div><h3>Evidence over opinion</h3><p>Claims carry source counts, quotes are real, and every number names its query. A hunch is allowed, but it has to be labelled as one.</p></div>
+      <div class="benefit"><div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg></div><h3>Risk checked every time</h3><p>Regulatory and wording constraints live in one file that a dedicated risk reviewer checks on every PRD. It's part of the procedure, not something someone has to remember.</p></div>
+      <div class="benefit"><div class="icon"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div><h3>Evidence over opinion</h3><p>Claims carry source counts, quotes are real, and every number names its query. Outside figures are labelled as benchmarks. A hunch is allowed, but it has to be labelled as one.</p></div>
       <div class="benefit"><div class="icon"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></div><h3>It compounds</h3><p>Decisions, context updates and launch readouts feed back into the library, so the harness knows more about my product each month. Improving one skill improves it for every PM.</p></div>
     </div>
     <div class="twocol">
       <div class="box"><h3>What stays with people</h3><ul><li><b>Intent:</b> which problems are worth solving.</li><li><b>Approval</b> at every gate, including every write to Jira, Slack or email.</li><li><b>Talking to customers.</b> The harness organises evidence; it doesn't replace collecting it.</li><li><b>Trade-offs</b> between goals, teams and timing.</li></ul></div>
-      <div class="box"><h3>Limits I plan around</h3><ul><li><b>Thin evidence stays thin.</b> The harness labels it, but it can't create more of it.</li><li><b>Connectors sometimes disconnect.</b> Skills must report a missing source instead of working around it.</li><li><b>Long sessions drift.</b> State lives in files, so work resumes cleanly in a fresh session.</li><li><b>Context goes stale.</b> The harness flags context files that haven't been updated in 90 days.</li></ul></div>
+      <div class="box"><h3>Limits I plan around</h3><ul><li><b>Thin evidence stays thin.</b> The harness labels it, but it can't create more of it.</li><li><b>Connectors sometimes disconnect.</b> Every skill checks its sources before it starts and reports a missing one instead of working around it.</li><li><b>Long sessions drift.</b> State lives in files, so work resumes cleanly in a fresh session.</li><li><b>Context goes stale.</b> The harness flags context files that haven't been updated in 90 days.</li></ul></div>
     </div>
   </div>
 </section>
@@ -1014,7 +1100,7 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
   <div class="wrap">
     <div class="section-head">
       <div class="eyebrow">Skill catalogue</div>
-      <h2>Fifteen skills, each short enough to read in five minutes</h2>
+      <h2>Twenty-two skills, each short enough to read in five minutes</h2>
       <p class="lede">Skills load automatically when a request matches their description. Skills marked <span class="manual">manual</span> only run when a PM types the command, because they act outside the workspace or run the whole pipeline.</p>
     </div>
     <div class="skill-tools">
@@ -1031,12 +1117,12 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
     <div class="section-head">
       <div class="eyebrow">Get started</div>
       <h2>Install, set up, run</h2>
-      <p class="lede">Works in Claude Code and in Claude's desktop app (Cowork). The plugin is plain files, so you can read every instruction before you install it.</p>
+      <p class="lede">Works in Claude Code and Claude's desktop app (Cowork) as a plugin, and in Codex, Cursor, GitHub Copilot and Gemini CLI through the installer. It's plain files, so you can read every instruction before you install it.</p>
     </div>
     <div class="start">
       <div class="box"><span class="eyebrow">1 · Install</span><h3>Add the plugin</h3><div class="codeblock"><div class="codebar"><span>Commands</span><button class="copy" data-copy="cmd-install" type="button">Copy</button></div><pre class="slip" id="cmd-install">/plugin marketplace add <span class="nw">mosin112/pm-harness</span>
-/plugin install <span class="nw">pm-harness@pm-harness</span></pre></div><p class="small muted">In Cowork: Customize → Browse plugins → Add marketplace from GitHub → <code>mosin112/pm-harness</code>.</p></div>
-      <div class="box"><span class="eyebrow">2 · Set up</span><h3>Create your workspace</h3><div class="codeblock"><div class="codebar"><span>Command</span><button class="copy" data-copy="cmd-setup" type="button">Copy</button></div><pre class="slip" id="cmd-setup">/pm-harness:setup</pre></div><p class="small muted">Creates the context library and asks short questions to fill it in. It checks your connectors too, and writes nothing to them.</p></div>
+/plugin install <span class="nw">pm-harness@pm-harness</span></pre></div><p class="small muted">In Cowork: Customize → Browse plugins → Add marketplace from GitHub → <code>mosin112/pm-harness</code>.</p><p class="small muted">Codex, Cursor, GitHub Copilot or Gemini CLI: run <code>npx github:mosin112/pm-harness init</code> in your workspace folder.</p></div>
+      <div class="box"><span class="eyebrow">2 · Set up</span><h3>Create your workspace</h3><div class="codeblock"><div class="codebar"><span>Command</span><button class="copy" data-copy="cmd-setup" type="button">Copy</button></div><pre class="slip" id="cmd-setup">/pm-harness:setup</pre></div><p class="small muted">Maps the connectors you have to what the skills need and suggests what's missing, then asks short questions to fill the context library and <code>DESIGN.md</code>. It writes nothing to your tools.</p></div>
       <div class="box"><span class="eyebrow">3 · Run</span><h3>Take an idea through</h3><div class="codeblock"><div class="codebar"><span>Command</span><button class="copy" data-copy="cmd-run" type="button">Copy</button></div><pre class="slip" id="cmd-run">/pm-harness:one-shot price alerts</pre></div><p class="small muted">Or run one step at a time, starting with <code>/pm-harness:capture-idea</code>.</p></div>
     </div>
   </div>
@@ -1082,26 +1168,26 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
       what: "Turns a one-liner into an idea card: who it's for, what prompted it, and the evidence for the underlying problem, counted and graded strong, some or hunch. It also searches the decision log so a rejected idea doesn't quietly come back.",
       reads: ["meeting notes", "team chat", "support tickets", "product analytics", "decision log"],
       out: "work/<item>/01-idea.md", check: "Evidence rules: every claim names its sources",
-      gate: "The PM chooses: continue, size it first with opportunity-brief, or park it with a reason." },
-    { n: 2, label: "Concept + JTBD", skill: "write-concept · spec-review", title: "Write the why",
-      what: "Writes the problem, the job to be done (\"When…, I want to…, so I can…\"), the forces that help or block adoption, today's alternatives, success metrics with baselines, scope and risks. It challenges a weak problem statement instead of polishing it. Then five independent reviewers critique it.",
-      reads: ["context library", "governed metric definitions", "constraints", "the idea card"],
-      out: "02-concept.md + 02-concept-review.md", check: "Five reviewer agents, each in a fresh context",
-      gate: "No blocking finding may stay open. The PM approves the concept." },
-    { n: 3, label: "Behaviour trees", skill: "write-behaviour-trees", title: "Write the what",
-      what: "Turns the concept into testable when / while / if / then lines: one Journey tree per job, and one Functional tree per capability that covers every state, condition and failure. Every job outcome, metric event and constraint must trace to at least one line.",
-      reads: ["approved concept", "review findings", "constraints"],
-      out: "03-trees/journey/ and 03-trees/functional/", check: "Tree checker: grammar, every branch ends in an outcome, no untestable words",
-      gate: "The PM reads every tree and approves it." },
-    { n: 4, label: "Prototype", skill: "build-prototype", title: "Make it clickable",
-      what: "Builds a single-file clickable HTML prototype with switches for every condition in the trees, so stakeholders can try each branch, including errors and edge cases. It also includes a coverage panel that lists every tree outcome.",
-      reads: ["approved trees", "product design basics"],
-      out: "04-prototype/index.html", check: "Coverage checker: every tree outcome maps to a real screen",
-      gate: "The PM walks through it. If feedback changes behaviour, the trees are updated first." },
+      gate: "The PM chooses: continue (with a product grill if the problem is fuzzy), size it first, research it, or park it with a reason." },
+    { n: 2, label: "PRD", skill: "write-prd · spec-review", title: "Write the why and the what",
+      what: "Writes an eight-section PRD whose depth follows the phase (MVP, MMP, MLP or Enhancement): the problem and job to be done, goals and non-goals, requirements, the journey, success metrics with a launch gate, and risks. A product grill settles fuzzy actors, states and scope first, one question at a time. Then five independent reviewers critique it.",
+      reads: ["context library", "governed metrics", "constraints", "idea card and grill"],
+      out: "02-prd.md + 02-prd-review.md", check: "PRD checker (structure, phase rules) and five reviewer agents in fresh contexts",
+      gate: "No blocking finding may stay open. The PM approves the PRD; after that it changes only through its change log." },
+    { n: 3, label: "Behaviour trees", skill: "write-behaviour-trees", title: "Write the exact behaviour",
+      what: "Turns the PRD into testable when / while / if / then lines: one Journey tree per job, and one Functional tree per capability that covers every state, condition and failure. The PM reviews them as a diagram and comments on any line.",
+      reads: ["approved PRD", "review findings", "constraints"],
+      out: "03-trees/ + 03-trees-view.html", check: "Tree checker: grammar, every branch ends in an outcome, no untestable words, a tree for every capability",
+      gate: "The PM reviews the trees view and approves every tree." },
+    { n: 4, label: "Prototype", skill: "build-prototype · review-prototype", title: "Make it clickable, twice",
+      what: "Builds one clickable HTML file with two design variants that argue the PRD's prototype decision, styled from the product's DESIGN.md. Scenario switches reach every branch, including errors and edge cases, in every variant. A design review scores it before the PM sees it, and every piece of feedback becomes a tracked amendment.",
+      reads: ["approved trees", "DESIGN.md", "the PRD's prototype decision"],
+      out: "04-prototype/index.html + design-review.md + amendments.md", check: "Coverage checker: every tree outcome on a real screen in every variant, no open amendments",
+      gate: "The PM picks a variant, a merge or an experiment. If feedback changes behaviour, the PRD and trees change first." },
     { n: 5, label: "Eng-ready tickets", skill: "create-eng-tickets", title: "Hand over the contract",
-      what: "Drafts an epic and one story per tree, with the tree lines as acceptance criteria word for word, plus an analytics story for the success metrics and a definition-of-ready checklist. Tickets are created in the tracker only after approval.",
-      reads: ["concept", "trees", "prototype", "issue tracker"],
-      out: "05-tickets.md + epic and stories", check: "Traceability checker: nothing missing, nothing invented",
+      what: "Drafts an epic and one story per tree, with the tree lines as acceptance criteria word for word, an analytics story for every PRD metric and the team's Definition of done. After approval it creates them in the tracker and writes one engineering contract per tree.",
+      reads: ["PRD", "trees", "chosen variant", "definition of done", "issue tracker"],
+      out: "05-tickets.md + 05-contracts/", check: "Traceability checker: nothing missing, nothing invented, every metric measured",
       gate: "Manual-only skill. Nothing is created until the PM approves the exact draft." }
   ];
 
@@ -1213,7 +1299,7 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
       screen: "set-alert", demo: "Scenario: verified · target 0 → error shown under the input", ticket: "PA-1 · Set a price alert",
       test: "price-alert-creation.functional.test › rejects a target of zero or below with “Enter a price above zero”" },
     { line: 'then one push notification is sent with the text "<Asset> reached <target price>"', tree: "trigger", file: "functional/price-alert-trigger",
-      screen: "lock", demo: "Scenario: push on · price moves to target → notification on lock screen", ticket: "PA-2 · Trigger and notify",
+      screen: "lock", demo: "Scenario: push on · price moves to target → notification on lock screen", ticket: "PA-2 · Trigger price alerts and notify",
       test: "price-alert-trigger.functional.test › sends one push “Bitcoin reached $60,000.00” when the target is reached" },
     { line: "then the asset page opens", tree: "journey", file: "journey/set-and-receive-price-alert",
       screen: "asset", demo: "Tap the notification → Bitcoin asset page", ticket: "PA-3 · End-to-end journey test",
@@ -1249,39 +1335,53 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
   /* skills */
   var skills = [
     ["Pipeline", "capture-idea", "Turns a one-liner into an evidence-graded idea card and checks past decisions.", false],
-    ["Pipeline", "write-concept", "Writes the problem, job to be done, forces, success metrics, scope and risks.", false],
+    ["Pipeline", "product-grill", "Explores an open problem, then grills a direction one question at a time, each with a recommended answer.", false],
+    ["Pipeline", "write-prd", "Writes an eight-section PRD whose depth follows the phase, then keeps it under change control.", false],
     ["Pipeline", "spec-review", "Runs five independent reviewer agents and consolidates their findings by severity.", false],
-    ["Pipeline", "write-behaviour-trees", "Writes Journey and Functional trees in strict when / while / if / then grammar.", false],
-    ["Pipeline", "build-prototype", "Builds a clickable HTML prototype where every tree outcome can be demonstrated.", false],
-    ["Pipeline", "create-eng-tickets", "Drafts tickets with tree lines as acceptance criteria and creates them after approval.", true],
-    ["Pipeline", "one-shot", "Runs all five steps in one sitting, stopping at every gate.", true],
+    ["Pipeline", "write-behaviour-trees", "Writes Journey and Functional trees in strict when / while / if / then grammar, reviewed as a diagram.", false],
+    ["Pipeline", "build-prototype", "Builds a clickable prototype with two design variants, where every tree outcome can be shown in each.", false],
+    ["Pipeline", "review-prototype", "Classifies every piece of prototype feedback; behaviour changes go through the PRD and trees first.", false],
+    ["Pipeline", "create-eng-tickets", "Drafts tickets with tree lines as acceptance criteria and the Definition of done; creates them after approval.", true],
+    ["Pipeline", "one-shot", "Runs all five steps in one sitting, checks every step's sources first, and stops at every gate.", true],
+    ["Share", "publish", "Publishes the PRD to Confluence and the prototype and trees view as Claude artifacts; comments come back as changes.", false],
     ["Discover", "synthesize-signals", "Turns calls, tickets and chat into themes with source counts and real quotes.", false],
+    ["Discover", "desktop-research", "Researches a product, competitor, market or rule on the public web, with cited sources and stated gaps.", false],
     ["Discover", "opportunity-brief", "Sizes an idea with governed metrics and shows the RICE inputs, not just the score.", false],
+    ["Plan", "roadmap", "Keeps a Now / Next / Later roadmap in sync with the items and logs every move as a decision.", false],
     ["Deliver & learn", "stakeholder-update", "Drafts a short update that leads with what the reader needs to do. Never sends it alone.", false],
-    ["Deliver & learn", "launch-readout", "Compares real results with targets, guardrails first, and records what was learned.", false],
+    ["Deliver & learn", "metrics-review", "A scorecard from governed numbers: guardrails first, launched items against their gates, outside benchmarks kept apart.", false],
+    ["Deliver & learn", "launch-readout", "Compares real results with the PRD's metrics and gate, guardrails first, and records what was learned.", false],
     ["Everyday", "meeting-prep", "One-page brief: attendees' priorities, the PM's ask and a fallback.", false],
     ["Everyday", "meeting-to-decisions", "Pulls decisions, owners and risks from transcripts and proposes log updates.", false],
-    ["Workspace", "setup", "Creates the context library, approval rules and checker, then fills the context by interview.", true],
-    ["Workspace", "update-context", "Proposes small edits to context files and the decision log; applies only approved ones.", false]
+    ["Workspace", "setup", "Creates the workspace, maps your connectors to the skills' needs, then fills the context and DESIGN.md by interview.", true],
+    ["Workspace", "update-context", "Proposes small edits to context files and the decision log; applies only approved ones.", false],
+    ["Workspace", "done", "End-of-session retrospective: finds repeated corrections across sessions and proposes the smallest fix for each.", false]
   ];
   var more = {
-    "capture-idea": ["a new idea, a feature request or \"what if…\"", "work/<item>/01-idea.md"],
-    "write-concept": ["a concept doc, PRD, problem statement or job to be done", "02-concept.md"],
-    "spec-review": ["feedback or a critique before a document is shared", "02-concept-review.md"],
-    "write-behaviour-trees": ["acceptance criteria, requirements or edge cases", "03-trees/journey/ and 03-trees/functional/"],
-    "build-prototype": ["a prototype, mockup or clickable demo", "04-prototype/index.html"],
-    "create-eng-tickets": ["only when the PM types the command", "05-tickets.md, then the tracker after approval"],
-    "one-shot": ["only when the PM types the command", "every file in work/<item>/"],
-    "synthesize-signals": ["\"what are customers saying?\", interview or ticket synthesis", "signals/<date>-<topic>.md"],
-    "opportunity-brief": ["sizing or prioritising, RICE or ICE", "an Opportunity section in 01-idea.md"],
-    "stakeholder-update": ["a weekly, status or roadmap update", "updates/<date>-<audience>.md (never sent alone)"],
-    "launch-readout": ["\"did it work?\", a post-launch review", "06-launch-readout.md"],
-    "meeting-prep": ["\"prep me for…\" a meeting or 1:1", "meetings/<date>-<meeting>-brief.md"],
-    "meeting-to-decisions": ["turning notes or a transcript into decisions and actions", "meetings/<date>-<meeting>-decisions.md"],
-    "setup": ["only when the PM types the command", "the whole workspace: context/, decisions/, work/…"],
-    "update-context": ["the end of a session, or \"remember this\"", "context/ and decisions/, only after approval"]
+    "capture-idea": ["a new idea, a feature request or \"what if…\"", "work/<item>/01-idea.md", "meeting-notes, team-chat or support-feedback · product-analytics · docs"],
+    "product-grill": ["\"grill me\", \"brainstorm\", or a fuzzy problem before a PRD", "01-grill.md", "none: works from the workspace files"],
+    "write-prd": ["a PRD, spec, one-pager or job to be done", "02-prd.md", "governed-metrics or product-analytics · docs"],
+    "spec-review": ["a critique before a document is shared", "02-prd-review.md, 03-trees-review.md", "none: works from the workspace files"],
+    "write-behaviour-trees": ["acceptance criteria, requirements or edge cases", "03-trees/ and 03-trees-view.html", "none: works from the workspace files"],
+    "build-prototype": ["a prototype, mockup or design options", "04-prototype/index.html, design-review.md", "design-source · artifact-sharing"],
+    "review-prototype": ["feedback on a prototype, or artifact comments", "04-prototype/amendments.md", "artifact-sharing · meeting-notes"],
+    "create-eng-tickets": ["only when the PM types the command", "05-tickets.md and 05-contracts/, then the tracker after approval", "issue-tracker (required)"],
+    "one-shot": ["only when the PM types the command", "every file in work/<item>/", "the needs of every step it runs"],
+    "publish": ["publishing or sharing, or \"check my comments\"", "the PRD's Links: line; nothing published without approval", "prd-publishing (required) · artifact-sharing (required)"],
+    "synthesize-signals": ["\"what are customers saying?\", interview or ticket synthesis", "signals/<date>-<topic>.md", "meeting-notes, team-chat or support-feedback (required) · product-analytics"],
+    "desktop-research": ["\"look into X\", \"how do competitors do X\"", "signals/<date>-research-<topic>.md", "web-research (required) · market-data"],
+    "opportunity-brief": ["sizing or prioritising, RICE or ICE", "an Opportunity section in 01-idea.md", "governed-metrics or product-analytics (required) · market-data or web-research"],
+    "roadmap": ["\"what's now, next and later\", fitting a new item in", "roadmap.md", "issue-tracker"],
+    "stakeholder-update": ["a weekly, status or roadmap update", "updates/<date>-<audience>.md (never sent alone)", "issue-tracker · team-chat or email"],
+    "metrics-review": ["\"how are our numbers\", a spike or a drop", "updates/<date>-metrics-<period>.md", "governed-metrics (required) · product-analytics · market-data or web-research · team-chat or docs"],
+    "launch-readout": ["\"did it work?\", a post-launch review", "06-launch-readout.md", "governed-metrics or product-analytics (required) · support-feedback, team-chat or meeting-notes · market-data or web-research"],
+    "meeting-prep": ["\"prep me for…\" a meeting or 1:1", "meetings/<date>-<meeting>-brief.md", "calendar · meeting-notes"],
+    "meeting-to-decisions": ["turning notes or a transcript into decisions and actions", "meetings/<date>-<meeting>-decisions.md", "meeting-notes"],
+    "setup": ["only when the PM types the command", "the whole workspace: context/, DESIGN.md, decisions/, work/…", "docs · governed-metrics · design-source"],
+    "update-context": ["\"remember this\", \"update the context\"", "context/ and decisions/, only after approval", "docs, team-chat or meeting-notes"],
+    "done": ["\"done\", \"wrap up\", \"what did we learn\"", "sessions/<date>-done.md, then approved fixes", "none: works from the workspace files"]
   };
-  var groups = ["All", "Pipeline", "Discover", "Deliver & learn", "Everyday", "Workspace"], current = "All", query = "";
+  var groups = ["All", "Pipeline", "Share", "Discover", "Plan", "Deliver & learn", "Everyday", "Workspace"], current = "All", query = "";
   function renderSkills() {
     $("filters").innerHTML = groups.map(function (g) {
       var c = g === "All" ? skills.length : skills.filter(function (s) { return s[0] === g; }).length;
@@ -1297,7 +1397,8 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
       return '<details class="skill-card"><summary><span class="stage">' + esc(s[0]) + '</span><span class="top"><code>/pm-harness:' + esc(s[1]) + "</code>" +
         '<span class="top-r">' + (s[3] ? '<span class="manual">manual</span>' : "") + '<span class="chev" aria-hidden="true">›</span></span>' + "</span><p>" + esc(s[2]) + "</p></summary>" +
         '<div class="skill-more"><div class="kv"><span class="k">Loads when you ask for</span><span class="v">' + esc(m[0]) + '</span></div>' +
-        '<div class="kv"><span class="k">Writes</span><span class="v mono">' + esc(m[1]) + "</span></div></div></details>";
+        '<div class="kv"><span class="k">Writes</span><span class="v mono">' + esc(m[1]) + "</span></div>" +
+        '<div class="kv"><span class="k">Needs</span><span class="v mono">' + esc(m[2]).replace(/[a-z]+(?:-[a-z]+)+/g, '<span class="nb">$&</span>') + "</span></div></div></details>";
     }).join("") : '<p class="empty-note">No skill matches "' + esc(query) + '". Try "tickets", "meeting" or "metrics".</p>';
   }
   $("skill-search").addEventListener("input", function (e) { query = e.target.value; renderSkills(); });
@@ -1333,19 +1434,19 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
     var idleHtml = log.innerHTML;
     var STOP = {}, run = 0, approved = 0, mode = "idle", paused = false, wake = null, stepText = "Idle";
     var script = [
-      { lines: [["dim", "▸ reading context/strategy.md, context/users.md, context/constraints.md"], ["", "▸ searching meeting notes for price targets … 6 customer calls"], ["", "▸ searching support tickets … 23 matching tickets (8 weeks)"], ["", "▸ checking decision log … no earlier decision on this idea"], ["pass", "✓ wrote work/price-alerts/01-idea.md · evidence: some"]],
-        q: "Gate 1 · Continue to a concept?", yes: "Continue", no: "Size it first",
-        redo: [["pm", "PM: size it first"], ["", "▸ reach from governed metric: 18,000 investors / month"], ["pass", "✓ RICE 4,800 added to 01-idea.md"]] },
-      { lines: [["", "▸ drafting job: When I'm waiting for a price I've decided on, I want to be told the moment it gets there…"], ["", "▸ success metrics from context/metrics.md: adoption, alert-to-action, opt-out guardrail"], ["dim", "▸ launching 5 reviewers in fresh contexts"], ["fail", "  ✗ blocking · risk: \"buy now?\" reads as advice"], ["fail", "  ✗ blocking · engineering: repeat notifications not ruled out"], ["", "  ! important · design, customer advocate, exec, engineering: 4 findings"], ["", "▸ revising concept"], ["pass", "✓ 2 blocking + 4 important findings resolved"]],
-        q: "Gate 2 · Approve the concept?", yes: "Approve", no: "Request changes",
-        redo: [["pm", "PM: scope it to verified investors only"], ["", "▸ concept updated, risk reviewer re-run"], ["pass", "✓ 0 open blocking findings"]] },
-      { lines: [["", "▸ 1 Journey tree for the job, 2 Functional trees for the capabilities"], ["", "▸ every state, condition and failure case written as when / while / if / then"], ["dim", "$ pm_check.py trees work/price-alerts/03-trees"], ["pass", "PASS  32 lines, 16 outcomes, 0 errors, 0 warnings"]],
+      { lines: [["dim", "▸ preflight: 7 needs · meeting-notes → Granola ok · issue-tracker → Jira ok"], ["dim", "▸ reading context/strategy.md, context/users.md, context/constraints.md"], ["", "▸ searching meeting notes for price targets … 6 customer calls"], ["", "▸ searching support tickets … 23 matching tickets (8 weeks)"], ["", "▸ checking decision log … no earlier decision on this idea"], ["pass", "✓ wrote work/price-alerts/01-idea.md · evidence: some"]],
+        q: "Gate 1 · Continue to a PRD?", yes: "Continue", no: "Size it first",
+        redo: [["pm", "PM: size it first"], ["", "▸ reach from governed metric (Metabase): 18,000 investors / month"], ["pass", "✓ RICE 4,800 added to 01-idea.md"]] },
+      { lines: [["", "▸ product grill: phase MVP · prototype decision: quick set vs guided set"], ["", "▸ drafting the eight-section PRD · job: When I'm waiting for a price I've decided on…"], ["", "▸ success metrics and launch gate from context/metrics.md"], ["dim", "▸ launching 5 reviewers in fresh contexts"], ["fail", "  ✗ blocking · risk: \"buy now?\" reads as advice"], ["fail", "  ✗ blocking · engineering: repeat notifications not ruled out"], ["", "  ! important · design, customer advocate, exec, engineering: 5 findings"], ["", "▸ revising the PRD"], ["pass", "✓ 2 blocking + 5 important findings resolved · PASS pm_check.py prd"]],
+        q: "Gate 2 · Approve the PRD?", yes: "Approve", no: "Request changes",
+        redo: [["pm", "PM: scope it to verified investors only"], ["", "▸ PRD updated, risk reviewer re-run"], ["pass", "✓ 0 open blocking findings"]] },
+      { lines: [["", "▸ 1 Journey tree for the job, 2 Functional trees for the capabilities"], ["", "▸ every state, condition and failure case written as when / while / if / then"], ["dim", "$ pm_check.py trees work/price-alerts/03-trees"], ["pass", "PASS  32 lines, 16 outcomes, 0 errors, 0 warnings"], ["", "▸ trees view written for your review: 03-trees-view.html"]],
         q: "Gate 3 · Approve the behaviour trees?", yes: "Approve", no: "Add a case",
         redo: [["pm", "PM: what if they already have 20 alerts?"], ["", "▸ added: if the investor already has 20 active price alerts → rejected with a message"], ["pass", "PASS  tree checker re-run, 0 errors"]] },
-      { lines: [["", "▸ building 04-prototype/index.html with scenario switches for every condition"], ["dim", "$ pm_check.py prototype … 04-prototype/index.html"], ["pass", "PASS  5 screens, 16/16 tree outcomes demonstrated or justified"]],
-        q: "Gate 4 · Approve the prototype?", yes: "Approve", no: "Change the copy",
-        redo: [["pm", "PM: say \"price alert\", not \"alert\""], ["", "▸ trees updated first, then the prototype"], ["pass", "PASS  coverage re-checked, 16/16"]] },
-      { lines: [["", "▸ drafting epic + 4 stories; acceptance criteria copied verbatim from the trees"], ["dim", "$ pm_check.py tickets … 05-tickets.md"], ["pass", "PASS  16 outcomes traced, nothing missing, nothing invented"]],
+      { lines: [["", "▸ variants: Quick set (speed) vs Guided set (confidence), styled from DESIGN.md"], ["", "▸ scenario switches for every condition, in both variants"], ["", "▸ design review: 3 P1 findings fixed before you see it"], ["dim", "$ pm_check.py prototype … 04-prototype/index.html"], ["pass", "PASS  2 variants, 16/16 tree outcomes in each"]],
+        q: "Gate 4 · Which variant goes forward?", yes: "Guided set", no: "Change the copy",
+        redo: [["pm", "PM: say \"price alert\", not \"alert\""], ["", "▸ amendment recorded · trees updated first, then the prototype"], ["pass", "PASS  coverage re-checked, 16/16"]] },
+      { lines: [["", "▸ drafting epic + 4 stories; acceptance criteria copied verbatim from the trees"], ["", "▸ analytics story covers all 3 PRD metrics · Definition of done attached"], ["dim", "$ pm_check.py tickets … 05-tickets.md 02-prd.md"], ["pass", "PASS  16 outcomes traced, 3 metrics measured, nothing invented"]],
         q: "Gate 5 · Create 4 tickets in the tracker?", yes: "Create tickets", no: "Not yet",
         redo: [["pm", "PM: not yet, I'll share the draft first"], ["", "▸ draft kept in 05-tickets.md; nothing written to the tracker"]] }
     ];
@@ -1414,7 +1515,7 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
           }
           approved++; add("pm", "PM: " + st.yes.toLowerCase() + " ✓");
         }
-        await stream([["pass", "\n✓ PA-1 … PA-4 created · trees handed to engineering · stage: tickets"], ["dim", "Next: stakeholder-update now, launch-readout after launch."]]);
+        await stream([["pass", "\n✓ PA-1 … PA-4 created · 3 contracts handed to engineering · stage: tickets"], ["dim", "Next: publish the PRD, stakeholder-update now, launch-readout after launch."]]);
         finish(script.length, "Done");
       } catch (e) { if (e !== STOP) throw e; }
     }
@@ -1512,13 +1613,13 @@ footer li, footer p { font-size: .875rem; color: var(--ink-2); }
     var items = Array.prototype.slice.call(card.querySelectorAll(".run-steps li"));
     var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches, runId = 0;
     var script = [
-      ["dim", "$ /pm-harness:one-shot price alerts"], ["", "▸ reading context library · 10 files"],
-      ["", "▸ evidence: 6 calls, 23 tickets · grade: some"], ["gate", "◆ Gate 1 · continue to concept?"],
-      ["", "▸ 5 reviewers · 2 blocking found, resolved"], ["gate", "◆ Gate 2 · approve concept?"],
+      ["dim", "$ /pm-harness:one-shot price alerts"], ["", "▸ 10 context files · 9 tools answer"],
+      ["", "▸ evidence: 6 calls, 23 tickets · grade: some"], ["gate", "◆ Gate 1 · continue to a PRD?"],
+      ["", "▸ 5 reviewers · 2 blocking found, resolved"], ["gate", "◆ Gate 2 · approve the PRD?"],
       ["pass", "trees        16 testable outcomes"], ["gate", "◆ Gate 3 · approve the trees?"],
-      ["pass", "prototype    16/16 outcomes shown"], ["gate", "◆ Gate 4 · approve the prototype?"],
+      ["pass", "prototype    2 variants · 16/16 shown"], ["gate", "◆ Gate 4 · choose a variant?"],
       ["pass", "tickets      nothing missing or invented"], ["gate", "◆ Gate 5 · create 4 tickets?"],
-      ["done", "✓ PA-1 … PA-4 created · handed to engineering"]
+      ["done", "✓ PA-1 … PA-4 created · contracts handed over"]
     ];
     function lineHtml(l, text, approved) {
       if (l[0] === "dim") return '<span class="dim">' + esc(text) + "</span>";
