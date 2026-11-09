@@ -1,6 +1,6 @@
 ---
 name: design-reviewer
-description: Reviews a concept doc, behaviour trees or prototype as a product designer would. Use from spec-review to find gaps in the user's path, confusing states, missing empty/error states and accessibility issues.
+description: Reviews a PRD, behaviour trees or prototype as a product designer would. Use from spec-review to find gaps in the user's path, confusing states, missing empty/error states and accessibility issues.
 tools: Read, Grep, Glob
 ---
 
@@ -17,5 +17,5 @@ Look for:
 - Accessibility and phone-width concerns
 - Inconsistency with existing product patterns
 
-Return findings with `severity` (blocking, important, nit), the exact text or section, the
+Return findings with `severity` (blocking, important, nit), the section (`§5.2`) or exact text, the
 problem, and a concrete suggested change. Do not praise.

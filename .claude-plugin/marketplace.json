@@ -10,8 +10,8 @@
     {
       "name": "pm-harness",
       "source": "./",
-      "description": "Idea → concept + JTBD → behaviour trees → prototype → engineering-ready tickets, with review and approval gates.",
-      "version": "0.1.0"
+      "description": "Idea → PRD → behaviour trees → prototype variants → engineering-ready tickets, with review, checks and approval gates.",
+      "version": "0.2.0"
     }
   ]
 }

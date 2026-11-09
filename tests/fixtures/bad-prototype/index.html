@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Price Alerts Prototype</title>
+<style>
+/* Layout: phone-sized product UI on the left, scenario + coverage panel on the right; stacks when narrow. */
+:root {
+  --bg: #eef1f4; --panel: #ffffff; --ink: #14181d; --muted: #5d6773; --line: #d8dde3;
+  --app: #ffffff; --app-ink: #111418; --app-muted: #6b7480; --app-line: #e6e9ed; --app-soft: #f3f5f7;
+  --brand: #3f5568; --brand-ink: #ffffff; --up: #138a4a; --down: #c2412d; --warn: #9a5b00;
+  --focus: #2f6fe0; --chip: #e6ebf0;
+  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1215; --panel: #171b20; --ink: #e8ecf0; --muted: #9aa4af; --line: #2a3038;
+    --app: #12161a; --app-ink: #eef1f4; --app-muted: #8f99a4; --app-line: #252b32; --app-soft: #1b2026;
+    --brand: #b3c3d3; --brand-ink: #0a0b0c; --up: #3ccf7f; --down: #ff7b66; --warn: #f0b356;
+    --focus: #7aa7ff; --chip: #1f2730; color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 var(--font); }
+.wrap { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); gap: 24px;
+  max-width: 1040px; margin: 0 auto; padding-block: 20px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.phone { position: sticky; top: 16px; align-self: start; }
+@media (max-width: 760px) { .wrap { grid-template-columns: minmax(0, 1fr); } .phone { position: static; } }
+button, input { font: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* phone */
+.phone { background: var(--app); color: var(--app-ink); border: 1px solid var(--line); border-radius: 28px;
+  overflow: hidden; min-height: 640px; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,.08); }
+.status { display: flex; justify-content: space-between; padding: 10px 20px 4px; font-size: 12px; color: var(--app-muted); font-variant-numeric: tabular-nums; }
+.screen { flex: 1; display: flex; flex-direction: column; gap: 16px; padding: 12px 20px 20px; }
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.topbar h1 { font-size: 17px; margin: 0; }
+.iconbtn { background: var(--app-soft); border: 0; color: var(--app-ink); border-radius: 999px; padding: 6px 12px; cursor: pointer; }
+.price { font-size: 32px; font-weight: 650; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.change { color: var(--up); font-weight: 600; font-variant-numeric: tabular-nums; }
+.spark { width: 100%; height: 120px; display: block; }
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: auto; }
+.btn { border: 0; border-radius: 12px; padding: 13px 14px; font-weight: 600; cursor: pointer; }
+.btn.primary { background: var(--brand); color: var(--brand-ink); }
+.btn.ghost { background: var(--app-soft); color: var(--app-ink); }
+.btn.full { width: 100%; }
+.btn[disabled] { opacity: .45; cursor: not-allowed; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font-size: 12px; color: var(--app-muted); text-transform: uppercase; letter-spacing: .06em; }
+.field input { border: 1px solid var(--app-line); background: var(--app-soft); color: var(--app-ink); border-radius: 12px; padding: 14px; font-size: 22px; font-variant-numeric: tabular-nums; }
+.hint { color: var(--app-muted); font-size: 13px; min-height: 1.4em; }
+.error { color: var(--down); font-size: 13px; font-weight: 600; min-height: 1.4em; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--app-line); }
+.row:last-child { border-bottom: 0; }
+.sub { color: var(--app-muted); font-size: 12px; }
+.pill { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; letter-spacing: .03em; text-transform: uppercase; }
+.pill.active { background: var(--chip); color: var(--brand); }
+.pill.triggered { background: var(--app-soft); color: var(--app-muted); }
+.section-label { font-size: 12px; color: var(--app-muted); text-transform: uppercase; letter-spacing: .06em; margin: 4px 0 -8px; }
+.empty { color: var(--app-muted); padding: 12px 0; }
+.lock { background: linear-gradient(180deg, #1d2b36, #0d1418); color: #f2f5f8; flex: 1; padding: 40px 16px 20px; display: flex; flex-direction: column; gap: 18px; }
+.lock .clock { text-align: center; font-size: 56px; font-weight: 300; font-variant-numeric: tabular-nums; }
+.notif { background: rgba(255,255,255,.16); border-radius: 16px; padding: 12px 14px; border: 0; color: inherit; text-align: left; cursor: pointer; width: 100%; }
+.notif b { display: block; }
+.notif .sub { color: rgba(242,245,248,.75); }
+.nonotif { text-align: center; color: rgba(242,245,248,.6); }
+.center { text-align: center; display: flex; flex-direction: column; gap: 12px; align-items: center; margin: auto 0; }
+.badge-big { width: 56px; height: 56px; border-radius: 50%; background: var(--app-soft); display: grid; place-items: center; font-size: 26px; }
+
+/* panel */
+.panel { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.card h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0; }
+.toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.toggle input { width: 18px; height: 18px; accent-color: var(--brand); }
+.pbtns { display: flex; flex-wrap: wrap; gap: 8px; }
+.pbtn { border: 1px solid var(--line); background: transparent; color: var(--ink); border-radius: 8px; padding: 7px 10px; cursor: pointer; }
+.pbtn:hover { border-color: var(--brand); }
+.log { font-family: var(--mono); font-size: 12px; color: var(--muted); max-height: 140px; overflow: auto; margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.cov { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.cov .tree { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-top: 8px; }
+.cov button { display: flex; gap: 8px; align-items: flex-start; width: 100%; text-align: left; background: transparent; border: 0; color: var(--ink); padding: 6px 8px; border-radius: 8px; cursor: pointer; font-family: var(--mono); font-size: 12px; }
+.cov button:hover { background: var(--bg); }
+.cov .tick { color: var(--muted); flex: none; }
+.cov .seen .tick { color: var(--up); }
+.meta { color: var(--muted); font-size: 12px; }
+.demo-tag { font-size: 11px; color: var(--warn); font-weight: 600; }
+/* variants */
+.sheet-backdrop { opacity: .45; display: flex; flex-direction: column; gap: 4px; }
+.sheet-backdrop .price { font-size: 26px; }
+.sheet { margin: auto -20px -20px; background: var(--app); box-shadow: 0 -8px 24px rgba(0,0,0,.12); border-radius: 22px 22px 0 0; padding: 10px 20px 20px; display: flex; flex-direction: column; gap: 12px; }
+.sheet .handle { width: 40px; height: 4px; border-radius: 4px; background: var(--app-line); align-self: center; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip { border: 1px solid var(--app-line); background: var(--app-soft); color: var(--app-ink); border-radius: 999px; padding: 6px 12px; cursor: pointer; font-variant-numeric: tabular-nums; }
+.preview { border: 1px dashed var(--app-line); border-radius: 14px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
+.preview .sub { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+.vopt { display: flex; gap: 10px; align-items: flex-start; border: 1px solid var(--line); border-radius: 10px; padding: 10px; cursor: pointer; }
+.vopt input { margin-top: 3px; accent-color: var(--brand); }
+.vopt b { display: block; }
+.vopt ul { margin: 4px 0 0; padding-left: 18px; color: var(--muted); font-size: 12px; }
+.decision { font-size: 13px; }
+.note-box { width: 100%; min-height: 72px; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; background: transparent; color: var(--ink); font: inherit; resize: vertical; }
+.note-name { border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; background: transparent; color: var(--ink); width: 100%; }
+.note-out { font-family: var(--mono); font-size: 12px; white-space: pre-wrap; background: var(--bg); border-radius: 8px; padding: 8px; margin: 0; }
+.where { font-family: var(--mono); font-size: 12px; color: var(--muted); word-break: break-all; }
+@media (prefers-reduced-motion: no-preference) { .screen, .lock { animation: in .18s ease-out; } @keyframes in { from { opacity: .4; transform: translateY(4px); } } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="phone" aria-label="Product prototype">
+    <div class="status"><span id="clock-small">9:41</span><span class="demo-tag">PROTOTYPE · SAMPLE DATA</span></div>
+
+    <section class="screen" data-screen="asset">
+      <div class="topbar"><h1>Bitcoin <span class="sub">BTC</span></h1><button class="iconbtn" data-go="alerts">Price alerts</button></div>
+      <div><div class="price" id="asset-price">$64,250.00</div><div class="change">+1.8% today</div></div>
+      <svg class="spark" viewBox="0 0 320 120" preserveAspectRatio="none" aria-hidden="true">
+        <polyline fill="none" stroke="var(--up)" stroke-width="2.5" points="0,92 20,88 40,95 60,80 80,84 100,70 120,74 140,60 160,66 180,52 200,58 220,44 240,50 260,38 280,46 300,30 320,34"></polyline>
+      </svg>
+      <div class="sub">Sample price data for the prototype.</div>
+      <button class="btn ghost full" id="open-set">🔔 Set price alert</button>
+      <div class="actions"><button class="btn primary" disabled>Buy</button><button class="btn ghost" disabled>Sell</button></div>
+    </section>
+
+    <!-- Variant "guided": presets and a preview of the exact notification (confidence). -->
+    <section class="screen" data-screen="set-alert" data-variant="guided" hidden>
+      <div class="topbar"><button class="iconbtn" data-go="asset">‹ Back</button><h1>New price alert</h1><span></span></div>
+      <div class="sub">Bitcoin is <b class="set-current">$64,250.00</b> now.</div>
+      <div class="chips" aria-label="Preset targets">
+        <button type="button" class="chip" data-preset="-0.10">−10%</button>
+        <button type="button" class="chip" data-preset="-0.05">−5%</button>
+        <button type="button" class="chip" data-preset="0.05">+5%</button>
+        <button type="button" class="chip" data-preset="0.10">+10%</button>
+      </div>
+      <form class="alert-form field" novalidate>
+        <label for="target-guided">Alert me when Bitcoin reaches</label>
+        <input id="target-guided" class="target" inputmode="decimal" autocomplete="off" placeholder="60000">
+        <div class="hint direction-hint">Enter a target price.</div>
+        <div class="preview" aria-live="polite">
+          <span class="sub">You'll get this notification, once</span>
+          <b class="preview-text">Bitcoin reached …</b>
+        </div>
+        <div class="error form-error" role="alert"></div>
+        <button class="btn primary full" type="submit">Save price alert</button>
+      </form>
+      <div class="sub">It states the price only; it is not advice. You can have up to 20 active price alerts.</div>
+    </section>
+
+    <section class="screen" data-screen="verify" hidden>
+      <div class="topbar"><button class="iconbtn" data-go="asset">‹ Back</button><h1>Verification needed</h1><span></span></div>
+      <div class="center">
+        <div class="badge-big" aria-hidden="true">🪪</div>
+        <b>Complete verification to set price alerts</b>
+        <div class="sub">It takes about five minutes. You'll need an ID document.</div>
+        <button class="btn primary">Start verification</button>
+      </div>
+    </section>
+
+    <section class="screen" data-screen="alerts" hidden>
+      <div class="topbar"><button class="iconbtn" data-go="asset">‹ Bitcoin</button><h1>Price alerts</h1><span class="sub" id="alert-count"></span></div>
+      <div class="section-label">Active</div>
+      <div id="active-list"></div>
+      <div class="section-label">Triggered</div>
+      <div id="triggered-list"></div>
+    </section>
+
+    <section class="lock" data-screen="lock" hidden>
+      <div class="clock">9:42</div>
+      <div id="lock-body"></div>
+      <button class="iconbtn" style="margin-top:auto;align-self:center" data-go="alerts">Unlock to app</button>
+    </section>
+  </div>
+
+  <div class="panel">
+    <div class="card">
+      <h2>Design variants</h2>
+      <div class="meta decision" id="decision"></div>
+      <div id="variant-options"></div>
+      <a class="meta" id="side-by-side" href="#" target="_blank" rel="noopener">Open the other variant in a new tab to compare side by side ↗</a>
+    </div>
+    <div class="card">
+      <h2>Scenario controls</h2>
+      <div class="meta">These switch the conditions in the behaviour trees. They are not part of the product.</div>
+      <label class="toggle" for="s-verified">Investor is verified <input type="checkbox" id="s-verified" checked></label>
+      <label class="toggle" for="s-push">Push notifications enabled <input type="checkbox" id="s-push" checked></label>
+      <label class="toggle" for="s-full">Investor already has 20 active price alerts <input type="checkbox" id="s-full"></label>
+      <div class="pbtns">
+        <button class="pbtn" id="sim-reach">Move price to first active target</button>
+        <button class="pbtn" id="sim-again">Cross a triggered target again</button>
+        <button class="pbtn" id="sim-reset">Reset</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>System events</h2>
+      <ul class="log" id="log"><li>Prototype ready. Bitcoin at $64,250.00.</li></ul>
+    </div>
+    <div class="card">
+      <h2>Tree coverage</h2>
+      <div class="meta">Every outcome in the behaviour trees. Click one to see it in the prototype.</div>
+      <ul class="cov" id="cov"></ul>
+    </div>
+    <div class="card">
+      <h2>Review note</h2>
+      <div class="meta">Pins your note to this variant, screen and scenario. Paste it into <code>amendments.md</code> or send it to the PM.</div>
+      <div class="where" id="where"></div>
+      <input class="note-name" id="note-name" placeholder="Your name" autocomplete="name">
+      <textarea class="note-box" id="note-text" placeholder="What should change, and why?"></textarea>
+      <div class="pbtns"><button class="pbtn" id="note-copy">Copy as amendment</button></div>
+      <pre class="note-out" id="note-out" hidden></pre>
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="prototype-variants">
+{
+  "decision": "Setting an alert in one quick step (speed) versus seeing exactly what will be sent before saving (confidence that it is a fact, not advice, and fires once).",
+  "source": "02-prd.md §6.3",
+  "variants": [
+    {
+      "id": "quick",
+      "label": "Quick set",
+      "hypothesis": "Fewer steps means more investors set a price alert.",
+      "tradeOffs": ["The investor does not see the notification text before saving", "Direction is only a hint under the field"]
+    },
+    {
+      "id": "guided",
+      "label": "Guided set",
+      "hypothesis": "Seeing the exact notification and preset targets builds the trust that leads to action.",
+      "tradeOffs": ["More to read before saving", "Presets may anchor investors on round percentages"]
+    }
+  ]
+}
+</script>
+<script type="application/json" id="tree-coverage">
+{
+  "trees": {
+    "journey/set-and-receive-price-alert": [
+      { "line": "then the price alert appears as active in the investor's alerts list", "screen": "alerts", "demo": "create-ok" },
+      { "line": "then the investor receives a push notification naming the asset and the target price", "screen": "lock", "demo": "reach-push" },
+      { "line": "and the price alert is shown as triggered in the alerts list", "screen": "alerts", "demo": "reach-list" },
+      { "line": "then the asset page opens", "screen": "asset", "demo": "tap-notif" }
+    ],
+    "functional/price-alert-creation": [
+      { "line": "then the price alert is saved as active", "screen": "alerts", "demo": "create-ok" },
+      { "line": "and the direction is set to \"above\" when the target is higher than the current price, otherwise \"below\"", "screen": "alerts", "demo": "create-both" },
+      { "line": "then the price alert is rejected with the message \"Enter a price above zero\"", "screen": "set-alert", "demo": "err-zero" },
+      { "line": "then the price alert is rejected with the message \"Choose a price different from the current price\"", "screen": "set-alert", "demo": "err-same" },
+      { "line": "then the price alert is rejected with the message \"You can have up to 20 active price alerts\"", "screen": "set-alert", "demo": "err-full" },
+      { "line": "then the investor is asked to complete verification before setting price alerts", "screen": "verify", "demo": "unverified" }
+    ],
+    "functional/price-alert-trigger": [
+      { "line": "then one push notification is sent with the text \"<Asset> reached <target price>\"", "screen": "lock", "demo": "reach-push" },
+      { "line": "and the price alert is marked as triggered", "screen": "alerts", "demo": "reach-list" },
+      { "line": "then no push notification is sent", "screen": null, "reason": "Absence of a notification: shown in System events and on the empty lock screen", "demo": "reach-nopush" },
+      { "line": "then no further notification is sent for that price alert", "screen": null, "reason": "Absence of a notification: shown in System events", "demo": "again" }
+    ]
+  }
+}
+</script>
+<script>
+(function () {
+  "use strict";
+  var START = 64250;
+  var state;
+  var $ = function (id) { return document.getElementById(id); };
+  var fmt = function (n) { return "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
+  var manifest = JSON.parse($("prototype-variants").textContent);
+  var variantIds = manifest.variants.map(function (v) { return v.id; });
+  var variant = variantIds[0];
+  var lastDemo = null, lastLine = null;
+
+  // the set-alert screen differs per variant; these find its parts in the active variant
+  function setScreen() { return document.querySelector('[data-screen="set-alert"][data-variant="' + variant + '"]'); }
+  function part(cls) { return setScreen().querySelector("." + cls); }
+
+  function reset() {
+    state = { price: START, alerts: [], screen: "asset", lastNotif: null };
+    $("s-verified").checked = true; $("s-push").checked = true; $("s-full").checked = false;
+    $("log").innerHTML = "";
+    document.querySelectorAll(".form-error").forEach(function (el) { el.textContent = ""; });
+    document.querySelectorAll(".target").forEach(function (el) { el.value = ""; });
+    document.querySelectorAll(".direction-hint").forEach(function (el) { el.textContent = "Enter a target price."; });
+    document.querySelectorAll(".preview-text").forEach(function (el) { el.textContent = "Bitcoin reached …"; });
+    lastDemo = null; lastLine = null;
+    log("Prototype reset. Bitcoin at " + fmt(START) + ".");
+    show("asset");
+  }
+  function log(msg) {
+    var li = document.createElement("li");
+    li.textContent = msg;
+    $("log").prepend(li);
+  }
+  function visible(el, id) {
+    if (el.getAttribute("data-screen") !== id) return false;
+    var v = el.getAttribute("data-variant");
+    return !v || v === variant;
+  }
+  function show(id) {
+    state.screen = id;
+    document.querySelectorAll("[data-screen]").forEach(function (el) { el.hidden = !visible(el, id); });
+    if (id === "alerts") renderAlerts();
+    if (id === "lock") renderLock();
+    if (id === "set-alert") { document.querySelectorAll(".set-current").forEach(function (el) { el.textContent = fmt(state.price); }); }
+    $("asset-price").textContent = fmt(state.price);
+    syncLink();
+  }
+  function activeCount() {
+    var n = state.alerts.filter(function (a) { return a.status === "active"; }).length;
+    return $("s-full").checked ? Math.max(n, 20) : n;
+  }
+  function renderAlerts() {
+    var act = state.alerts.filter(function (a) { return a.status === "active"; });
+    var trg = state.alerts.filter(function (a) { return a.status === "triggered"; });
+    var row = function (a) {
+      var arrow = a.direction === "above" ? "▲ above" : "▼ below";
+      return '<div class="row"><div><b>Bitcoin ' + arrow + " " + fmt(a.target) + '</b><div class="sub">Set at ' + fmt(a.setAt) + '</div></div><span class="pill ' + a.status + '">' + a.status + "</span></div>";
+    };
+    $("active-list").innerHTML = act.length ? act.map(row).join("") : '<div class="empty">No active price alerts.</div>';
+    $("triggered-list").innerHTML = trg.length ? trg.map(row).join("") : '<div class="empty">Nothing triggered yet.</div>';
+    $("alert-count").textContent = activeCount() + " / 20";
+  }
+  function renderLock() {
+    if (state.lastNotif) {
+      $("lock-body").innerHTML = '<button class="notif" id="notif-btn"><b>' + state.lastNotif + '</b><span class="sub">Price alert · now</span></button>';
+      $("notif-btn").addEventListener("click", function () { log("Notification tapped: opening the Bitcoin asset page."); show("asset"); });
+    } else {
+      $("lock-body").innerHTML = '<div class="nonotif">No notifications</div>';
+    }
+  }
+  function parse(raw) { return Number(String(raw).replace(/[$,\s]/g, "")); }
+  function submitAlert(raw) {
+    part("form-error").textContent = "";
+    var target = parse(raw);
+    if (!$("s-verified").checked) { show("verify"); log("Rejected: investor is unverified; asked to verify."); return; }
+    if (!isFinite(target) || target <= 0) { part("form-error").textContent = "Enter a price above zero"; log("Rejected: target is zero or below."); return; }
+    if (target === state.price) { part("form-error").textContent = "Choose a price different from the current price"; log("Rejected: target equals the current price."); return; }
+    if (activeCount() >= 20) { part("form-error").textContent = "You can have up to 20 active price alerts"; log("Rejected: 20 active price alerts already."); return; }
+    var a = { target: target, setAt: state.price, direction: target > state.price ? "above" : "below", status: "active" };
+    state.alerts.push(a);
+    log("Saved: price alert " + a.direction + " " + fmt(target) + " (active).");
+    part("target").value = "";
+    updateHint();
+    show("alerts");
+  }
+  function updateHint() {
+    var t = parse(part("target").value);
+    part("direction-hint").textContent = !t ? "Enter a target price." : t > state.price ? "▲ Alert when the price rises above this." : t < state.price ? "▼ Alert when the price falls below this." : "That is the current price.";
+    var pv = part("preview-text");
+    if (pv) pv.textContent = t > 0 ? "Bitcoin reached " + fmt(t) : "Bitcoin reached …";
+  }
+  function fill(value) { part("target").value = value; updateHint(); }
+  function reach() {
+    var a = state.alerts.find(function (x) { return x.status === "active"; });
+    if (!a) { log("No active price alert to reach. Create one first."); return null; }
+    state.price = a.target;
+    a.status = "triggered";
+    if ($("s-push").checked) {
+      state.lastNotif = "Bitcoin reached " + fmt(a.target);
+      log("Price " + fmt(a.target) + " received. Push sent: \"" + state.lastNotif + "\". Alert marked triggered.");
+      show("lock");
+    } else {
+      state.lastNotif = null;
+      log("Price " + fmt(a.target) + " received. Push notifications disabled: no push sent. Alert marked triggered.");
+      show("alerts");
+    }
+    return a;
+  }
+  function again() {
+    var a = state.alerts.find(function (x) { return x.status === "triggered"; });
+    if (!a) { log("No triggered price alert yet. Move a price to a target first."); return; }
+    log("Price moved away and crossed " + fmt(a.target) + " again. No further notification sent for that price alert.");
+  }
+
+  // variants: switching keeps the reviewer on the equivalent screen
+  function setVariant(id) {
+    if (variantIds.indexOf(id) < 0) return;
+    variant = id;
+    document.querySelectorAll('input[name="variant"]').forEach(function (r) { r.checked = r.value === id; });
+    var other = variantIds.filter(function (v) { return v !== id; })[0];
+    $("side-by-side").hidden = !other;
+    if (other) $("side-by-side").href = "#variant=" + other + "&screen=" + (state ? state.screen : "asset");
+    if (state) show(state.screen);
+  }
+  $("decision").textContent = "Decision: " + manifest.decision;
+  manifest.variants.forEach(function (v) {
+    var label = document.createElement("label");
+    label.className = "vopt";
+    label.innerHTML = '<input type="radio" name="variant"><span><b></b><span class="meta"></span><ul></ul></span>';
+    label.querySelector("input").value = v.id;
+    label.querySelector("b").textContent = v.label;
+    label.querySelector(".meta").textContent = v.hypothesis;
+    v.tradeOffs.forEach(function (t) { var li = document.createElement("li"); li.textContent = t; label.querySelector("ul").appendChild(li); });
+    label.querySelector("input").addEventListener("change", function () { setVariant(v.id); log("Variant: " + v.label + "."); });
+    $("variant-options").appendChild(label);
+  });
+
+  // deep links: #variant=guided&screen=set-alert&demo=err-full
+  function syncLink() {
+    var h = "#variant=" + variant + "&screen=" + state.screen + (lastDemo ? "&demo=" + lastDemo : "");
+    if (location.hash !== h) history.replaceState(null, "", h);
+    $("where").textContent = "variant " + variant + " · screen " + state.screen + (lastDemo ? " · scenario " + lastDemo : "");
+    var other = variantIds.filter(function (v) { return v !== variant; })[0];
+    if (other) $("side-by-side").href = h.replace("variant=" + variant, "variant=" + other);
+  }
+  function readLink() {
+    var q = {};
+    location.hash.replace(/^#/, "").split("&").forEach(function (kv) { var p = kv.split("="); if (p[0]) q[p[0]] = decodeURIComponent(p[1] || ""); });
+    if (q.variant) setVariant(q.variant);
+    if (q.demo && demos[q.demo]) { runDemo(q.demo); return; }
+    lastDemo = null; lastLine = null;
+    if (q.screen && document.querySelector('[data-screen="' + q.screen + '"]')) show(q.screen);
+  }
+
+  // product UI wiring
+  document.querySelectorAll("[data-go]").forEach(function (b) { b.addEventListener("click", function () { lastDemo = null; show(b.getAttribute("data-go")); }); });
+  $("open-set").addEventListener("click", function () { lastDemo = null; if (!$("s-verified").checked) { show("verify"); log("Unverified investor tried to set a price alert."); } else show("set-alert"); });
+  document.querySelectorAll(".alert-form").forEach(function (f) { f.addEventListener("submit", function (e) { e.preventDefault(); lastDemo = null; submitAlert(part("target").value); }); });
+  document.querySelectorAll(".target").forEach(function (el) { el.addEventListener("input", updateHint); });
+  document.querySelectorAll("[data-preset]").forEach(function (b) {
+    b.addEventListener("click", function () { fill(String(Math.round(state.price * (1 + Number(b.getAttribute("data-preset")))))); });
+  });
+  $("sim-reach").addEventListener("click", reach);
+  $("sim-again").addEventListener("click", again);
+  $("sim-reset").addEventListener("click", reset);
+  ["s-verified", "s-push", "s-full"].forEach(function (id) { $(id).addEventListener("change", function () { lastDemo = null; syncLink(); log("Scenario: " + $(id).parentElement.textContent.trim() + " = " + ($(id).checked ? "yes" : "no")); if (state.screen === "alerts") renderAlerts(); }); });
+
+  // demos for the coverage panel: each puts the prototype into the state a tree line describes
+  function fresh() { reset(); }
+  var demos = {
+    "create-ok": function () { fresh(); show("set-alert"); fill("60000"); submitAlert("60000"); },
+    "create-both": function () { fresh(); submitAlert("60000"); submitAlert("70000"); },
+    "err-zero": function () { fresh(); show("set-alert"); fill("0"); submitAlert("0"); },
+    "err-same": function () { fresh(); show("set-alert"); fill("64250"); submitAlert("64250"); },
+    "err-full": function () { fresh(); $("s-full").checked = true; show("set-alert"); fill("60000"); submitAlert("60000"); },
+    "unverified": function () { fresh(); $("s-verified").checked = false; $("open-set").click(); },
+    "reach-push": function () { fresh(); submitAlert("60000"); reach(); },
+    "reach-list": function () { fresh(); submitAlert("60000"); reach(); show("alerts"); },
+    "reach-nopush": function () { fresh(); $("s-push").checked = false; submitAlert("60000"); reach(); show("lock"); },
+    "tap-notif": function () { fresh(); submitAlert("60000"); reach(); var b = $("notif-btn"); if (b) b.click(); },
+    "again": function () { fresh(); submitAlert("60000"); reach(); again(); }
+  };
+  function runDemo(name, line) {
+    demos[name]();
+    lastDemo = name; lastLine = line || null;
+    syncLink();
+  }
+
+  // coverage panel built from the same map the checker reads
+  var cov = JSON.parse($("tree-coverage").textContent).trees;
+  var list = $("cov");
+  Object.keys(cov).forEach(function (tree) {
+    var h = document.createElement("li"); h.className = "tree"; h.textContent = tree; list.appendChild(h);
+    cov[tree].forEach(function (e) {
+      var li = document.createElement("li");
+      var b = document.createElement("button");
+      b.innerHTML = '<span class="tick">○</span><span></span>';
+      b.lastChild.textContent = e.line;
+      b.title = e.screen ? "Shows on screen: " + e.screen : e.reason;
+      b.addEventListener("click", function () { runDemo(e.demo, e.line); li.classList.add("seen"); b.firstChild.textContent = "●"; });
+      li.appendChild(b); list.appendChild(li);
+    });
+  });
+
+  // review note: pinned to variant, screen and scenario, ready for amendments.md
+  $("note-copy").addEventListener("click", function () {
+    var text = $("note-text").value.trim();
+    if (!text) { $("note-text").focus(); return; }
+    var title = text.split(/\n/)[0].slice(0, 60);
+    var today = new Date().toISOString().slice(0, 10);
+    var lines = [
+      "## A? · " + title,
+      "- Status: open",
+      "- Variant: " + variant,
+      "- Screen: " + state.screen
+    ];
+    if (lastDemo) lines.push("- Demo: " + lastDemo);
+    if (lastLine) lines.push("- Tree line: " + lastLine);
+    lines.push("- From: " + ($("note-name").value.trim() || "reviewer") + " · " + today);
+    lines.push("- Link: index.html" + location.hash);
+    lines.push("- Note: " + text.replace(/\s*\n\s*/g, " "));
+    var out = lines.join("\n");
+    $("note-out").textContent = out;
+    $("note-out").hidden = false;
+    var done = function () { $("note-copy").textContent = "Copied ✓"; setTimeout(function () { $("note-copy").textContent = "Copy as amendment"; }, 1600); };
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(out).then(done, function () { selectOut(); });
+    } else { selectOut(); }
+  });
+  function selectOut() {
+    var r = document.createRange(); r.selectNodeContents($("note-out"));
+    var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    $("note-copy").textContent = "Selected: press Ctrl/⌘+C";
+  }
+
+  reset();
+  setVariant(variant);
+  readLink();
+  window.addEventListener("hashchange", readLink);
+})();
+</script>
+</body>
+</html>

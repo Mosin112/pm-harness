@@ -1,6 +1,6 @@
 ---
 name: capture-idea
-description: Use when the user has a new product idea, feature request or "what if we…", or wants to start the PM pipeline. Step 1 of the one-shot pipeline - turns a one-liner into an evidence-graded idea card and checks it against past decisions.
+description: Use when the user has a new product idea, feature request or "what if we…", or wants to start the PM pipeline. Step 1 of the pipeline - turns a one-liner into an evidence-graded idea card and checks it against past decisions.
 ---
 
 # Step 1 · Capture the idea
@@ -53,6 +53,10 @@ evidence: strong | some | hunch
 
 ## Gate
 
-Ask the PM: continue to the concept (`/pm-harness:write-concept`), size it first
-(`/pm-harness:opportunity-brief`), or park it (log a decision with a "revisit if" condition and
-set `stage: parked`).
+Ask the PM which way to go:
+
+- **Continue:** run the `product-grill` skill if the actors, states, scope or trade-offs are
+  still fuzzy, otherwise go straight to the `write-prd` skill.
+- **Size it first** with the `opportunity-brief` skill, or **research it** with the
+  `desktop-research` skill.
+- **Park it:** log a decision with a "revisit if" condition and set `stage: parked`.

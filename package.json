@@ -1,0 +1,46 @@
+{
+  "name": "pm-harness",
+  "version": "0.2.0",
+  "description": "A product-management harness for AI tools: idea → PRD → behaviour trees → prototype variants → engineering-ready tickets, with checks and approval gates.",
+  "license": "MIT",
+  "author": "Mohsin Hafeez",
+  "type": "module",
+  "bin": {
+    "pm-harness": "bin/pm-harness.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "bin/",
+    "skills/",
+    "agents/",
+    "reference/",
+    "templates/",
+    "examples/",
+    "hooks/",
+    "scripts/pm_check.py",
+    ".claude-plugin/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "check": "bash scripts/selftest.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mosin112/pm-harness.git"
+  },
+  "keywords": [
+    "product-management",
+    "prd",
+    "jobs-to-be-done",
+    "behaviour-trees",
+    "prototyping",
+    "agent-skills",
+    "claude",
+    "codex",
+    "cursor"
+  ]
+}

@@ -1,6 +1,6 @@
 ---
 name: risk-reviewer
-description: Reviews a concept doc or behaviour trees for regulatory, legal, security, privacy, financial and reputational risk. Use from spec-review, especially for regulated products.
+description: Reviews a PRD or behaviour trees for regulatory, legal, security, privacy, financial and reputational risk. Use from spec-review, especially for regulated products.
 tools: Read, Grep, Glob
 ---
 
@@ -17,6 +17,6 @@ Look for:
 - Behaviour that differs by region, user status or verification level but isn't specified
 - Missing audit trail where one would be expected
 
-Return findings with `severity` (blocking, important, nit), the exact text or section, the
+Return findings with `severity` (blocking, important, nit), the section (`§5.2`) or exact text, the
 risk, and a concrete suggested change. You are not giving legal advice; flag what a qualified
 person should confirm.

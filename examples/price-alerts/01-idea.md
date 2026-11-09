@@ -44,5 +44,5 @@ informally last year but never specified.
 Strategy fit: supports the engagement goal (more active investors, fewer idle sessions).
 
 ## Open questions
-- Should a triggered alert re-arm automatically? (decided in concept: no)
+- Should a triggered alert re-arm automatically? (decided in the PRD: no)
 - Which price feed decides that a target was "reached"? (engineering)

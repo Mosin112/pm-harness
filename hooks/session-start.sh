@@ -1,56 +1,29 @@
 #!/usr/bin/env bash
-# PM Harness SessionStart hook.
-# In a PM workspace (CLAUDE.md contains the pm-harness-workspace marker) it:
-#   1. keeps .pm-harness/pm_check.py in step with the installed plugin, and
+# PM Harness SessionStart hook (Claude Code plugin).
+# In a PM workspace (AGENTS.md or CLAUDE.md contains the pm-harness-workspace marker) it:
+#   1. keeps .pm-harness/ (checker, reference files, reviewer definitions) in step with the
+#      installed plugin, so every tool working in the workspace uses the same version, and
 #   2. prints the pipeline board so every session starts knowing what is in flight.
 # Anywhere else it prints nothing.
 set -u
 
 dir="${CLAUDE_PROJECT_DIR:-$PWD}"
-[[ -f "$dir/CLAUDE.md" ]] || exit 0
-grep -q 'pm-harness-workspace' "$dir/CLAUDE.md" 2>/dev/null || exit 0
+grep -qs 'pm-harness-workspace' "$dir/AGENTS.md" "$dir/CLAUDE.md" || exit 0
 
-if [[ -n "${CLAUDE_PLUGIN_ROOT:-}" && -f "$CLAUDE_PLUGIN_ROOT/scripts/pm_check.py" ]]; then
-  mkdir -p "$dir/.pm-harness"
-  if ! cmp -s "$CLAUDE_PLUGIN_ROOT/scripts/pm_check.py" "$dir/.pm-harness/pm_check.py"; then
-    cp "$CLAUDE_PLUGIN_ROOT/scripts/pm_check.py" "$dir/.pm-harness/pm_check.py"
-  fi
+root="${CLAUDE_PLUGIN_ROOT:-}"
+if [[ -n "$root" && -f "$root/scripts/pm_check.py" ]]; then
+  mkdir -p "$dir/.pm-harness/reference" "$dir/.pm-harness/agents"
+  sync() { cmp -s "$1" "$2" || cp "$1" "$2"; }
+  sync "$root/scripts/pm_check.py" "$dir/.pm-harness/pm_check.py"
+  for f in "$root"/reference/*.md; do sync "$f" "$dir/.pm-harness/reference/$(basename "$f")"; done
+  for f in "$root"/agents/*.md; do sync "$f" "$dir/.pm-harness/agents/$(basename "$f")"; done
 fi
 
-next_step() {
-  case "$1" in
-    idea) echo "write-concept (or opportunity-brief to size it first)" ;;
-    concept) echo "write-behaviour-trees" ;;
-    trees) echo "build-prototype" ;;
-    prototype) echo "create-eng-tickets" ;;
-    tickets|building) echo "stakeholder-update; launch-readout after launch" ;;
-    launched) echo "done; run update-context if not yet captured" ;;
-    parked) echo "parked; see decision log" ;;
-    *) echo "unknown stage; check 01-idea.md" ;;
-  esac
-}
-
-echo "## PM Harness pipeline board"
-found=0
-for f in "$dir"/work/*/01-idea.md; do
-  [[ -f "$f" ]] || continue
-  found=1
-  item=$(basename "$(dirname "$f")")
-  stage=$(sed -n 's/^stage:[[:space:]]*//p' "$f" | head -n 1)
-  updated=$(sed -n 's/^updated:[[:space:]]*//p' "$f" | head -n 1)
-  printf -- '- %s | stage: %s | updated: %s | next: %s\n' \
-    "$item" "${stage:-?}" "${updated:-?}" "$(next_step "${stage:-}")"
-done
-if [[ $found -eq 0 ]]; then
-  echo "- No items yet. Start with /pm-harness:capture-idea or /pm-harness:synthesize-signals."
+checker="$dir/.pm-harness/pm_check.py"
+if command -v python3 >/dev/null 2>&1 && [[ -f "$checker" ]]; then
+  python3 "$checker" board "$dir"
+else
+  echo "## PM Harness"
+  echo "Python 3 is needed for the pipeline board and checks. Install it, then run the setup skill in repair mode."
 fi
-
-if [[ -d "$dir/context" ]]; then
-  stale=$(find "$dir/context" -name '*.md' -mtime +90 2>/dev/null | sed "s|^$dir/||" | tr '\n' ' ')
-  if [[ -n "$stale" ]]; then
-    echo "Context files not updated in 90+ days (offer to review them): $stale"
-  fi
-fi
-
-echo "Reminders: follow CLAUDE.md and the evidence rules; never write to an external tool without the PM's approval."
 exit 0

@@ -8,7 +8,7 @@ summary of thin evidence is the most common way AI-assisted product work goes wr
    a signal, not a pattern.
 2. **Quote, don't paraphrase, the customer.** Customer language comes only from sources you
    actually read in this session. Never invent or "smooth" a quote.
-3. **Grade the evidence.** Label each idea or concept `strong` (several independent sources,
+3. **Grade the evidence.** Label each idea, PRD or research finding `strong` (several independent sources,
    including behavioural data), `some` (a few sources or one kind of source) or `hunch`
    (an internal opinion). Hunches are allowed; they are labelled.
 4. **Numbers come from governed definitions.** Use the metric definitions listed in
