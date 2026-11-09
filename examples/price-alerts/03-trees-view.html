@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Price alerts trees</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a header with the counts, then one card per tree; each tree reads left to right,
+   cause to outcome, and stacks into an indented outline on a phone. */
+:root {
+  --bg: #f5f6f8; --surface: #ffffff; --ink: #14171c; --muted: #5a6472; --line: #d3d9e1;
+  --accent: #4d6378; --focus: #2f6fe0; --warn: #9a5800; --warn-bg: #fbf0dc;
+  --when: #2c5b8a; --when-bg: #e8eff7; --while: #67499f; --while-bg: #efeaf8;
+  --if: #8a5a00; --if-bg: #f8eedb; --then: #1d6e46; --then-bg: #e4f2ea;
+  --font: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0e1013; --surface: #161a1f; --ink: #e7ebf0; --muted: #9aa4b1; --line: #2b323b;
+  --accent: #8fa3b8; --focus: #7aa7ff; --warn: #f0b860; --warn-bg: #2a2214;
+  --when: #93bbe8; --when-bg: #15212d; --while: #bba6ec; --while-bg: #1e1929;
+  --if: #efbb62; --if-bg: #272013; --then: #72d2a2; --then-bg: #12231b; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0e1013; --surface: #161a1f; --ink: #e7ebf0; --muted: #9aa4b1; --line: #2b323b;
+  --accent: #8fa3b8; --focus: #7aa7ff; --warn: #f0b860; --warn-bg: #2a2214;
+  --when: #93bbe8; --when-bg: #15212d; --while: #bba6ec; --while-bg: #1e1929;
+  --if: #efbb62; --if-bg: #272013; --then: #72d2a2; --then-bg: #12231b; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 var(--font); }
+.page { max-width: 1280px; margin: 0 auto; padding-block: 28px 96px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 20px; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+header { display: flex; flex-direction: column; gap: 12px; }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { margin: 0; font-size: 28px; font-weight: 500; letter-spacing: -0.015em; text-wrap: balance;
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.phase { font: 500 12px/1 var(--mono); border: 1px solid var(--line); border-radius: 999px; padding: 6px 10px; color: var(--muted); }
+dl.stats { display: flex; flex-wrap: wrap; gap: 8px 28px; margin: 0; }
+dl.stats div { display: flex; flex-direction: column; gap: 2px; }
+dt { font-size: 12px; color: var(--muted); }
+dd { margin: 0; font: 500 18px/1.2 var(--mono); font-variant-numeric: tabular-nums; }
+.howto { color: var(--muted); max-width: 72ch; margin: 0; }
+.howto b { color: var(--ink); font-weight: 500; }
+.mode-local { display: inline; } .has-comments .mode-local { display: none; }
+.mode-artifact { display: none; } .has-comments .mode-artifact { display: inline; }
+.legend, .toc { display: flex; flex-wrap: wrap; gap: 8px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.legend i { font: 500 11px/1 var(--mono); padding: 4px 6px; border-radius: 6px; font-style: normal; }
+.toc a { display: inline-flex; gap: 8px; align-items: center; text-decoration: none; color: var(--ink);
+  border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; font-size: 13px; }
+.toc a:hover { border-color: var(--accent); }
+.tk { font: 500 10px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.tree-card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.tree-card > summary { list-style: none; cursor: pointer; display: flex; flex-wrap: wrap; align-items: baseline;
+  gap: 6px 14px; padding: 16px 18px; }
+.tree-card > summary::-webkit-details-marker { display: none; }
+.tree-card > summary::before { content: "▸"; color: var(--muted); transition: transform .15s; }
+.tree-card[open] > summary::before { transform: rotate(90deg); }
+.subject { font: 500 16px/1.3 var(--mono); }
+.where { color: var(--muted); }
+.count { margin-left: auto; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 18px 12px; align-items: center; }
+.chip, .seam, .file { font: 400 12px/1 var(--mono); color: var(--muted); }
+.chip { border: 1px dashed var(--line); border-radius: 6px; padding: 4px 6px; }
+.seam { color: var(--ink); }
+.file { margin-left: auto; }
+.diagram { overflow-x: auto; padding: 4px 18px 18px; border-top: 1px solid var(--line); }
+/* the tree: each node is its clause card followed by its children */
+ol.tree, ol.kids { list-style: none; margin: 0; padding: 0; }
+ol.tree { padding-top: 12px; }
+.node { display: flex; align-items: flex-start; padding: 5px 0; }
+.clause { position: relative; flex: 0 0 auto; width: 17.5rem; display: flex; flex-wrap: wrap; gap: 4px 8px;
+  align-items: baseline; background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  padding: 8px 10px; scroll-margin: 80px; }
+.kw { font: 500 11px/1.6 var(--mono); letter-spacing: .04em; text-transform: uppercase; padding: 0 6px; border-radius: 5px; }
+.txt { flex: 1 1 12rem; min-width: 0; }
+.k-when > .clause .kw, .legend .k-when { color: var(--when); background: var(--when-bg); }
+.k-while > .clause .kw, .legend .k-while { color: var(--while); background: var(--while-bg); }
+.k-if > .clause .kw, .legend .k-if { color: var(--if); background: var(--if-bg); }
+.k-then > .clause .kw, .k-and > .clause .kw, .legend .k-then { color: var(--then); background: var(--then-bg); }
+.k-then > .clause, .k-and > .clause { background: color-mix(in srgb, var(--then-bg) 45%, var(--surface)); }
+.badges { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px; }
+.badge { font: 400 11px/1.4 var(--mono); border-radius: 6px; padding: 2px 6px; border: 1px solid var(--line);
+  color: var(--muted); text-decoration: none; max-width: 100%; overflow-wrap: anywhere; }
+a.badge.proto { color: var(--accent); }
+a.badge.proto:hover { border-color: var(--accent); }
+.badge.ticket { color: var(--ink); }
+.badge.warn { color: var(--warn); background: var(--warn-bg); border-color: transparent; }
+.cbtn { position: absolute; top: -11px; right: 8px; font: 500 11px/1 var(--font); color: var(--muted);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 5px 8px; cursor: pointer;
+  opacity: 0; transition: opacity .12s; }
+.clause:hover .cbtn, .clause:focus-within .cbtn, .clause.noted .cbtn { opacity: 1; }
+@media (hover: none) { .cbtn { opacity: 1; } }
+.cbtn:hover { color: var(--ink); border-color: var(--accent); }
+.clause.noted { border-color: var(--accent); }
+/* connectors */
+ol.kids { position: relative; padding-left: 28px; margin-top: -5px; }
+ol.kids::before { content: ""; position: absolute; left: 0; top: 24px; width: 14px; border-top: 1.5px solid var(--line); }
+ol.kids > .node { position: relative; }
+ol.kids > .node::before { content: ""; position: absolute; left: -14px; top: 24px; width: 14px; border-top: 1.5px solid var(--line); }
+ol.kids > .node::after { content: ""; position: absolute; left: -14px; top: 0; bottom: 0; border-left: 1.5px solid var(--line); }
+ol.kids > .node:first-child::after { top: 24px; }
+ol.kids > .node:last-child::after { bottom: auto; height: 24px; }
+ol.kids > .node:only-child::after { display: none; }
+@media (max-width: 760px) {
+  .node { display: block; }
+  .clause { width: auto; }
+  ol.kids { margin: 0 0 0 12px; padding-left: 18px; }
+  ol.kids::before { display: none; }
+  ol.kids > .node::before { left: -18px; width: 16px; top: 22px; }
+  ol.kids > .node::after { left: -18px; }
+  ol.kids > .node:first-child::after { top: 0; }
+  ol.kids > .node:last-child::after { height: 22px; }
+  ol.kids > .node:only-child::after { display: block; top: 0; height: 22px; }
+  .file { margin-left: 0; }
+}
+/* note editor and tray (used when this page is not a Claude artifact) */
+.note-edit { flex-basis: 100%; display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+.note-edit textarea { width: 100%; min-height: 64px; font: inherit; color: var(--ink); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; resize: vertical; }
+.row { display: flex; gap: 6px; flex-wrap: wrap; }
+.btn { font: 500 12px/1 var(--font); border-radius: 999px; padding: 7px 12px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+.btn.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.note-text { flex-basis: 100%; font-size: 13px; color: var(--ink); border-left: 2px solid var(--accent); padding-left: 8px; }
+.tray { position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line);
+  padding-block: 10px calc(10px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.tray-inner { max-width: 1280px; margin: 0 auto; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.tray pre { flex-basis: 100%; max-height: 30vh; overflow: auto; margin: 0; font: 12px/1.5 var(--mono);
+  white-space: pre-wrap; background: var(--bg); border-radius: 8px; padding: 8px; }
+footer { color: var(--muted); font-size: 12px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="page">
+<header>
+  <div class="eyebrow">Behaviour trees · price-alerts</div>
+  <h1>Price alerts <span class="phase">MVP</span></h1>
+  <dl class="stats"><div><dt>Trees</dt><dd>3</dd></div><div><dt>Outcomes</dt><dd>16</dd></div><div><dt>In the prototype</dt><dd>16/16</dd></div><div><dt>In tickets</dt><dd>16/16</dd></div><div><dt>Hard to test</dt><dd>0</dd></div></dl>
+  <p class="howto">Read each tree left to right: an event, the state the user is in, a condition, then what they see.
+    <span class="mode-artifact"><b>Comment</b> on any line and choose <b>Send to Claude</b>: Claude changes the tree
+    file and republishes this page.</span><span class="mode-local"><b>Comment</b> on any line, then
+    <b>Copy for Claude</b> and paste the notes into your chat.</span></p>
+  <div class="legend"><span><i class="k-when">When</i>an event</span><span><i class="k-while">While</i>a state that holds</span>
+    <span><i class="k-if">If</i>a condition</span><span><i class="k-then">Then / And</i>an outcome, which becomes a test</span></div>
+  <nav class="toc" aria-label="Trees"><a href="#tree-functional-price-alert-creation"><span class="tk k-functional">Functional</span>price-alert-creation</a><a href="#tree-functional-price-alert-trigger"><span class="tk k-functional">Functional</span>price-alert-trigger</a><a href="#tree-journey-set-and-receive-price-alert"><span class="tk k-journey">Journey</span>set-and-receive-price-alert</a></nav>
+</header>
+<details class="tree-card" id="tree-functional-price-alert-creation" open><summary><span class="tk k-functional">Functional</span><span class="subject">price-alert-creation</span><span class="where">PRD §5.1 · Set a price alert · P0</span><span class="count">6 outcomes</span></summary><div class="meta"><span class="chip">src: none</span><span class="chip">functional: none</span><span class="seam">Seam: the app&#x27;s asset page and Price alerts list</span><span class="file">price-alert-creation_TEST_TREES.md</span></div><div class="diagram"><ol class="tree"><li class="node k-when"><div class="clause" id="functional-price-alert-creation--when-an-investor-submits-a-price-60e91" data-comment-target data-tree="functional/price-alert-creation" data-line="2" data-text="when an investor submits a price alert for an asset"><span class="kw">When</span><span class="txt">an investor submits a price alert for an asset</span><button type="button" class="cbtn">Comment</button></div><ol class="kids"><li class="node k-while"><div class="clause" id="functional-price-alert-creation--while-the-investor-is-verified-01fd4" data-comment-target data-tree="functional/price-alert-creation" data-line="3" data-text="while the investor is verified"><span class="kw">While</span><span class="txt">the investor is verified</span><button type="button" class="cbtn">Comment</button></div><ol class="kids"><li class="node k-if"><div class="clause" id="functional-price-alert-creation--if-the-target-price-is-above-ca51b" data-comment-target data-tree="functional/price-alert-creation" data-line="4" data-text="if the target price is above zero and differs from the current price"><span class="kw">If</span><span class="txt">the target price is above zero and differs from the current price</span><button type="button" class="cbtn">Comment</button></div><ol class="kids"><li class="node k-then"><div class="clause" id="functional-price-alert-creation--then-the-price-alert-is-saved-f5241" data-comment-target data-tree="functional/price-alert-creation" data-line="5" data-text="then the price alert is saved as active"><span class="kw">Then</span><span class="txt">the price alert is saved as active</span><span class="badges"><a class="badge proto" href="04-prototype/index.html#guided--alerts--create-ok" target="_blank" rel="noopener">Prototype: alerts</a><span class="badge ticket">PA-1</span></span><button type="button" class="cbtn">Comment</button></div></li><li class="node k-and"><div class="clause" id="functional-price-alert-creation--and-the-direction-is-set-to-19894" data-comment-target data-tree="functional/price-alert-creation" data-line="6" data-text="and the direction is set to &quot;above&quot; when the target is higher than the current price, otherwise &quot;below&quot;"><span class="kw">And</span><span class="txt">the direction is set to &quot;above&quot; when the target is higher than the current price, otherwise &quot;below&quot;</span><span class="badges"><a class="badge proto" href="04-prototype/index.html#guided--alerts--create-both" target="_blank" rel="noopener">Prototype: alerts</a><span class="badge ticket">PA-1</span></span><button type="button" class="cbtn">Comment</button></div></li></ol></li><li class="node k-if"><div class="clause" id="functional-price-alert-creation--if-the-target-price-is-zero-c7df4" data-comment-target data-tree="functional/price-alert-creation" data-line="7" data-text="if the target price is zero or below"><span class="kw">If</span><span class="txt">the target price is zero or below</span><button type="button" class="cbtn">Comment</button></div><ol class="kids"><li class="node k-then"><div class="clause" id="functional-price-alert-creation--then-the-price-alert-is-rejected-3719c" data-comment-target data-tree="functional/price-alert-creation" data-line="8" data-text="then the price alert is rejected with the message &quot;Enter a price above zero&quot;"><span class="kw">Then</span><span class="txt">the price alert is rejected with the message &quot;Enter a price above zero&quot;</span><span class="badges"><a class="badge proto" href="04-prototype/index.html#guided--set-alert--err-zero" target="_blank" rel="noopener">Prototype: set-alert</a><span class="badge ticket">PA-1</span></span><button type="button" class="cbtn">Comment</button></div></li></ol></li><li class="node k-if"><div class="clause" id="functional-price-alert-creation--if-the-target-price-equals-the-1647f" data-comment-target data-tree="functional/price-alert-creation" data-line="9" data-text="if the target price equals the current price"><span class="kw">If</span><span class="txt">the target price equals the current price</span><button type="button" class="cbtn">Comment</button></div><ol class="kids"><li class="node k-then"><div class="clause" id="functional-price-alert-creation--then-the-price-alert-is-rejected-b5fca" data-comment-target data-tree="functional/price-alert-creation" data-line="10" data-text="then the price alert is rejected with the message &quot;Choose a price different from the current price&quot;"><span class="kw">Then</span><span class="txt">the price alert is rejected with the message &quot;Choose a price different from the current price&quot;</span><span class="badges"><a class="badge proto" href="04-prototype/index.html#guided--set-alert--err-same" target="_blank" rel="noopener">Prototype: set-alert</a><span class="badge ticket">PA-1</span></span><button type="button" class="cbtn">Comment</button></div></li></ol></li><li class="node k-if"><div class="clause" id="functional-price-alert-creation--if-the-investor-already-has-20-280c7" data-comment-target data-tree="functional/price-alert-creation" data-line="11" data-text="if the investor already has 20 active price alerts"><span class="kw">If</span><span class="txt">the investor already has 20 active price alerts</span><button type="button" class="cbtn">Comment</button></div><ol class="kids"><li class="node k-then"><div class="clause" id="functional-price-alert-creation--then-the-price-alert-is-rejected-5caf3" data-comment-target data-tree="functional/price-alert-creation" data-line="12" data-text="then the price alert is rejected with the message &quot;You can have up to 20 active price alerts&quot;"><span class="kw">Then</span><span class="txt">the price alert is rejected with the message &quot;You can have up to 20 active price alerts&quot;</span><span class="badges"><a class="badge proto" href="04-prototype/index.html#guided--set-alert--err-full" target="_blank" rel="noopener">Prototype: set-alert</a><span class="badge ticket">PA-1</span></span><button type="button" class="cbtn">Comment</button></div></li></ol></li></ol></li><li class="node k-while"><div class="clause" id="functional-price-alert-creation--while-the-investor-is-unverified-72356" data-comment-target data-tree="functional/price-alert-creation" data-line="13" data-text="while the investor is unverified"><span class="kw">While</span><span class="txt">the investor is unverified</span><button type="button" class="cbtn">Comment</button></div><ol class="kids"><li class="node k-then"><div class="clause" id="functional-price-alert-creation--then-the-investor-is-asked-to-b75d9" data-comment-target data-tree="functional/price-alert-creation" data-line="14" data-text="then the investor is asked to complete verification before setting price alerts"><span class="kw">Then</span><span class="txt">the investor is asked to complete verification before setting price alerts</span><span class="badges"><a class="badge proto" href="04-prototype/index.html#guided--verify--unverified" target="_blank" rel="noopener">Prototype: verify</a><span class="badge ticket">PA-1</span></span><button type="button" class="cbtn">Comment</button></div></li></ol></li></ol></li></ol></div></details>
+<details class="tree-card" id="tree-functional-price-alert-trigger" open><summary><span class="tk k-functional">Functional</span><span class="subject">price-alert-trigger</span><span class="where">PRD §5.2 · Trigger and notify · P0</span><span class="count">6 outcomes</span></summary><div class="meta"><span class="chip">src: none</span><span class="chip">functional: none</span><span class="seam">Seam: the price-alert service, observed through push notifications and the Price alerts list</span><span class="file">price-alert-trigger_TEST_TREES.md</span></div><div class="diagram"><ol class="tree"><li class="node k-when"><div class="clause" id="functional-price-alert-trigger--when-a-new-price-is-received-6c2b9" data-comment-target data-tree="functional/price-alert-trigger" data-line="2" data-text="when a new price is received for an asset"><span class="kw">When</span><span class="txt">a new price is received for an asset</span><button type="button" class="cbtn">Comment</button></div><ol class="kids"><li class="node k-while"><div class="clause" id="functional-price-alert-trigger--while-an-active-price-alert-s-target-2d024" data-comment-target data-tree="functional/price-alert-trigger" data-line="3" data-text="while an active price alert&#x27;s target has been reached in its direction"><span class="kw">While</span><span class="txt">an active price alert&#x27;s target has been reached in its direction</span><button type="button" class="cbtn">Comment</button></div><ol class="kids"><li class="node k-if"><div class="clause" id="functional-price-alert-trigger--if-the-investor-has-push-notifications-17416" data-comment-target data-tree="functional/price-alert-trigger" data-line="4" data-text="if the investor has push notifications enabled"><span class="kw">If</span><span class="txt">the investor has push notifications enabled</span><button type="button" class="cbtn">Comment</button></div><ol class="kids"><li class="node k-then"><div class="clause" id="functional-price-alert-trigger--then-one-push-notification-is-sent-06bd2" data-comment-target data-tree="functional/price-alert-trigger" data-line="5" data-text="then one push notification is sent with the text &quot;&lt;Asset&gt; reached &lt;target price&gt;&quot;"><span class="kw">Then</span><span class="txt">one push notification is sent with the text &quot;&lt;Asset&gt; reached &lt;target price&gt;&quot;</span><span class="badges"><a class="badge proto" href="04-prototype/index.html#guided--lock--reach-push" target="_blank" rel="noopener">Prototype: lock</a><span class="badge ticket">PA-2</span></span><button type="button" class="cbtn">Comment</button></div></li><li class="node k-and"><div class="clause" id="functional-price-alert-trigger--and-the-price-alert-is-marked-5d0e9" data-comment-target data-tree="functional/price-alert-trigger" data-line="6" data-text="and the price alert is marked as triggered"><span class="kw">And</span><span class="txt">the price alert is marked as triggered</span><span class="badges"><a class="badge proto" href="04-prototype/index.html#guided--alerts--reach-list" target="_blank" rel="noopener">Prototype: alerts</a><span class="badge ticket">PA-2</span></span><button type="button" class="cbtn">Comment</button></div></li></ol></li><li class="node k-if"><div class="clause" id="functional-price-alert-trigger--if-the-investor-has-push-notifications-c9120" data-comment-target data-tree="functional/price-alert-trigger" data-line="7" data-text="if the investor has push notifications disabled"><span class="kw">If</span><span class="txt">the investor has push notifications disabled</span><button type="button" class="cbtn">Comment</button></div><ol class="kids"><li class="node k-then"><div class="clause" id="functional-price-alert-trigger--then-no-push-notification-is-sent-f0ae7" data-comment-target data-tree="functional/price-alert-trigger" data-line="8" data-text="then no push notification is sent"><span class="kw">Then</span><span class="txt">no push notification is sent</span><span class="badges"><span class="badge">Not on screen: Absence of a notification: shown in System events and on the empty lock screen</span><span class="badge ticket">PA-2</span></span><button type="button" class="cbtn">Comment</button></div></li><li class="node k-and"><div class="clause" id="functional-price-alert-trigger--and-the-price-alert-is-marked-84ab1" data-comment-target data-tree="functional/price-alert-trigger" data-line="9" data-text="and the price alert is marked as triggered"><span class="kw">And</span><span class="txt">the price alert is marked as triggered</span><span class="badges"><a class="badge proto" href="04-prototype/index.html#guided--alerts--reach-list" target="_blank" rel="noopener">Prototype: alerts</a><span class="badge ticket">PA-2</span></span><button type="button" class="cbtn">Comment</button></div></li></ol></li></ol></li><li class="node k-while"><div class="clause" id="functional-price-alert-trigger--while-no-active-price-alert-s-target-cd59f" data-comment-target data-tree="functional/price-alert-trigger" data-line="10" data-text="while no active price alert&#x27;s target has been reached"><span class="kw">While</span><span class="txt">no active price alert&#x27;s target has been reached</span><button type="button" class="cbtn">Comment</button></div><ol class="kids"><li class="node k-then"><div class="clause" id="functional-price-alert-trigger--then-no-push-notification-is-sent-59b0b" data-comment-target data-tree="functional/price-alert-trigger" data-line="11" data-text="then no push notification is sent"><span class="kw">Then</span><span class="txt">no push notification is sent</span><span class="badges"><span class="badge">Not on screen: Absence of a notification: shown in System events and on the empty lock screen</span><span class="badge ticket">PA-2</span></span><button type="button" class="cbtn">Comment</button></div></li></ol></li></ol></li><li class="node k-when"><div class="clause" id="functional-price-alert-trigger--when-the-price-crosses-a-triggered-688ed" data-comment-target data-tree="functional/price-alert-trigger" data-line="12" data-text="when the price crosses a triggered price alert&#x27;s target again"><span class="kw">When</span><span class="txt">the price crosses a triggered price alert&#x27;s target again</span><button type="button" class="cbtn">Comment</button></div><ol class="kids"><li class="node k-then"><div class="clause" id="functional-price-alert-trigger--then-no-further-notification-is-sent-f3f8e" data-comment-target data-tree="functional/price-alert-trigger" data-line="13" data-text="then no further notification is sent for that price alert"><span class="kw">Then</span><span class="txt">no further notification is sent for that price alert</span><span class="badges"><span class="badge">Not on screen: Absence of a notification: shown in System events</span><span class="badge ticket">PA-2</span></span><button type="button" class="cbtn">Comment</button></div></li></ol></li></ol></div></details>
+<details class="tree-card" id="tree-journey-set-and-receive-price-alert" open><summary><span class="tk k-journey">Journey</span><span class="subject">set-and-receive-price-alert</span><span class="where">PRD §6.1 · Core journey</span><span class="count">4 outcomes</span></summary><div class="meta"><span class="chip">src: none</span><span class="chip">journey: none</span><span class="seam">Seam: end to end, on a test build with a simulated price feed</span><span class="file">set-and-receive-price-alert_TEST_TREES.md</span></div><div class="diagram"><ol class="tree"><li class="node k-when"><div class="clause" id="journey-set-and-receive-price-alert--when-a-verified-investor-sets-a-04d20" data-comment-target data-tree="journey/set-and-receive-price-alert" data-line="2" data-text="when a verified investor sets a price alert from an asset page"><span class="kw">When</span><span class="txt">a verified investor sets a price alert from an asset page</span><button type="button" class="cbtn">Comment</button></div><ol class="kids"><li class="node k-then"><div class="clause" id="journey-set-and-receive-price-alert--then-the-price-alert-appears-as-e51b1" data-comment-target data-tree="journey/set-and-receive-price-alert" data-line="3" data-text="then the price alert appears as active in the investor&#x27;s alerts list"><span class="kw">Then</span><span class="txt">the price alert appears as active in the investor&#x27;s alerts list</span><span class="badges"><a class="badge proto" href="04-prototype/index.html#guided--alerts--create-ok" target="_blank" rel="noopener">Prototype: alerts</a><span class="badge ticket">PA-3</span></span><button type="button" class="cbtn">Comment</button></div></li></ol></li><li class="node k-when"><div class="clause" id="journey-set-and-receive-price-alert--when-the-asset-s-price-reaches-the-cfd79" data-comment-target data-tree="journey/set-and-receive-price-alert" data-line="4" data-text="when the asset&#x27;s price reaches the price alert&#x27;s target"><span class="kw">When</span><span class="txt">the asset&#x27;s price reaches the price alert&#x27;s target</span><button type="button" class="cbtn">Comment</button></div><ol class="kids"><li class="node k-then"><div class="clause" id="journey-set-and-receive-price-alert--then-the-investor-receives-a-push-95c10" data-comment-target data-tree="journey/set-and-receive-price-alert" data-line="5" data-text="then the investor receives a push notification naming the asset and the target price"><span class="kw">Then</span><span class="txt">the investor receives a push notification naming the asset and the target price</span><span class="badges"><a class="badge proto" href="04-prototype/index.html#guided--lock--reach-push" target="_blank" rel="noopener">Prototype: lock</a><span class="badge ticket">PA-3</span></span><button type="button" class="cbtn">Comment</button></div></li><li class="node k-and"><div class="clause" id="journey-set-and-receive-price-alert--and-the-price-alert-is-shown-53bf3" data-comment-target data-tree="journey/set-and-receive-price-alert" data-line="6" data-text="and the price alert is shown as triggered in the alerts list"><span class="kw">And</span><span class="txt">the price alert is shown as triggered in the alerts list</span><span class="badges"><a class="badge proto" href="04-prototype/index.html#guided--alerts--reach-list" target="_blank" rel="noopener">Prototype: alerts</a><span class="badge ticket">PA-3</span></span><button type="button" class="cbtn">Comment</button></div></li></ol></li><li class="node k-when"><div class="clause" id="journey-set-and-receive-price-alert--when-the-investor-taps-the-price-90c24" data-comment-target data-tree="journey/set-and-receive-price-alert" data-line="7" data-text="when the investor taps the price alert notification"><span class="kw">When</span><span class="txt">the investor taps the price alert notification</span><button type="button" class="cbtn">Comment</button></div><ol class="kids"><li class="node k-then"><div class="clause" id="journey-set-and-receive-price-alert--then-the-asset-page-opens-6fed1" data-comment-target data-tree="journey/set-and-receive-price-alert" data-line="8" data-text="then the asset page opens"><span class="kw">Then</span><span class="txt">the asset page opens</span><span class="badges"><a class="badge proto" href="04-prototype/index.html#guided--asset--tap-notif" target="_blank" rel="noopener">Prototype: asset</a><span class="badge ticket">PA-3</span></span><button type="button" class="cbtn">Comment</button></div></li></ol></li></ol></div></details>
+<footer>Generated from the tree files by PM Harness. Change the trees, not this page.</footer>
+</div>
+<div class="tray" id="tray" hidden><div class="tray-inner">
+  <b id="tray-count"></b>
+  <button type="button" class="btn primary" id="tray-copy">Copy for Claude</button>
+  <button type="button" class="btn" id="tray-clear">Clear notes</button>
+  <pre id="tray-out" hidden></pre>
+</div></div>
+<script>
+(function () {
+  "use strict";
+  var comments = null;
+  var notes = [];
+  if (window.claude && typeof window.claude.use === "function") {
+    window.claude.use("comments").then(function (c) {
+      if (c) { comments = c; document.documentElement.classList.add("has-comments"); }
+    }, function () {});
+  }
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest && e.target.closest(".cbtn");
+    if (!btn) return;
+    var clause = btn.closest(".clause");
+    if (comments) {
+      comments.openComposer({ element: clause }).catch(function (err) {
+        if (err && (err.code === "unavailable" || err.code === "not_granted")) {
+          comments = null; document.documentElement.classList.remove("has-comments"); editNote(clause);
+        }
+      });
+    } else { editNote(clause); }
+  });
+  function editNote(clause) {
+    if (clause.querySelector(".note-edit")) { clause.querySelector("textarea").focus(); return; }
+    var box = document.createElement("div");
+    box.className = "note-edit";
+    var area = document.createElement("textarea");
+    area.id = "note-" + clause.id;
+    area.setAttribute("aria-label", "Note on this line");
+    area.placeholder = "What should change, and why?";
+    var row = document.createElement("div"); row.className = "row";
+    var add = document.createElement("button"); add.type = "button"; add.className = "btn primary"; add.textContent = "Add note";
+    var cancel = document.createElement("button"); cancel.type = "button"; cancel.className = "btn"; cancel.textContent = "Cancel";
+    row.appendChild(add); row.appendChild(cancel); box.appendChild(area); box.appendChild(row);
+    clause.appendChild(box); area.focus();
+    cancel.addEventListener("click", function () { box.remove(); });
+    add.addEventListener("click", function () {
+      var text = area.value.trim();
+      if (!text) { area.focus(); return; }
+      notes.push({ tree: clause.dataset.tree, line: clause.dataset.line, text: clause.dataset.text, note: text });
+      box.remove();
+      var shown = document.createElement("div"); shown.className = "note-text"; shown.textContent = text;
+      clause.appendChild(shown); clause.classList.add("noted");
+      renderTray();
+    });
+  }
+  function renderTray() {
+    document.getElementById("tray").hidden = !notes.length;
+    document.getElementById("tray-count").textContent = notes.length + (notes.length === 1 ? " note" : " notes");
+    document.getElementById("tray-out").hidden = true;
+  }
+  function asText() {
+    return ["Behaviour tree review: please change the trees, re-run the checks and regenerate the view."]
+      .concat(notes.map(function (n, i) {
+        return (i + 1) + ". " + n.tree + " line " + n.line + ": " + n.text + "\n   Note: " + n.note;
+      })).join("\n");
+  }
+  document.getElementById("tray-copy").addEventListener("click", function () {
+    var out = document.getElementById("tray-out"), btn = this, text = asText();
+    out.textContent = text;
+    var select = function () {
+      out.hidden = false;
+      var r = document.createRange(); r.selectNodeContents(out);
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      btn.textContent = "Selected: press Ctrl/⌘+C";
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        btn.textContent = "Copied: paste into your chat";
+        setTimeout(function () { btn.textContent = "Copy for Claude"; }, 2000);
+      }, select);
+    } else { select(); }
+  });
+  document.getElementById("tray-clear").addEventListener("click", function () {
+    notes = [];
+    document.querySelectorAll(".note-text").forEach(function (n) { n.remove(); });
+    document.querySelectorAll(".clause.noted").forEach(function (c) { c.classList.remove("noted"); });
+    renderTray();
+  });
+})();
+</script>
+</body>
+</html>

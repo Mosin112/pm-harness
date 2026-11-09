@@ -1,6 +1,6 @@
 ---
 name: desktop-research
-description: Use when the user wants to research a product, feature, competitor, market or regulation on the web, asks "what do people say about X", "how do competitors do X", "look into X" or wants market evidence before writing a PRD. Runs scoped web research and writes an evidence-counted research report with cited sources and stated gaps.
+description: Use when the user wants to research a product, feature, competitor, market or regulation on the public web, asks "what do people online say about X", "how do competitors do X", "look into X" or wants market evidence before writing a PRD (for the company's own customer evidence, use synthesize-signals). Runs scoped web research and writes an evidence-counted research report with cited sources and stated gaps.
 ---
 
 # Desktop research

@@ -30,12 +30,13 @@ Idea → (grill) → PRD → Behaviour trees → Prototype variants → Eng-read
    | 1 `capture-idea` | continue, grill, size first, or park | — |
    | `product-grill` (if the idea is fuzzy) | PM ends the grill; phase and prototype decision agreed | — |
    | 2 `write-prd` + `spec-review` | PRD approved; no open blocking findings | `pm_check.py prd` |
-   | 3 `write-behaviour-trees` | trees approved | `pm_check.py trees` and `prd` with trees |
+   | 3 `write-behaviour-trees` | trees approved after the PM reviews the diagram (`pm_check.py view`) | `pm_check.py trees` and `prd` with trees |
    | 4 brief for `build-prototype` | variants and hypotheses approved | — |
    | 4 `build-prototype` + `review-prototype` | variant chosen; no open amendments | `pm_check.py prototype` |
-   | 5 `create-eng-tickets` | draft approved before anything is created in the tracker | `pm_check.py tickets` |
+   | 5 `create-eng-tickets` | draft approved before anything is created in the tracker; contracts handed over | `pm_check.py tickets` with the PRD, then `contracts` |
 
-5. **Keep the PM oriented.** At each gate show a one-line status:
+5. **Keep the PM oriented.** Run `python3 .pm-harness/pm_check.py item work/<item>` at each gate
+   and show a one-line status:
    `price-alerts · MVP · step 4/5 prototype · 2 variants, 16/16 outcomes, 0 open amendments · waiting for your choice`
 6. **Manage context.** After each approved step, write everything needed to the item folder so
    that a new session can resume from files alone. If the conversation is long, suggest
@@ -48,5 +49,6 @@ Idea → (grill) → PRD → Behaviour trees → Prototype variants → Eng-read
 
 Summarise: item and phase, files created, checker results, the chosen prototype variant,
 ticket keys, open questions and their owners, and the next action (engineering handoff,
-stakeholder update, date for the launch readout and its gate). Then offer the `done` skill to
+stakeholder update, date for the launch readout and its gate). Offer the `publish` skill if the
+PRD should go to Confluence or the prototype should be shared. Then offer the `done` skill to
 capture what this run taught.

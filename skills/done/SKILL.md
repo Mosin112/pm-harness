@@ -1,6 +1,6 @@
 ---
 name: done
-description: Use when the PM says "done", "wrap up", "close the session", "what should we learn from this" or asks for a session retrospective. Reviews this session and recent ones for repeated corrections, re-explained facts and friction, then proposes context updates, Definition of done changes, skill improvements and open threads; applies only what the PM approves.
+description: Use when the PM says "done", "wrap up", "close the session", "what did we learn" or "what should we learn from this", or asks for a session retrospective. Reviews this session and recent ones for repeated corrections, re-explained facts and friction, then proposes context updates, Definition of done changes, skill improvements and open threads; applies only what the PM approves.
 ---
 
 # Done: session retrospective
@@ -37,8 +37,11 @@ keeps them:
 - Transcripts are large. Extract only the PM's messages and your final replies; skip tool calls
   and results. For Claude Code, for example:
   `jq -r 'select(.type=="user" and (.isMeta|not)) | .message.content | if type=="string" then . else (map(select(.type=="text").text)|join("\n")) end | select(length>0)' <file>.jsonl`
-- If no transcripts are reachable (a cloud session, or a tool that does not keep them), say so
-  and review this conversation only. Do not guess at earlier sessions.
+- Always read `sessions/corrections.md` too: every session appends a line there when the PM
+  corrects the output or repeats an instruction (an `AGENTS.md` rule), so patterns survive in
+  tools that keep no transcripts, such as Claude's cloud sessions.
+- If no transcripts are reachable, say so and work from this conversation and the corrections
+  log only. Do not guess at earlier sessions.
 - Transcripts stay on the machine. Never copy long excerpts, secrets or personal details about
   named people into the log.
 

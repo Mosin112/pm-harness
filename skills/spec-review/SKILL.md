@@ -30,11 +30,20 @@ each reviewer in a fresh context that has not seen the drafting conversation.
 5. **Consolidate:** merge duplicates, keep the reviewer names, sort by severity. Do not soften
    or drop findings you disagree with; add your view beside them instead.
 
-## Output: `work/<item>/02-prd-review.md`
+## Output
+
+One review file per document, so reviewing the trees never overwrites the PRD's trail:
+
+- the PRD → `work/<item>/02-prd-review.md`
+- the trees → `work/<item>/03-trees-review.md`
+
+Each review is a dated round. A later round (a re-review after a change, or of changed sections
+only) is **appended** under its own heading; earlier rounds and their resolutions stay.
 
 ```
 # <Title> · Review (YYYY-MM-DD)
 Reviewers: engineering, design, risk, exec, customer advocate (independent subagents)
+Scope: whole PRD | §5.2 and §7 only (after change log row 3)
 
 | # | Severity | Reviewer | Section | Finding | Suggested change | Resolution |
 |---|---|---|---|---|---|---|
@@ -44,4 +53,4 @@ Reviewers: engineering, design, risk, exec, customer advocate (independent subag
 After the PM and the author revise the document, fill in the **Resolution** column for every
 blocking and important finding: `changed`, `won't change because …`, or `open`.
 
-A PRD cannot be approved while any blocking finding is `open`.
+A PRD or a set of trees cannot be approved while any blocking finding in any round is `open`.

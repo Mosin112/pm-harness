@@ -2,19 +2,28 @@
 """PM Harness checker: the verification gates behind the pipeline.
 
 Usage:
+  pm_check.py item <work/item>                           every check that applies to one item
   pm_check.py prd <prd.md> [trees-dir]                   PRD structure, phase rules, links to trees
   pm_check.py trees <trees-dir>                          grammar + testability of behaviour trees
   pm_check.py prototype <trees-dir> <prototype.html>     variants, tree coverage, review amendments
-  pm_check.py tickets <trees-dir> <tickets.md>           tickets trace to trees, Definition of done
+  pm_check.py tickets <trees-dir> <tickets.md> [prd.md]  tickets trace to trees, metrics, Definition of done
   pm_check.py workspace <workspace-dir>                  workspace layout and item stages
   pm_check.py board <workspace-dir>                      pipeline board for the start of a session
   pm_check.py plugin <plugin-dir>                        skills, agents, manifests and installer
+
+Generators:
+  pm_check.py view <work/item>                           03-trees-view.html: the trees as a diagram to review
+  pm_check.py contracts <work/item>                      05-contracts/: trees as engineering-harness contracts
+  pm_check.py artifact <page.html> <out.html>            a full HTML page as a Claude artifact fragment
 
 Exit code 0 = pass (warnings allowed), 1 = errors found, 2 = usage problem.
 Standard library only, Python 3.8+.
 """
 from __future__ import annotations
 
+import contextlib
+import hashlib
+import io
 import json
 import re
 import sys
@@ -35,6 +44,7 @@ WORD_BUDGET = {"MVP": 1200, "MMP": 1800, "MLP": 1800, "Enhancement": 900}
 AMENDMENT_STATUSES = ("open", "resolved", "dismissed")
 AMENDMENT_CLASSES = ("prd change", "tree change", "polish", "later", "dismiss")
 MARKER = "pm-harness-workspace"
+RESERVED_HASHES = ("settings", "sidebar", "customize", "upgrade", "downloads")
 FILE_RE = re.compile(r"^([a-z0-9]+(?:-[a-z0-9]+)*)_TEST_TREES\.md$")
 HEAD_RE = re.compile(r"^(\w+): ([a-z0-9]+(?:-[a-z0-9]+)*) \((.+)\)$")
 KEBAB_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
@@ -185,7 +195,8 @@ def parse_tree(path: Path, report: Report) -> dict | None:
 
     leaves = [text for (_, _, word, text) in nodes if word in LEAF_WORDS]
     return {"kind": kind, "subject": subject, "key": f"{kind.lower()}/{subject}",
-            "leaves": leaves, "lines": [n[3] for n in nodes], "path": path}
+            "leaves": leaves, "lines": [n[3] for n in nodes], "path": path,
+            "nodes": nodes, "coverage": coverage}
 
 
 def load_trees(trees_dir: Path, report: Report) -> list[dict]:
@@ -217,6 +228,7 @@ def cmd_trees(trees_dir: str) -> int:
 SECTION_RE = re.compile(r"^## (\d+)\.?\s+(.+?)\s*$")
 SUBSECTION_RE = re.compile(r"^### (\d+)\.(\d+)\.?\s+(.+?)\s*$")
 PRIORITY_RE = re.compile(r"\((P[0-9])\)\s*$")
+SEAM_RE = re.compile(r"^\s*(?:[-*]\s+)?\**Seam:?\**:?\s*(.+?)\s*$")
 TREE_REF_RE = re.compile(r"^\s*(?:[-*]\s+)?\**Tree:?\**:?\s*`?(functional|journey)/([a-z0-9]+(?:-[a-z0-9]+)*)`?")
 
 
@@ -234,7 +246,11 @@ def strip_code(lines: list[str]) -> list[str]:
 def parse_prd(path: Path, report: Report) -> dict:
     lines = read(path).splitlines()
     prd = {"phase": None, "status": None, "sections": {}, "order": [], "capabilities": [],
-           "journeys": [], "words": 0}
+           "journeys": [], "words": 0, "journey_seam": None, "links": {}}
+    for ln in lines[:12]:
+        if re.match(r"^\**Links\**\s*:", ln):
+            for label, url in re.findall(r"([A-Za-z][\w ]*?)\s*:?\s*<?(https?://[^\s>·|]+)", ln.split(":", 1)[1]):
+                prd["links"][label.strip().lower()] = url
 
     header = next((ln for ln in lines[:12] if re.search(r"\bPhase\s*:", ln)), None)
     if header is None:
@@ -278,6 +294,12 @@ def parse_prd(path: Path, report: Report) -> dict:
                 prd["capabilities"].append({"num": f"5.{sub[1]}", "title": sub[2],
                                             "priority": pm.group(1) if pm else None, "trees": []})
             continue
+        sm2 = SEAM_RE.match(raw)
+        if sm2:
+            if current == 5 and prd["capabilities"] and sub and sub[0] == 5:
+                prd["capabilities"][-1]["seam"] = sm2.group(1).strip()
+            elif current == 6:
+                prd["journey_seam"] = sm2.group(1).strip()
         tm = TREE_REF_RE.match(raw)
         if tm:
             ref = f"{tm.group(1)}/{tm.group(2)}"
@@ -322,6 +344,8 @@ def check_prd_structure(prd: dict, report: Report) -> None:
             report.error(f"§{c['num']} {c['title']}: heading must end with a priority, e.g. (P0)")
         elif c["priority"] not in ("P0", "P1", "P2"):
             report.error(f"§{c['num']}: priority {c['priority']} must be P0, P1 or P2")
+        if not c.get("seam"):
+            report.warn(f"§{c['num']} {c['title']}: add a 'Seam:' line (where engineering tests it)")
         functional = [t for t in c["trees"] if t.startswith("functional/")]
         if not functional:
             report.error(f"§{c['num']} {c['title']}: name its tree with 'Tree: functional/<subject>'")
@@ -345,6 +369,8 @@ def check_prd_structure(prd: dict, report: Report) -> None:
         report.warn("MVP: §7 should state the continue / stop gate")
     if phase == "MLP" and "polish" not in s5 + s6:
         report.warn("MLP: add polish criteria to §5 or §6")
+    if 2 in prd["sections"] and "market" not in section_text(prd, 2).lower():
+        report.warn("§2: add a 'Markets and languages' row")
     if 6 in prd["sections"] and not prd["journeys"]:
         report.warn("§6.1: end the core journey with 'Tree: journey/<subject>'")
     if 6 in prd["sections"] and "prototype decision" not in s6 and phase != "Enhancement":
@@ -399,8 +425,8 @@ def cmd_prd(prd_path: str, trees_dir: str | None = None) -> int:
 
 # ---------------------------------------------------------------- prototype
 
-SCREEN_TAG_RE = re.compile(r"<[a-zA-Z][\w-]*\s[^<>]*?\bdata-screen=\"([^\"]+)\"[^<>]*>")
-VARIANT_ATTR_RE = re.compile(r"\sdata-variant=\"([^\"]+)\"")
+SCREEN_TAG_RE = re.compile(r"<[a-zA-Z][\w-]*\s[^<>]*?\bdata-screen=([\"'])([^\"']+)\1[^<>]*>")
+VARIANT_ATTR_RE = re.compile(r"\sdata-variant=([\"'])([^\"']+)\1")
 
 
 def json_block(html: str, block_id: str):
@@ -419,19 +445,20 @@ def prototype_screens(html: str) -> tuple[set[str], dict[str, set[str]]]:
     for m in SCREEN_TAG_RE.finditer(html):
         vm = VARIANT_ATTR_RE.search(m.group(0))
         if vm:
-            by_variant.setdefault(vm.group(1), set()).add(m.group(1))
+            by_variant.setdefault(vm.group(2), set()).add(m.group(2))
         else:
-            shared.add(m.group(1))
+            shared.add(m.group(2))
     return shared, by_variant
 
 
-def check_variants(html: str, report: Report) -> list[str | None]:
-    """Validate the variants manifest. Returns the variant ids (or [None] for one design)."""
+def check_variants(html: str, report: Report) -> tuple[list[str | None], str | None]:
+    """Validate the variants manifest. Returns the variant ids (or [None] for one design)
+    and the chosen variant, once the PM has picked one at the prototype gate."""
     manifest, err = json_block(html, "prototype-variants")
     _, by_variant = prototype_screens(html)
     if err:
         report.error(f"prototype-variants block is not valid JSON: {err}")
-        return [None]
+        return [None], None
     if manifest is None:
         if by_variant:
             report.error("screens use data-variant but there is no "
@@ -439,14 +466,14 @@ def check_variants(html: str, report: Report) -> list[str | None]:
         else:
             report.warn("one design only: build-prototype expects 2 hypothesis-led variants "
                         "(one is fine for an Enhancement; declare it in a prototype-variants block)")
-        return list(by_variant) or [None]
+        return list(by_variant) or [None], None
 
     if not str(manifest.get("decision", "")).strip():
         report.error("prototype-variants: 'decision' must state the trade-off the variants argue about")
     variants = manifest.get("variants")
     if not isinstance(variants, list) or not variants:
         report.error("prototype-variants: 'variants' must be a non-empty list")
-        return list(by_variant) or [None]
+        return list(by_variant) or [None], None
     if len(variants) > 3:
         report.warn(f"{len(variants)} variants: more than three rarely sharpens a decision")
     if len(variants) == 1 and not str(manifest.get("singleReason", "")).strip():
@@ -475,8 +502,16 @@ def check_variants(html: str, report: Report) -> list[str | None]:
         for vid in ids:
             if vid not in by_variant:
                 report.warn(f"variant '{vid}' has no screens of its own; it differs only in styling")
-    report.note(f"{len(ids)} variant(s): {', '.join(ids)}")
-    return ids
+        for vid in ids:
+            if vid in RESERVED_HASHES or vid.startswith("comment-"):
+                report.error(f"variant id '{vid}' is reserved by claude.ai links; pick another")
+    chosen = manifest.get("chosen")
+    if chosen is not None and chosen not in ids:
+        report.error(f"prototype-variants: chosen '{chosen}' is not a declared variant")
+        chosen = None
+    report.note(f"{len(ids)} variant(s): {', '.join(ids)}"
+                + (f"; chosen: {chosen} (others archived)" if chosen else ""))
+    return ids, chosen
 
 
 def parse_amendments(path: Path) -> list[dict]:
@@ -493,7 +528,7 @@ def parse_amendments(path: Path) -> list[dict]:
 
 
 def check_amendments(path: Path, variants: list, shared: set, by_variant: dict,
-                     tree_lines: set, report: Report) -> None:
+                     tree_lines: set, report: Report, chosen: str | None = None) -> None:
     items = parse_amendments(path)
     named_variants = [v for v in variants if v]
     counts = {s: 0 for s in AMENDMENT_STATUSES}
@@ -515,6 +550,9 @@ def check_amendments(path: Path, variants: list, shared: set, by_variant: dict,
             report.error(f"{aid}: say which variant (one of {', '.join(named_variants)})")
         if variant and named_variants and variant not in named_variants:
             report.error(f"{aid}: variant '{variant}' is not declared")
+        if chosen and variant and variant != chosen and status == "open":
+            report.error(f"{aid}: variant '{variant}' is archived; review notes now apply to '{chosen}' "
+                         "(dismiss this one or reopen the choice)")
         screen = a.get("screen")
         if not screen:
             report.error(f"{aid}: 'Screen' is empty")
@@ -550,7 +588,10 @@ def cmd_prototype(trees_dir: str, html_path: str) -> int:
         report.error(f"prototype not found: {html_path}")
         return report.finish()
     html = read(html_file)
-    variants = check_variants(html, report)
+    variants, chosen = check_variants(html, report)
+    archived = [v for v in variants if v and chosen and v != chosen]
+    if chosen:
+        variants = [chosen]
     shared, by_variant = prototype_screens(html)
     all_screens = (shared | set().union(*by_variant.values())) if by_variant else set(shared)
 
@@ -570,6 +611,7 @@ def cmd_prototype(trees_dir: str, html_path: str) -> int:
     cov = cov["trees"]
 
     total = covered = 0
+    no_demo = 0
     for t in trees:
         entries = cov.get(t["key"])
         if entries is None:
@@ -579,6 +621,8 @@ def cmd_prototype(trees_dir: str, html_path: str) -> int:
         for e in entries:
             line = (e.get("line") or "").strip()
             mapped[line] = e
+            if not e.get("demo"):
+                no_demo += 1
             if line not in t["leaves"]:
                 report.error(f"{t['key']}: coverage line is not an outcome in the tree: '{line}'")
         for leaf in t["leaves"]:
@@ -606,12 +650,36 @@ def cmd_prototype(trees_dir: str, html_path: str) -> int:
     for key in cov:
         if key not in {t["key"] for t in trees}:
             report.warn(f"coverage map mentions unknown tree '{key}'")
-    report.note(f"{covered}/{total} tree outcomes demonstrated or justified in every variant")
+    scope = f"the chosen variant ({chosen})" if chosen else "every variant"
+    report.note(f"{covered}/{total} tree outcomes demonstrated or justified in {scope}")
+    if archived:
+        report.note(f"archived, not checked: {', '.join(archived)}")
+    if no_demo:
+        report.warn(f"{no_demo} coverage line(s) have no 'demo': the coverage panel and deep links "
+                    "cannot open them")
+
+    prd_path = html_file.parent.parent / "02-prd.md"
+    if prd_path.is_file():
+        s6 = section_text(parse_prd(prd_path, Report("(prd parse)")), 6).lower()
+        chosen_lines = [ln for ln in s6.splitlines() if "chosen" in ln]
+        if chosen:
+            man, _ = json_block(html, "prototype-variants")
+            label = next((str(v.get("label", "")) for v in man.get("variants", [])
+                          if isinstance(v, dict) and v.get("id") == chosen), chosen).lower()
+            if not chosen_lines:
+                report.error(f"the manifest says '{chosen}' was chosen, but PRD §6.3 does not record "
+                             "the choice and why")
+            elif not any(label in ln or chosen in ln for ln in chosen_lines):
+                report.error(f"PRD §6.3 records a different choice than the manifest's '{chosen}'")
+        if not chosen and "chosen at the prototype gate" in s6:
+            report.error("PRD §6.3 records a chosen variant, but the prototype-variants manifest has "
+                         "no 'chosen'")
 
     amend = html_file.parent / "amendments.md"
     if amend.is_file():
         tree_lines = {ln for t in trees for ln in t["lines"]}
-        check_amendments(amend, variants, shared, by_variant, tree_lines, report)
+        all_variants = [v for v in variants + archived]
+        check_amendments(amend, all_variants, shared, by_variant, tree_lines, report, chosen)
     return report.finish()
 
 
@@ -640,7 +708,23 @@ def dod_blocks(lines: list[str]) -> list[int]:
     return blocks
 
 
-def cmd_tickets(trees_dir: str, tickets_path: str) -> int:
+def prd_metrics(prd: dict) -> list[str]:
+    """Metric names from the first column of the PRD §7 table(s)."""
+    names = []
+    for ln in prd["sections"].get(7, {}).get("lines", []):
+        if not ln.strip().startswith("|"):
+            continue
+        cell = ln.strip().strip("|").split("|")[0].strip()
+        if not cell or set(cell) <= set("-: ") or cell.lower() == "metric":
+            continue
+        name = re.sub(r"\*|\(.*?\)", "", cell)
+        name = re.sub(r"^\s*guardrail\s*:\s*", "", name, flags=re.I).strip(" .")
+        if name:
+            names.append(name)
+    return names
+
+
+def cmd_tickets(trees_dir: str, tickets_path: str, prd_path: str | None = None) -> int:
     report = Report(f"tickets {tickets_path}")
     trees = load_trees(Path(trees_dir), Report("(tree parse)"))
     path = Path(tickets_path)
@@ -661,6 +745,16 @@ def cmd_tickets(trees_dir: str, tickets_path: str) -> int:
     for ln in sorted(ticket_outcomes - all_tree_lines):
         report.error(f"ticket requirement not found in any tree (invented or reworded): '{ln}'")
     report.note(f"{total} tree outcomes, {len(ticket_outcomes)} outcome lines in tickets")
+
+    if prd_path:
+        prd = parse_prd(Path(prd_path), Report("(prd parse)"))
+        text = read(path).lower()
+        metrics = prd_metrics(prd)
+        for m in metrics:
+            if m.lower() not in text:
+                report.error(f"PRD §7 metric '{m}' has no analytics event in the tickets "
+                             "(name the metric in the analytics story)")
+        report.note(f"{len(metrics)} PRD §7 metric(s) checked against the analytics story")
 
     blocks = dod_blocks(raw_lines)
     if not blocks:
@@ -734,6 +828,9 @@ def cmd_workspace(ws: str) -> int:
             report.error(f"work/{item}: stage '{stage}' must be one of {', '.join(STAGES)}")
             continue
         report.note(f"work/{item}: {stage}")
+        lm = re.search(r"^lineage:\s*(\S+)", read(idea), re.M)
+        if lm and not (root / "work" / lm.group(1) / "01-idea.md").is_file():
+            report.warn(f"work/{item}: lineage '{lm.group(1)}' is not an item in work/")
         if stage == "parked":
             continue
         files = item_files(idea.parent)
@@ -753,9 +850,9 @@ NEXT_STEP = {
     "prd": "write-behaviour-trees",
     "trees": "build-prototype",
     "prototype": "create-eng-tickets",
-    "tickets": "stakeholder-update; launch-readout after launch",
-    "building": "stakeholder-update; launch-readout after launch",
-    "launched": "done or update-context to capture what was learned",
+    "tickets": "hand over 05-contracts/ to engineering; stakeholder-update",
+    "building": "stakeholder-update; set stage launched when it ships",
+    "launched": "launch-readout when the gate window ends; then the next phase or done",
     "parked": "parked; see the decision log",
 }
 
@@ -784,7 +881,7 @@ def cmd_board(ws: str) -> int:
         updated = (re.search(r"^updated:\s*(\S+)", text, re.M) or [None, "?"])[1]
         flags = []
         files = item_files(idea.parent)
-        blocking = open_blocking(files["review"])
+        blocking = open_blocking(files["review"]) + open_blocking(idea.parent / "03-trees-review.md")
         if blocking:
             flags.append(f"{blocking} open blocking review finding(s)")
         if files["amendments"].is_file():
@@ -792,6 +889,10 @@ def cmd_board(ws: str) -> int:
                          if a.get("status", "").lower() == "open")
             if open_a:
                 flags.append(f"{open_a} open prototype amendment(s): review-prototype")
+        if stage != "parked":
+            failed = [name for name, code, _ in item_checks(idea.parent) if code]
+            if failed:
+                flags.append(f"checks failing: {', '.join(failed)} (run pm_check.py item work/{idea.parent.name})")
         phase = ""
         if files["prd"].is_file():
             pm = re.search(r"\bPhase\s*:\s*\**\s*([A-Za-z]+)", read(files["prd"]))
@@ -811,6 +912,534 @@ def cmd_board(ws: str) -> int:
     print("Reminders: follow AGENTS.md and the evidence rules; never write to an external tool "
           "without the PM's approval; run done at the end of a useful session.")
     return 0
+
+
+# ---------------------------------------------------------------- item
+
+def run_quiet(fn, *args) -> tuple[int, str]:
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        code = fn(*args)
+    return code, buf.getvalue()
+
+
+def item_checks(folder: Path) -> list[tuple[str, int, str]]:
+    """Run every check whose inputs exist for one item. Returns (name, exit code, output)."""
+    files = item_files(folder)
+    trees = files["trees"] if files["trees"].is_dir() else None
+    prd = files["prd"] if files["prd"].is_file() and files["prd"].name == "02-prd.md" else None
+    results = []
+    if prd:
+        results.append(("prd", *run_quiet(cmd_prd, str(prd), str(trees) if trees else None)))
+    if trees:
+        results.append(("trees", *run_quiet(cmd_trees, str(trees))))
+        if files["prototype"].is_file():
+            results.append(("prototype", *run_quiet(cmd_prototype, str(trees), str(files["prototype"]))))
+        if files["tickets"].is_file():
+            results.append(("tickets", *run_quiet(cmd_tickets, str(trees), str(files["tickets"]),
+                                                  str(prd) if prd else None)))
+    return results
+
+
+def cmd_item(item_dir: str) -> int:
+    folder = Path(item_dir)
+    idea = folder / "01-idea.md"
+    if not idea.is_file():
+        print(f"FAIL  item {item_dir}: no 01-idea.md")
+        return 1
+    stage = LEGACY_STAGES.get(item_stage(idea) or "", item_stage(idea) or "?")
+    results = item_checks(folder)
+    for _, _, output in results:
+        print(output, end="")
+    failed = [name for name, code, _ in results if code]
+    ran = ", ".join(name for name, _, _ in results) or "nothing to check yet"
+    print(f"{'FAIL' if failed else 'PASS'}  item {folder.name} (stage: {stage}): ran {ran}"
+          + (f"; failing: {', '.join(failed)}" if failed else ""))
+    return 1 if failed else 0
+
+
+# ---------------------------------------------------------------- contracts (engineering hand-off)
+
+def prd_non_goals(prd: dict) -> list[str]:
+    goals, on = [], False
+    for ln in prd["sections"].get(4, {}).get("lines", []):
+        t = ln.strip()
+        if re.match(r"^(\*\*|#+\s*)non-goals", t, re.I):
+            on = True
+            continue
+        if on and (t.startswith("**") or t.startswith("#")):
+            break
+        if on and re.match(r"^[-*]\s+\S", t):
+            goals.append(t[2:].strip().rstrip("."))
+    return goals
+
+
+def cmd_contracts(item_dir: str) -> int:
+    """Write work/<item>/05-contracts/<subject>.contract.md for the engineering harness."""
+    folder = Path(item_dir)
+    report = Report(f"contracts for {folder.name}")
+    files = item_files(folder)
+    trees = load_trees(files["trees"], report)
+    prd = parse_prd(files["prd"], Report("(prd parse)")) if files["prd"].is_file() else None
+    by_tree: dict[str, dict] = {}
+    if prd:
+        for c in prd["capabilities"]:
+            for t in c["trees"]:
+                by_tree[t] = c
+    non_goals = prd_non_goals(prd) if prd else []
+    out = folder / "05-contracts"
+    out.mkdir(exist_ok=True)
+    for t in trees:
+        cap = by_tree.get(t["key"])
+        if t["kind"] == "Journey":
+            seam = (prd or {}).get("journey_seam") or "end to end, in a production-like environment"
+            source = "PRD §6.1"
+        else:
+            seam = (cap or {}).get("seam")
+            source = f"PRD §{cap['num']}" if cap else "PRD §5"
+            if not seam:
+                report.warn(f"{t['key']}: no 'Seam:' line under its capability in PRD §5; "
+                            "the contract says 'seam: to confirm with engineering'")
+                seam = "to confirm with engineering"
+        body = ["  " * (depth - 1) + text for (_, depth, _, text) in t["nodes"]]
+        lines = [f"Contract: {t['subject']} (seam: {seam})", "", *body, ""]
+        if non_goals:
+            lines.append("Non-goals: " + "; ".join(non_goals))
+        rel = t["path"].relative_to(folder).as_posix() if folder in t["path"].parents else t["path"].name
+        lines.append(f"Source: PM Harness item {folder.name}, {rel}, {source}")
+        (out / f"{t['subject']}.contract.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+        report.note(f"05-contracts/{t['subject']}.contract.md (seam: {seam})")
+    return report.finish()
+
+
+# ---------------------------------------------------------------- artifact
+
+def cmd_artifact(src: str, dest: str) -> int:
+    """Turn a full HTML document into the page fragment a Claude artifact publishes."""
+    html = read(Path(src))
+    if not re.search(r"<html[\s>]", html, re.I):
+        Path(dest).write_text(html, encoding="utf-8")
+        print(f"PASS  {src} is already a fragment; copied to {dest}")
+        return 0
+    head = re.search(r"<head[^>]*>(.*?)</head>", html, re.S | re.I)
+    body = re.search(r"<body[^>]*>(.*)</body>", html, re.S | re.I)
+    if not body:
+        print(f"FAIL  {src}: no <body>")
+        return 1
+    parts = []
+    head_html = head.group(1) if head else ""
+    title = re.search(r"<title>.*?</title>", head_html, re.S | re.I)
+    if title:
+        parts.append(title.group(0))
+    if "safe-area-inset-left" in html:
+        parts.append('<meta name="claude:viewport-fit-sides" content="cover">')
+    for m in re.finditer(r"<link\b[^>]*>|<style\b.*?</style>|<script\b.*?</script>", head_html, re.S | re.I):
+        parts.append(m.group(0))
+    parts.append(body.group(1).strip())
+    Path(dest).write_text("\n".join(parts) + "\n", encoding="utf-8")
+    print(f"PASS  wrote {dest}: publish it as a Claude artifact")
+    return 0
+
+
+# ---------------------------------------------------------------- view (behaviour trees, visual)
+
+VIEW_KIND_LABEL = {"when": "When", "while": "While", "if": "If", "then": "Then", "and": "And"}
+
+
+def ticket_map(path: Path) -> dict[str, str]:
+    """Tree line -> ticket key, from the fenced acceptance criteria in 05-tickets.md."""
+    found, key = {}, None
+    for ln in read(path).splitlines():
+        hm = re.match(r"^##\s+([A-Z][A-Z0-9]*-\d+)\b", ln)
+        if hm:
+            key = hm.group(1)
+            continue
+        t = ln.strip()
+        if key and t.split(" ", 1)[0] in KEYWORDS:
+            found.setdefault(t, key)
+    return found
+
+
+def node_id(key: str, chain: list[str]) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", " ".join(chain[-1].lower().split()[:6])).strip("-")
+    digest = hashlib.sha1("\n".join([key, *chain]).encode("utf-8")).hexdigest()[:5]
+    return f"{key.replace('/', '-')}--{slug}-{digest}"
+
+
+def cmd_view(item_dir: str) -> int:
+    """Write work/<item>/03-trees-view.html: the behaviour trees as a diagram the PM can review."""
+    from html import escape as esc
+    folder = Path(item_dir)
+    report = Report(f"trees view for {folder.name}")
+    files = item_files(folder)
+    trees = load_trees(files["trees"], report)
+    if not trees:
+        return report.finish()
+    idea = folder / "01-idea.md"
+    title = folder.name.replace("-", " ").capitalize()
+    if idea.is_file():
+        tm = re.search(r"^title:\s*(.+)$", read(idea), re.M)
+        title = tm.group(1).strip() if tm else title
+    prd = parse_prd(files["prd"], Report("(prd parse)")) if files["prd"].name == "02-prd.md" and files["prd"].is_file() else None
+    caps = {t: c for c in (prd or {}).get("capabilities", []) for t in c["trees"]}
+
+    coverage, variant, proto_base = {}, None, None
+    if files["prototype"].is_file():
+        html = read(files["prototype"])
+        cov, _ = json_block(html, "tree-coverage")
+        man, _ = json_block(html, "prototype-variants")
+        coverage = (cov or {}).get("trees", {}) if isinstance(cov, dict) else {}
+        if isinstance(man, dict):
+            variant = man.get("chosen") or ((man.get("variants") or [{}])[0] or {}).get("id")
+        proto_base = (prd or {}).get("links", {}).get("prototype") or "04-prototype/index.html"
+    tickets = ticket_map(files["tickets"]) if files["tickets"].is_file() else {}
+
+    total = demonstrated = in_tickets = warnings = 0
+    sections, toc = [], []
+    for t in trees:
+        cov_by_line = {(e.get("line") or "").strip(): e for e in coverage.get(t["key"], [])}
+        cap = caps.get(t["key"])
+        if cap:
+            where = f"PRD §{esc(cap['num'])} · {esc(PRIORITY_RE.sub('', cap['title']).strip())}" + (
+                f" · {esc(cap['priority'])}" if cap.get("priority") else "")
+            seam = cap.get("seam")
+        elif t["kind"] == "Journey":
+            where, seam = "PRD §6.1 · Core journey", (prd or {}).get("journey_seam")
+        else:
+            where, seam = "Not named in the PRD", None
+        chips = "".join(f'<span class="chip">{esc(c.strip())}</span>' for c in t["coverage"].split(";"))
+        # nest the (lineno, depth, word, text) nodes, then render them recursively
+        root: dict = {"depth": 0, "children": []}
+        stack = [root]
+        for n in t["nodes"]:
+            item = {"n": n, "depth": n[1], "children": []}
+            while stack[-1]["depth"] >= n[1]:
+                stack.pop()
+            stack[-1]["children"].append(item)
+            stack.append(item)
+        leaves = 0
+
+        def render(items: list, chain: list) -> str:
+            nonlocal leaves, total, demonstrated, in_tickets, warnings
+            html_out = []
+            for it in items:
+                lineno, depth, word, text = it["n"]
+                here = chain + [text]
+                nid = node_id(t["key"], here)
+                clause = esc(text.split(" ", 1)[1] if " " in text else text)
+                badges = []
+                if word in LEAF_WORDS:
+                    leaves += 1
+                    total += 1
+                    e = cov_by_line.get(text)
+                    if e and e.get("screen"):
+                        demonstrated += 1
+                        frag = "--".join(x for x in (variant, e["screen"], e.get("demo")) if x)
+                        badges.append(f'<a class="badge proto" href="{esc(proto_base)}#{esc(frag)}" '
+                                      f'target="_blank" rel="noopener">Prototype: {esc(e["screen"])}</a>')
+                    elif e and e.get("reason"):
+                        demonstrated += 1
+                        badges.append(f'<span class="badge">Not on screen: {esc(e["reason"])}</span>')
+                    elif coverage:
+                        badges.append('<span class="badge warn">Not in the prototype</span>')
+                    if text in tickets:
+                        in_tickets += 1
+                        badges.append(f'<span class="badge ticket">{esc(tickets[text])}</span>')
+                    for vague in VAGUE:
+                        if re.search(rf"\b{re.escape(vague)}\b", f" {text.lower()} "):
+                            warnings += 1
+                            badges.append(f'<span class="badge warn">\u201c{esc(vague)}\u201d is hard to test</span>')
+                kids = render(it["children"], here) if it["children"] else ""
+                html_out.append(
+                    f'<li class="node k-{word}"><div class="clause" id="{nid}" data-comment-target '
+                    f'data-tree="{esc(t["key"])}" data-line="{lineno}" data-text="{esc(text)}">'
+                    f'<span class="kw">{VIEW_KIND_LABEL[word]}</span><span class="txt">{clause}</span>'
+                    + (f'<span class="badges">{"".join(badges)}</span>' if badges else "")
+                    + '<button type="button" class="cbtn">Comment</button></div>'
+                    + (f'<ol class="kids">{kids}</ol>' if kids else "") + "</li>")
+            return "".join(html_out)
+
+        out = [render(root["children"], [])]
+        anchor = f"tree-{t['kind'].lower()}-{t['subject']}"
+        toc.append(f'<a href="#{anchor}"><span class="tk k-{t["kind"].lower()}">{esc(t["kind"])}</span>'
+                   f'{esc(t["subject"])}</a>')
+        sections.append(
+            f'<details class="tree-card" id="{anchor}" open><summary>'
+            f'<span class="tk k-{t["kind"].lower()}">{esc(t["kind"])}</span>'
+            f'<span class="subject">{esc(t["subject"])}</span>'
+            f'<span class="where">{where}</span><span class="count">{leaves} outcomes</span></summary>'
+            f'<div class="meta">{chips}' + (f'<span class="seam">Seam: {esc(seam)}</span>' if seam else "")
+            + f'<span class="file">{esc(t["path"].name)}</span></div>'
+            f'<div class="diagram"><ol class="tree">{"".join(out)}</ol></div></details>'
+        )
+
+    stats = [("Trees", str(len(trees))), ("Outcomes", str(total))]
+    if coverage:
+        stats.append(("In the prototype", f"{demonstrated}/{total}"))
+    if tickets:
+        stats.append(("In tickets", f"{in_tickets}/{total}"))
+    stats.append(("Hard to test", str(warnings)))
+    phase = (prd or {}).get("phase")
+    page = (VIEW_TEMPLATE
+            .replace("__TITLE__", esc(f"{title} trees"))
+            .replace("__HEADING__", esc(title))
+            .replace("__PHASE__", f'<span class="phase">{esc(phase)}</span>' if phase else "")
+            .replace("__ITEM__", esc(folder.name))
+            .replace("__STATS__", "".join(f'<div><dt>{a}</dt><dd>{b}</dd></div>' for a, b in stats))
+            .replace("__TOC__", "".join(toc))
+            .replace("__TREES__", "\n".join(sections)))
+    dest = folder / "03-trees-view.html"
+    dest.write_text(page, encoding="utf-8")
+    report.note(f"wrote {dest.name}: {len(trees)} trees, {total} outcomes")
+    return report.finish()
+
+
+VIEW_TEMPLATE = r"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>__TITLE__</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a header with the counts, then one card per tree; each tree reads left to right,
+   cause to outcome, and stacks into an indented outline on a phone. */
+:root {
+  --bg: #f5f6f8; --surface: #ffffff; --ink: #14171c; --muted: #5a6472; --line: #d3d9e1;
+  --accent: #4d6378; --focus: #2f6fe0; --warn: #9a5800; --warn-bg: #fbf0dc;
+  --when: #2c5b8a; --when-bg: #e8eff7; --while: #67499f; --while-bg: #efeaf8;
+  --if: #8a5a00; --if-bg: #f8eedb; --then: #1d6e46; --then-bg: #e4f2ea;
+  --font: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0e1013; --surface: #161a1f; --ink: #e7ebf0; --muted: #9aa4b1; --line: #2b323b;
+  --accent: #8fa3b8; --focus: #7aa7ff; --warn: #f0b860; --warn-bg: #2a2214;
+  --when: #93bbe8; --when-bg: #15212d; --while: #bba6ec; --while-bg: #1e1929;
+  --if: #efbb62; --if-bg: #272013; --then: #72d2a2; --then-bg: #12231b; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0e1013; --surface: #161a1f; --ink: #e7ebf0; --muted: #9aa4b1; --line: #2b323b;
+  --accent: #8fa3b8; --focus: #7aa7ff; --warn: #f0b860; --warn-bg: #2a2214;
+  --when: #93bbe8; --when-bg: #15212d; --while: #bba6ec; --while-bg: #1e1929;
+  --if: #efbb62; --if-bg: #272013; --then: #72d2a2; --then-bg: #12231b; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 var(--font); }
+.page { max-width: 1280px; margin: 0 auto; padding-block: 28px 96px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 20px; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+header { display: flex; flex-direction: column; gap: 12px; }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { margin: 0; font-size: 28px; font-weight: 500; letter-spacing: -0.015em; text-wrap: balance;
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.phase { font: 500 12px/1 var(--mono); border: 1px solid var(--line); border-radius: 999px; padding: 6px 10px; color: var(--muted); }
+dl.stats { display: flex; flex-wrap: wrap; gap: 8px 28px; margin: 0; }
+dl.stats div { display: flex; flex-direction: column; gap: 2px; }
+dt { font-size: 12px; color: var(--muted); }
+dd { margin: 0; font: 500 18px/1.2 var(--mono); font-variant-numeric: tabular-nums; }
+.howto { color: var(--muted); max-width: 72ch; margin: 0; }
+.howto b { color: var(--ink); font-weight: 500; }
+.mode-local { display: inline; } .has-comments .mode-local { display: none; }
+.mode-artifact { display: none; } .has-comments .mode-artifact { display: inline; }
+.legend, .toc { display: flex; flex-wrap: wrap; gap: 8px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.legend i { font: 500 11px/1 var(--mono); padding: 4px 6px; border-radius: 6px; font-style: normal; }
+.toc a { display: inline-flex; gap: 8px; align-items: center; text-decoration: none; color: var(--ink);
+  border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; font-size: 13px; }
+.toc a:hover { border-color: var(--accent); }
+.tk { font: 500 10px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.tree-card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.tree-card > summary { list-style: none; cursor: pointer; display: flex; flex-wrap: wrap; align-items: baseline;
+  gap: 6px 14px; padding: 16px 18px; }
+.tree-card > summary::-webkit-details-marker { display: none; }
+.tree-card > summary::before { content: "▸"; color: var(--muted); transition: transform .15s; }
+.tree-card[open] > summary::before { transform: rotate(90deg); }
+.subject { font: 500 16px/1.3 var(--mono); }
+.where { color: var(--muted); }
+.count { margin-left: auto; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 18px 12px; align-items: center; }
+.chip, .seam, .file { font: 400 12px/1 var(--mono); color: var(--muted); }
+.chip { border: 1px dashed var(--line); border-radius: 6px; padding: 4px 6px; }
+.seam { color: var(--ink); }
+.file { margin-left: auto; }
+.diagram { overflow-x: auto; padding: 4px 18px 18px; border-top: 1px solid var(--line); }
+/* the tree: each node is its clause card followed by its children */
+ol.tree, ol.kids { list-style: none; margin: 0; padding: 0; }
+ol.tree { padding-top: 12px; }
+.node { display: flex; align-items: flex-start; padding: 5px 0; }
+.clause { position: relative; flex: 0 0 auto; width: 17.5rem; display: flex; flex-wrap: wrap; gap: 4px 8px;
+  align-items: baseline; background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  padding: 8px 10px; scroll-margin: 80px; }
+.kw { font: 500 11px/1.6 var(--mono); letter-spacing: .04em; text-transform: uppercase; padding: 0 6px; border-radius: 5px; }
+.txt { flex: 1 1 12rem; min-width: 0; }
+.k-when > .clause .kw, .legend .k-when { color: var(--when); background: var(--when-bg); }
+.k-while > .clause .kw, .legend .k-while { color: var(--while); background: var(--while-bg); }
+.k-if > .clause .kw, .legend .k-if { color: var(--if); background: var(--if-bg); }
+.k-then > .clause .kw, .k-and > .clause .kw, .legend .k-then { color: var(--then); background: var(--then-bg); }
+.k-then > .clause, .k-and > .clause { background: color-mix(in srgb, var(--then-bg) 45%, var(--surface)); }
+.badges { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px; }
+.badge { font: 400 11px/1.4 var(--mono); border-radius: 6px; padding: 2px 6px; border: 1px solid var(--line);
+  color: var(--muted); text-decoration: none; max-width: 100%; overflow-wrap: anywhere; }
+a.badge.proto { color: var(--accent); }
+a.badge.proto:hover { border-color: var(--accent); }
+.badge.ticket { color: var(--ink); }
+.badge.warn { color: var(--warn); background: var(--warn-bg); border-color: transparent; }
+.cbtn { position: absolute; top: -11px; right: 8px; font: 500 11px/1 var(--font); color: var(--muted);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 5px 8px; cursor: pointer;
+  opacity: 0; transition: opacity .12s; }
+.clause:hover .cbtn, .clause:focus-within .cbtn, .clause.noted .cbtn { opacity: 1; }
+@media (hover: none) { .cbtn { opacity: 1; } }
+.cbtn:hover { color: var(--ink); border-color: var(--accent); }
+.clause.noted { border-color: var(--accent); }
+/* connectors */
+ol.kids { position: relative; padding-left: 28px; margin-top: -5px; }
+ol.kids::before { content: ""; position: absolute; left: 0; top: 24px; width: 14px; border-top: 1.5px solid var(--line); }
+ol.kids > .node { position: relative; }
+ol.kids > .node::before { content: ""; position: absolute; left: -14px; top: 24px; width: 14px; border-top: 1.5px solid var(--line); }
+ol.kids > .node::after { content: ""; position: absolute; left: -14px; top: 0; bottom: 0; border-left: 1.5px solid var(--line); }
+ol.kids > .node:first-child::after { top: 24px; }
+ol.kids > .node:last-child::after { bottom: auto; height: 24px; }
+ol.kids > .node:only-child::after { display: none; }
+@media (max-width: 760px) {
+  .node { display: block; }
+  .clause { width: auto; }
+  ol.kids { margin: 0 0 0 12px; padding-left: 18px; }
+  ol.kids::before { display: none; }
+  ol.kids > .node::before { left: -18px; width: 16px; top: 22px; }
+  ol.kids > .node::after { left: -18px; }
+  ol.kids > .node:first-child::after { top: 0; }
+  ol.kids > .node:last-child::after { height: 22px; }
+  ol.kids > .node:only-child::after { display: block; top: 0; height: 22px; }
+  .file { margin-left: 0; }
+}
+/* note editor and tray (used when this page is not a Claude artifact) */
+.note-edit { flex-basis: 100%; display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+.note-edit textarea { width: 100%; min-height: 64px; font: inherit; color: var(--ink); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; resize: vertical; }
+.row { display: flex; gap: 6px; flex-wrap: wrap; }
+.btn { font: 500 12px/1 var(--font); border-radius: 999px; padding: 7px 12px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+.btn.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.note-text { flex-basis: 100%; font-size: 13px; color: var(--ink); border-left: 2px solid var(--accent); padding-left: 8px; }
+.tray { position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line);
+  padding-block: 10px calc(10px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.tray-inner { max-width: 1280px; margin: 0 auto; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.tray pre { flex-basis: 100%; max-height: 30vh; overflow: auto; margin: 0; font: 12px/1.5 var(--mono);
+  white-space: pre-wrap; background: var(--bg); border-radius: 8px; padding: 8px; }
+footer { color: var(--muted); font-size: 12px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="page">
+<header>
+  <div class="eyebrow">Behaviour trees · __ITEM__</div>
+  <h1>__HEADING__ __PHASE__</h1>
+  <dl class="stats">__STATS__</dl>
+  <p class="howto">Read each tree left to right: an event, the state the user is in, a condition, then what they see.
+    <span class="mode-artifact"><b>Comment</b> on any line and choose <b>Send to Claude</b>: Claude changes the tree
+    file and republishes this page.</span><span class="mode-local"><b>Comment</b> on any line, then
+    <b>Copy for Claude</b> and paste the notes into your chat.</span></p>
+  <div class="legend"><span><i class="k-when">When</i>an event</span><span><i class="k-while">While</i>a state that holds</span>
+    <span><i class="k-if">If</i>a condition</span><span><i class="k-then">Then / And</i>an outcome, which becomes a test</span></div>
+  <nav class="toc" aria-label="Trees">__TOC__</nav>
+</header>
+__TREES__
+<footer>Generated from the tree files by PM Harness. Change the trees, not this page.</footer>
+</div>
+<div class="tray" id="tray" hidden><div class="tray-inner">
+  <b id="tray-count"></b>
+  <button type="button" class="btn primary" id="tray-copy">Copy for Claude</button>
+  <button type="button" class="btn" id="tray-clear">Clear notes</button>
+  <pre id="tray-out" hidden></pre>
+</div></div>
+<script>
+(function () {
+  "use strict";
+  var comments = null;
+  var notes = [];
+  if (window.claude && typeof window.claude.use === "function") {
+    window.claude.use("comments").then(function (c) {
+      if (c) { comments = c; document.documentElement.classList.add("has-comments"); }
+    }, function () {});
+  }
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest && e.target.closest(".cbtn");
+    if (!btn) return;
+    var clause = btn.closest(".clause");
+    if (comments) {
+      comments.openComposer({ element: clause }).catch(function (err) {
+        if (err && (err.code === "unavailable" || err.code === "not_granted")) {
+          comments = null; document.documentElement.classList.remove("has-comments"); editNote(clause);
+        }
+      });
+    } else { editNote(clause); }
+  });
+  function editNote(clause) {
+    if (clause.querySelector(".note-edit")) { clause.querySelector("textarea").focus(); return; }
+    var box = document.createElement("div");
+    box.className = "note-edit";
+    var area = document.createElement("textarea");
+    area.id = "note-" + clause.id;
+    area.setAttribute("aria-label", "Note on this line");
+    area.placeholder = "What should change, and why?";
+    var row = document.createElement("div"); row.className = "row";
+    var add = document.createElement("button"); add.type = "button"; add.className = "btn primary"; add.textContent = "Add note";
+    var cancel = document.createElement("button"); cancel.type = "button"; cancel.className = "btn"; cancel.textContent = "Cancel";
+    row.appendChild(add); row.appendChild(cancel); box.appendChild(area); box.appendChild(row);
+    clause.appendChild(box); area.focus();
+    cancel.addEventListener("click", function () { box.remove(); });
+    add.addEventListener("click", function () {
+      var text = area.value.trim();
+      if (!text) { area.focus(); return; }
+      notes.push({ tree: clause.dataset.tree, line: clause.dataset.line, text: clause.dataset.text, note: text });
+      box.remove();
+      var shown = document.createElement("div"); shown.className = "note-text"; shown.textContent = text;
+      clause.appendChild(shown); clause.classList.add("noted");
+      renderTray();
+    });
+  }
+  function renderTray() {
+    document.getElementById("tray").hidden = !notes.length;
+    document.getElementById("tray-count").textContent = notes.length + (notes.length === 1 ? " note" : " notes");
+    document.getElementById("tray-out").hidden = true;
+  }
+  function asText() {
+    return ["Behaviour tree review: please change the trees, re-run the checks and regenerate the view."]
+      .concat(notes.map(function (n, i) {
+        return (i + 1) + ". " + n.tree + " line " + n.line + ": " + n.text + "\n   Note: " + n.note;
+      })).join("\n");
+  }
+  document.getElementById("tray-copy").addEventListener("click", function () {
+    var out = document.getElementById("tray-out"), btn = this, text = asText();
+    out.textContent = text;
+    var select = function () {
+      out.hidden = false;
+      var r = document.createRange(); r.selectNodeContents(out);
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      btn.textContent = "Selected: press Ctrl/⌘+C";
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        btn.textContent = "Copied: paste into your chat";
+        setTimeout(function () { btn.textContent = "Copy for Claude"; }, 2000);
+      }, select);
+    } else { select(); }
+  });
+  document.getElementById("tray-clear").addEventListener("click", function () {
+    notes = [];
+    document.querySelectorAll(".note-text").forEach(function (n) { n.remove(); });
+    document.querySelectorAll(".clause.noted").forEach(function (c) { c.classList.remove("noted"); });
+    renderTray();
+  });
+})();
+</script>
+</body>
+</html>
+"""
 
 
 # ---------------------------------------------------------------- plugin
@@ -898,10 +1527,14 @@ def cmd_plugin(plugin_dir: str) -> int:
 
 def main(argv: list[str]) -> int:
     commands = {
+        "item": (cmd_item, (1,)),
+        "view": (cmd_view, (1,)),
+        "contracts": (cmd_contracts, (1,)),
+        "artifact": (cmd_artifact, (2,)),
         "prd": (cmd_prd, (1, 2)),
         "trees": (cmd_trees, (1,)),
         "prototype": (cmd_prototype, (2,)),
-        "tickets": (cmd_tickets, (2,)),
+        "tickets": (cmd_tickets, (2, 3)),
         "workspace": (cmd_workspace, (1,)),
         "board": (cmd_board, (1,)),
         "plugin": (cmd_plugin, (1,)),

@@ -16,6 +16,12 @@ description: Use after a meeting when the user wants notes turned into decisions
    - **Actions:** owner, due date (or "none set"), linked item
    - **Risks and open questions** raised
    - **Customer evidence** mentioned (route it to the relevant `work/` item or `signals/`)
+   - **Prototype feedback:** add it to that item's `04-prototype/amendments.md` as open
+     amendments (variant and screen if they can be told; `From:` the speaker), for
+     `review-prototype`
+   - **Answers to open questions** in a PRD's §8.3, and **requirement changes**: propose them
+     as PRD edits under change control (`write-prd`, "After approval"), with the meeting as
+     the source
 3. Report what you could not determine (an unclear owner, an ambiguous agreement) instead of
    guessing.
 4. Write `meetings/YYYY-MM-DD-<meeting>-decisions.md`.

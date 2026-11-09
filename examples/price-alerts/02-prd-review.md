@@ -15,3 +15,11 @@ Reviewers: engineering, design, risk, exec, customer advocate (independent subag
 | 8 | nit | design | §6.1 | "Alert" vs "price alert" used inconsistently. | Use "price alert" in UI copy. | changed |
 
 All blocking findings resolved. PRD approved 2026-11-03.
+
+## Round 2 (2026-11-04)
+Reviewers: design, exec · Scope: §4 only (change log row 1, from prototype amendment A1)
+
+| # | Severity | Reviewer | Section | Finding | Suggested change | Resolution |
+|---|---|---|---|---|---|---|
+
+No findings. The PRD stays approved.

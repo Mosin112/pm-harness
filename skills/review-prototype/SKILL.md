@@ -14,9 +14,10 @@ Read first: `work/<item>/04-prototype/amendments.md`, the prototype's `prototype
 
 ## Amendment format
 
-Feedback arrives from the walkthrough, from the prototype's review-note card, or pasted from
-chat or meeting notes. Write each one into `amendments.md`, numbered `A1`, `A2`… in the order
-received:
+Feedback arrives from the walkthrough; from comments on the prototype artifact (their anchor,
+`#screen-<variant>-<screen>` or `#screen-<screen>`, names where they were left); from the
+prototype's review-note card; or from chat and meeting notes (`meeting-to-decisions` routes it
+here). Write each one into `amendments.md`, numbered `A1`, `A2`… in the order received:
 
 ```
 ## A3 · <short title>
@@ -24,6 +25,7 @@ received:
 - Variant: guided
 - Screen: set-alert
 - Demo: err-full                       (optional: the scenario it was seen in)
+- Link: index.html#guided--set-alert--err-full   (optional: reopens that exact state)
 - Tree line: then the price alert is…  (optional: the exact tree line it concerns)
 - From: <name> · YYYY-MM-DD
 - Note: <the feedback, in the reviewer's words>
@@ -36,8 +38,9 @@ received:
 
 For each open amendment, oldest first:
 
-1. **Open it where it was seen:** `index.html#variant=<variant>&screen=<screen>&demo=<demo>`.
-   Look at the screen; do not judge from memory.
+1. **Open it where it was seen:** its `Link`, or `index.html#<variant>--<screen>--<demo>`.
+   Look at the screen; do not judge from memory. Once a variant has been chosen, notes on an
+   archived variant are dismissed unless the PM reopens the choice.
 2. **Judge it** against the tree line, the PRD section and the variant's hypothesis.
 3. **Classify it:**
 
@@ -56,8 +59,10 @@ For each open amendment, oldest first:
 
 After the PM decides:
 
-1. Apply the change in order: PRD → trees → prototype. Keep PRD section numbers stable (add,
-   never renumber).
+1. Apply the change in order: PRD → trees → prototype. A change to an approved PRD goes
+   through its change control (`write-prd`, "After approval"): a change-log row with this
+   amendment as its source, and a re-review when §4, §5 or §7 changes. Keep section numbers
+   stable (add, never renumber).
 2. Re-run the checks that the change touches:
    - `pm_check.py prd work/<item>/02-prd.md work/<item>/03-trees`
    - `pm_check.py trees work/<item>/03-trees`
@@ -65,7 +70,9 @@ After the PM decides:
 3. Set the amendment's `Class`, `Section` and `Resolution`, and its `Status` to `resolved`
    (or `dismissed` for class `dismiss`). An amendment stays `open` until its change has landed
    and the checks pass.
-4. Summarise: resolved, dismissed, still open, and which files changed.
+4. Summarise: resolved, dismissed, still open, and which files changed. If the amendment came
+   from an artifact comment sent to Claude, reply on that thread with the amendment number and
+   outcome, and resolve it. If the prototype is published, republish it to the same URL.
 
 The prototype cannot be approved while any amendment is open; the prototype check enforces it.
 If tickets already exist, a `prd change` or `tree change` also needs the tickets updated and

@@ -31,8 +31,10 @@ from the workspace `context/users.md`, `strategy.md`, `metrics.md`, `constraints
    8. Risks, constraints and open questions.
    - Write the job statement as *When…, I want to…, so I can…*; offer a second framing if the
      situation could be read differently, and let the PM pick.
-   - In §5, one subsection per capability with a priority, the rules that shape it and a
-     `Tree: functional/<subject>` line naming the tree that will hold its behaviour.
+   - In §2, say where it launches and in which languages, and what differs by region.
+   - In §5, one subsection per capability with a priority, the rules that shape it, a
+     `Seam:` line (where engineering will test it) and a `Tree: functional/<subject>` line
+     naming the tree that will hold its behaviour.
    - In §6.3, state the prototype decision: the one trade-off the prototype variants will
      argue about. Take it from `01-grill.md` when the grill settled it.
    - In §7, define each metric with `context/metrics.md` and take baselines from data where
@@ -56,4 +58,17 @@ once reviewed (add `5.4`, never renumber).
 2. Revise the PRD to address every **blocking** finding, or record why not, and re-run the
    check.
 3. Ask the PM to approve. On approval set `stage: prd` and `updated:` in `01-idea.md`, set the
-   PRD's status to `approved`, and offer the `write-behaviour-trees` skill.
+   PRD's status to `approved`, and offer the `write-behaviour-trees` skill. Offer the `publish`
+   skill if stakeholders should read it in Confluence now.
+
+## After approval: change control
+
+An approved PRD changes only through its change log (`prd-guide.md`):
+
+1. Make the edit and add a row to `## Change log`: date, section, what changed, its source
+   (an amendment, a Confluence comment, a meeting, a readout) and who re-reviewed it.
+2. If the change touches §4 scope, §5 requirements or §7 metrics and gates, set the status to
+   `in review` and run `spec-review` on the changed sections only; it appends a dated round to
+   `02-prd-review.md`. Back to `approved` once no blocking finding is open.
+3. Follow it through: trees first, then the prototype, then tickets if they exist. Re-run
+   `python3 .pm-harness/pm_check.py item work/<item>`. If the PRD is on Confluence, republish it.
