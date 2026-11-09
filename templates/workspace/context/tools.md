@@ -9,5 +9,7 @@
 | Data warehouse / governed metrics | | |
 | Issue tracker | | |
 | Wiki / docs | | |
+| PRD publishing (e.g. Confluence space and parent page) | | |
+| Prototype and trees sharing (e.g. Claude artifact) | | |
 | Design | | |
 | Calendar / email | | |

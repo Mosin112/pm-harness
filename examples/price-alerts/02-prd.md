@@ -20,6 +20,7 @@ Phase: MVP · Status: approved · Owner: Example PM · Updated: 2026-11-03 · Ev
 | Lineage | New capability. Uses existing asset pages, push notifications and verification |
 | Entry points | **Set price alert** on every asset page; the **Price alerts** list |
 | Platforms | iOS and Android app |
+| Markets and languages | Every market where the app trades; the app's existing languages. No regional differences |
 
 **Assumptions to test**
 - Investors act when an alert fires (alert-to-action of 40% or more).
@@ -72,6 +73,7 @@ the current price) is set automatically and the alert is listed as active.
 - The target must be above zero and different from the current price.
 - Up to 20 active price alerts per investor.
 
+Seam: the app's asset page and Price alerts list
 Tree: functional/price-alert-creation
 
 ### 5.2 Trigger and notify (P0)
@@ -81,6 +83,7 @@ the alert moves to triggered in the list.
 - One notification per alert; a triggered alert does not re-arm.
 - With push turned off, the alert still shows as triggered in the list.
 
+Seam: the price-alert service, observed through push notifications and the Price alerts list
 Tree: functional/price-alert-trigger
 
 ## 6. Experience and journey
@@ -91,6 +94,7 @@ Tree: functional/price-alert-trigger
 4. When the price reaches the target, a push notification arrives.
 5. Tapping it opens the asset page; the alert shows as triggered.
 
+Seam: end to end, on a test build with a simulated price feed
 Tree: journey/set-and-receive-price-alert
 
 ### 6.2 States to design
@@ -132,3 +136,8 @@ record why in the launch readout.
 |---|---|---|
 | Which price feed defines "reached"? | Engineering lead | Before build |
 | Do alerts need an expiry date? | Example PM | Launch readout |
+
+## Change log
+| Date | Section | Change | Source | Re-reviewed by |
+|---|---|---|---|---|
+| 2026-11-04 | §4 | Added "Deleting price alerts from the list" to Later | Prototype amendment A1 | Design, exec (§4 only): no findings |

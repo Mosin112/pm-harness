@@ -18,7 +18,7 @@ moment it gets there, so I can act on my plan without watching the chart all day
 ## PA-1 · Set a price alert
 **Goal:** A verified investor can set a price alert on any asset, with clear errors when they can't (PRD §5.1).
 **Tree:** `functional/price-alert-creation_TEST_TREES.md`
-**Prototype:** `index.html#variant=guided&screen=set-alert`, `#variant=guided&screen=alerts`, `#variant=guided&screen=verify`
+**Prototype:** `index.html#guided--set-alert`, `#guided--alerts`, `#guided--verify`
 
 **Acceptance criteria**
 ```
@@ -41,7 +41,7 @@ when an investor submits a price alert for an asset
 ## PA-2 · Trigger price alerts and notify
 **Goal:** When a target is reached, the investor hears about it once, and the alert's state is clear (PRD §5.2).
 **Tree:** `functional/price-alert-trigger_TEST_TREES.md`
-**Prototype:** `index.html#variant=guided&screen=lock`, `#variant=guided&screen=alerts` (plus System events for "no notification" outcomes)
+**Prototype:** `index.html#guided--lock`, `#guided--alerts` (plus System events for "no notification" outcomes)
 
 **Acceptance criteria**
 ```
@@ -104,6 +104,6 @@ From `context/definition-of-done.md`; nothing extra for an MVP.
 - [ ] PM accepted it in staging against the Journey tree
 
 ## Handoff
-Copy `03-trees/journey/` and `03-trees/functional/` into the service repository's
-`test-trees/journey/` and `test-trees/functional/`. The engineering harness implements each
-line test-first and updates the coverage labels from `none` as tests and code land.
+`pm_check.py contracts` wrote one engineering contract per tree to `05-contracts/`. Copy them into
+the service repository's `contracts/` folder; the engineering harness implements each clause
+test-first. Seams were confirmed with the engineering lead (PRD §5).

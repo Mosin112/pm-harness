@@ -43,6 +43,8 @@ pipeline, one folder per idea under `work/`:
 3. Never rewrite a context file silently. Propose edits; apply only approved ones.
 4. Keep each item's state in its files so any new session can resume from them.
 5. When something is unclear, ask one sharp question rather than guessing.
+6. When the PM corrects your output or repeats an instruction, add one line to
+   `sessions/corrections.md` (date, what was corrected). The `done` skill learns from it.
 
 <!-- pm-harness:begin -->
 ## PM Harness
@@ -61,6 +63,7 @@ to "use the <skill> skill"). If a tool does not load skills, read
 | Group | Skills |
 |---|---|
 | Pipeline | `capture-idea` → `product-grill` (optional) → `write-prd` + `spec-review` → `write-behaviour-trees` → `build-prototype` + `review-prototype` → `create-eng-tickets` |
+| Share | `publish`: PRD to Confluence; prototype and trees view as Claude artifacts; comments come back as changes |
 | Whole pipeline | `one-shot`: runs the steps in order and stops at every gate |
 | Discover | `synthesize-signals`, `desktop-research`, `opportunity-brief` |
 | Deliver and learn | `stakeholder-update`, `launch-readout` |
@@ -73,7 +76,9 @@ is approved only when its check passes and the PM says so.
 **Reviewers** for `spec-review` are defined in `.pm-harness/agents/` (and registered as
 subagents in Claude Code). Tools without subagents run them one at a time.
 
-**Checks** (`python3 .pm-harness/pm_check.py <command>`): `prd`, `trees`, `prototype`,
-`tickets`, `workspace`, `board`. Run the one for the step you are on; never call a step done
-while its check fails.
+**Checks** (`python3 .pm-harness/pm_check.py <command>`): `item work/<item>` runs every check
+that applies to an item; `prd`, `trees`, `prototype`, `tickets`, `workspace` and `board` run one.
+Never call a step done while its check fails. **Generators:** `view work/<item>` draws the trees
+for review, `contracts work/<item>` writes the engineering hand-off, `artifact <page> <out>`
+prepares a page for publishing as a Claude artifact.
 <!-- pm-harness:end -->

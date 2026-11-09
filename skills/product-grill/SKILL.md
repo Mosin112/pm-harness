@@ -76,7 +76,9 @@ Never write to the glossary or the decision log without the PM approving the exa
 ## Stop and hand over
 
 When the PM is ready to stop (or the riskiest ambiguities are settled), write
-`work/<item>/01-grill.md`:
+`work/<item>/01-grill.md`. If there is no item yet, run `capture-idea` first so the grill has a
+home; if the request may never become an item (a stakeholder ask you are only exploring), write
+`signals/YYYY-MM-DD-grill-<topic>.md` instead and link it from the item if one follows.
 
 ```
 # <Title> · Grill (YYYY-MM-DD)

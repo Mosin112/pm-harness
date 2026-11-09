@@ -14,6 +14,10 @@ Turns a loose idea into an idea card the rest of the pipeline can build on. Read
    two clarifying questions: who it is for, and what prompted it.
 2. **Name the item** with a short kebab-case slug (`price-alerts`) and create `work/<slug>/`.
    If the folder exists, stop and ask whether to continue that item instead.
+   **Next phase of a launched item** (a launch readout said continue): create a new item named
+   `<slug>-<phase>` (`price-alerts-mmp`) with `lineage: <slug>` and `phase: <phase>` in its
+   front matter. Its evidence is the readout and the previous PRD's *Later* list and open
+   questions; its history is the previous item. The previous item stays as it was.
 3. **Check history.** Search `decisions/decision-log.md`, `signals/` and other `work/` items
    for the same or a similar idea. If it was rejected or parked before, quote the decision and
    its "revisit if" condition, and ask whether that condition is now met.
@@ -34,6 +38,8 @@ owner: <PM name>
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
 evidence: strong | some | hunch
+lineage: <previous item, for a next-phase item>   (optional)
+phase: <MVP | MMP | MLP | Enhancement>             (optional, settled in the PRD)
 ---
 # <Title>
 

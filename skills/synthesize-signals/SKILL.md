@@ -1,6 +1,6 @@
 ---
 name: synthesize-signals
-description: Use when the user wants to know what customers are saying, synthesise interviews, meeting transcripts, support tickets, chat threads or feedback, or asks "what are the top problems/themes". Produces evidence-counted themes with real quotes and candidate ideas.
+description: Use when the user wants to know what our own customers are saying, or to synthesise the company's own evidence (interviews, meeting transcripts, support tickets, chat threads, feedback, product analytics), or asks "what are the top problems/themes". Produces evidence-counted themes with real quotes and candidate ideas. For the public web, use desktop-research.
 ---
 
 # Synthesise signals

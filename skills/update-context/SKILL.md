@@ -1,6 +1,6 @@
 ---
 name: update-context
-description: Use at the end of a useful session, or when the user says "remember this", "update the context" or "what did we learn". Proposes small, specific edits to the PM workspace's context files and decision log, and applies only the ones the PM approves.
+description: Use when the user says "remember this", "save that", "update the context" or "add this to the glossary", or a fact about the company, users, metrics, stakeholders or constraints should be written down now. Proposes small, specific edits to the context files and decision log and applies only approved ones. For an end-of-session retrospective, use done.
 ---
 
 # Update the context library

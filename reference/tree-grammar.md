@@ -9,8 +9,11 @@ machine can check it and a person can read it aloud.
 - One tree per file, named `<test-subject>_TEST_TREES.md`, where the subject is lowercase
   kebab-case (`price-alert-creation_TEST_TREES.md`).
 - Product work lives under `work/<item>/03-trees/journey/` and `work/<item>/03-trees/functional/`.
-  The same files drop straight into an engineering repo's `test-trees/journey/` and
-  `test-trees/functional/` folders.
+- At handoff, `pm_check.py contracts work/<item>` turns each tree into an engineering-harness
+  contract (`05-contracts/<subject>.contract.md`, first line `Contract: <subject> (seam: …)`,
+  the same clause lines). Engineering copies those into the repository's `contracts/` folder.
+- `pm_check.py view work/<item>` draws the trees as a diagram for review
+  (`03-trees-view.html`).
 
 ## First line
 

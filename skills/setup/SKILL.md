@@ -72,11 +72,26 @@ metric dictionaries) over asking: ask the PM where those live and read them.
 Keep each file under ~150 lines. If a file grows past that, split it and add the new file to
 the routing index in `AGENTS.md` (above the managed block).
 
-## 4. Verify the connectors
+## 4. Connectors and approval rules
 
-For each tool listed in `tools.md`, make one harmless read call (search one meeting, read one
-ticket, list one dashboard, run one web search). Report which work and which need connecting.
-Do not write anything to an external tool during setup.
+1. **Start from what is connected.** List the connectors (MCP servers) and tools available in
+   this session and propose a row of `context/tools.md` for each need they cover, for example:
+   Jira → issue tracker; Confluence → wiki and **PRD publishing** (ask for the space and parent
+   page); Granola or another notetaker → meeting notes; Slack → team chat; Mixpanel or Amplitude
+   → product analytics; a warehouse or metrics connector → governed metrics (and link each
+   metric in `context/metrics.md` to its definition there); Figma → design; web search or
+   Firecrawl → research; the Artifact tool → **prototype and trees sharing**. Confirm each row
+   with the PM rather than guessing what they use.
+2. **Verify each one** with one harmless read call (search one meeting, read one ticket, list
+   one dashboard, run one web search). Report which work and which need connecting. Do not write
+   anything to an external tool during setup.
+3. **Approval rules (Claude Code).** List every connected tool whose name says it creates,
+   updates, sends, posts, publishes, moves or deletes something (`createJiraIssue`,
+   `updateConfluencePage`, `slack_send_message`, `send_message`, `create_event`, `update_file`,
+   `notion-create-pages`, `Create-Cohort`, `publish_artifact`…). Show the list, and on approval
+   write the exact tool names (`mcp__<server>__<tool>`, matching case) to `permissions.ask` in
+   `.claude/settings.json`, keeping what is already there. Other tools rely on rule 2 in
+   `AGENTS.md`: never write externally without the PM approving the exact content.
 
 ## 5. Repair mode
 
