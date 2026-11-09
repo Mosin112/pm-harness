@@ -15,15 +15,27 @@ Idea → (grill) → PRD → Behaviour trees → Prototype variants → Eng-read
   1                2          3            4 (+ review loop)          5
 ```
 
+## Needs
+
+The needs of every step it runs. Check them all at the start, so a missing tool shows up
+before the PRD is written, not at step 5: `python3 .pm-harness/pm_check.py needs one-shot`,
+then the preflight in `../../reference/connectors.md`.
+
+Includes: `capture-idea`, `product-grill`, `write-prd`, `spec-review`, `write-behaviour-trees`,
+`build-prototype`, `review-prototype`, `create-eng-tickets`
+
 ## Rules
 
-1. **Resume, don't restart.** If `work/<item>/01-idea.md` exists, read its `stage` and continue
+1. **Check the needs first.** Before step 1, run the preflight for every step (the Needs
+   above) and report it in one line. A required need with no answering tool is raised now, with
+   the step it blocks; the PM can connect it, or carry on and finish that step by hand.
+2. **Resume, don't restart.** If `work/<item>/01-idea.md` exists, read its `stage` and continue
    from the next step.
-2. **Follow each step's skill exactly,** including its checks. Do not skip a check because the
+3. **Follow each step's skill exactly,** including its checks. Do not skip a check because the
    session is long.
-3. **Respect the phase.** Once the PRD sets `Phase:`, every later step uses its depth from
+4. **Respect the phase.** Once the PRD sets `Phase:`, every later step uses its depth from
    `../../reference/phases.md`.
-4. **Stop at every gate** and wait for the PM:
+5. **Stop at every gate** and wait for the PM:
 
    | After | Gate | Check |
    |---|---|---|
@@ -35,14 +47,14 @@ Idea → (grill) → PRD → Behaviour trees → Prototype variants → Eng-read
    | 4 `build-prototype` + `review-prototype` | variant chosen; no open amendments | `pm_check.py prototype` |
    | 5 `create-eng-tickets` | draft approved before anything is created in the tracker; contracts handed over | `pm_check.py tickets` with the PRD, then `contracts` |
 
-5. **Keep the PM oriented.** Run `python3 .pm-harness/pm_check.py item work/<item>` at each gate
+6. **Keep the PM oriented.** Run `python3 .pm-harness/pm_check.py item work/<item>` at each gate
    and show a one-line status:
    `price-alerts · MVP · step 4/5 prototype · 2 variants, 16/16 outcomes, 0 open amendments · waiting for your choice`
-6. **Manage context.** After each approved step, write everything needed to the item folder so
+7. **Manage context.** After each approved step, write everything needed to the item folder so
    that a new session can resume from files alone. If the conversation is long, suggest
    continuing in a fresh session; the files carry the state.
-7. **Budget.** If a step needs evidence that is not available (a connector is down, data access
-   is refused), stop at that step, say what is missing, and offer to continue with the gap
+8. **Budget.** If a step needs evidence that is not available (a tool stops answering, data
+   access is refused), stop at that step, say what is missing, and offer to continue with the gap
    clearly labelled.
 
 ## Finish

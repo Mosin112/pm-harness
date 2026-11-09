@@ -10,6 +10,16 @@ public web, ready to feed `capture-idea`, `opportunity-brief` or PRD §3. Read
 `../../reference/evidence-rules.md` first; web evidence follows the same rules as customer
 evidence.
 
+## Needs
+
+Before starting, run `python3 .pm-harness/pm_check.py needs desktop-research` and confirm each tool
+answers (preflight in `../../reference/connectors.md`).
+
+- `web-research` · required · searching and reading public pages (Firecrawl, or the AI tool's own
+  web search)
+- `market-data` · optional · structured outside figures when numbers are in scope; they stay
+  external (evidence rule 9)
+
 ## 1. Agree the brief
 
 Ask for whatever is missing, in one message:
@@ -35,9 +45,11 @@ Do not start searching until the PM confirms the brief.
 
 ## 2. Search
 
-Use the web tool listed for research in `context/tools.md` (for example a Firecrawl connector);
-otherwise the web search and fetch tools available in this session. If no web tool is
-available, stop and say so instead of answering from memory.
+Use the `web-research` tools in `context/tools.md` (for example Firecrawl as `main` and the AI
+tool's own web search as `fallback`), and the `market-data` tools when figures are in scope; if
+none is configured, the web search and fetch tools available in this session. If no web tool
+answers, stop and say so instead of answering from memory. Every figure you report follows
+evidence rule 9: URL, publication date, date read, labelled external.
 
 - Run several targeted queries per source type, varying the wording: product names, category
   terms, the pain in users' words, competitor names. Use site-scoped searches where they help

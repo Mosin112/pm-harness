@@ -8,10 +8,20 @@ description: Use when the user wants to know what our own customers are saying, 
 Turns scattered evidence into themes a PM can act on, without overstating what the evidence
 supports. Read `../../reference/evidence-rules.md` (relative to this skill) before starting.
 
+## Needs
+
+Before starting, run `python3 .pm-harness/pm_check.py needs synthesize-signals` and confirm each tool
+answers (preflight in `../../reference/connectors.md`).
+
+- `meeting-notes`, `team-chat` or `support-feedback` · required · the company's own evidence;
+  every source in scope is read, not only the first that answers
+- `product-analytics` · optional · behaviour that confirms or contradicts a theme
+
 ## Inputs
 
 Ask for the scope if it is not given: **time window**, **sources** and **topic** (or "anything").
-Use the connectors listed in `context/tools.md`. Typical sources:
+Use every `main` and `also` tool for the needs above (`context/tools.md`), and a `fallback`
+only when the main one does not answer. Typical sources:
 
 - Meeting notes and transcripts (customer calls, sales calls, user interviews)
 - Team chat channels where customer feedback is shared

@@ -207,9 +207,27 @@ Add `--tools codex,cursor --yes` to skip the questions, `--dry-run` to see the p
 
 ### Connectors
 
-Skills use whichever connectors you have for meeting notes, team chat, support, product
-analytics, web research, your data warehouse, issue tracker, wiki, design and calendar. `setup`
-records which tool to use for each need in `context/tools.md`.
+Skills never name a tool. Each `SKILL.md` has a **Needs** block (governed metrics, product
+analytics, web research, a design source, an issue tracker…, each required or optional), and
+`context/tools.md` maps every need to the tools your team uses, several per need if you like:
+
+```
+| Need | Tool | Role | Source | Trusted for | Notes |
+| governed-metrics | Metabase | main | internal | every metric in metrics.md | collection "Product KPIs" |
+| product-analytics | Mixpanel | main | internal | events, funnels | project "App" |
+| product-analytics | Amplitude | also | internal | events before 2025 | |
+| web-research | Firecrawl | main | external | | |
+| web-research | web search | fallback | external | | built into the AI tool |
+| design-source | Figma | main | internal | tokens, components, screens | |
+| design-source | Google Drive | also | internal | brand guide | folder "Brand" |
+```
+
+Before a skill starts, `pm_check.py needs <skill>` lists what it needs and which tools serve it;
+the skill confirms each tool answers with one read call and says what is missing before doing the
+work (`one-shot` checks every step up front). External numbers, from Firecrawl or any outside
+source, are kept apart as labelled benchmarks and never stand in for your own metrics. The
+plugin ships no connectors: `setup` maps the ones you have and suggests what to add
+(`reference/connectors.md`).
 
 The workspace's `.claude/settings.json` makes Claude ask before any tool writes to the tracker,
 wiki, chat or email. Tool names depend on how each connector is installed; adjust the server
@@ -224,7 +242,7 @@ agents/                5 reviewer definitions used by spec-review
 hooks/                 SessionStart hook: pipeline board + keeps .pm-harness/ current
 scripts/pm_check.py    the checker behind the gates, plus the trees view, contracts and artifact generators (stdlib Python)
 bin/pm-harness.mjs     the installer for any AI tool (no dependencies)
-reference/             PRD guide, phases, prototype craft, tree grammar, evidence rules, JTBD cheat sheet
+reference/             PRD guide, phases, prototype craft, connectors, tree grammar, evidence rules, JTBD cheat sheet
 templates/workspace/   the PM workspace that setup and the installer create
 templates/prototype/   the prototype shell with the shared runtime
 examples/price-alerts/ a complete worked example through all five steps

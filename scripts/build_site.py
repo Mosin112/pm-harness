@@ -7,6 +7,7 @@ Reads site/index.src.html (a page fragment: head content, a `<!-- /head -->` mar
 content) and writes:
   docs/index.html                 full page for GitHub Pages
   docs/example/prototype.html     the worked example's clickable prototype
+  docs/example/trees-view.html    the worked example's behaviour trees as a diagram
   docs/.nojekyll                  serve files as-is
   site/dist/index.html            the fragment with the repo filled in (for hosted previews)
 """
@@ -37,13 +38,15 @@ def main() -> int:
     (docs / "example").mkdir(parents=True, exist_ok=True)
     (docs / "index.html").write_text(page, encoding="utf-8")
     (docs / ".nojekyll").write_text("", encoding="utf-8")
-    shutil.copyfile(ROOT / "examples" / "price-alerts" / "04-prototype" / "index.html",
-                    docs / "example" / "prototype.html")
+    example = ROOT / "examples" / "price-alerts"
+    shutil.copyfile(example / "04-prototype" / "index.html", docs / "example" / "prototype.html")
+    shutil.copyfile(example / "03-trees-view.html", docs / "example" / "trees-view.html")
 
     dist = ROOT / "site" / "dist"
     (dist / "example").mkdir(parents=True, exist_ok=True)
     (dist / "index.html").write_text(src, encoding="utf-8")
-    shutil.copyfile(docs / "example" / "prototype.html", dist / "example" / "prototype.html")
+    for name in ("prototype.html", "trees-view.html"):
+        shutil.copyfile(docs / "example" / name, dist / "example" / name)
     print(f"Built docs/ and site/dist/ for {repo}")
     return 0
 

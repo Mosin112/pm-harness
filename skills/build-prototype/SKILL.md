@@ -14,6 +14,15 @@ and §6.3), `../../reference/phases.md`, `../../reference/prototype-craft.md`, t
 `DESIGN.md` (the product's design system) and `context/writing-style.md`. Start from the shell `../../templates/prototype/index.html`; the worked example
 `../../examples/price-alerts/04-prototype/index.html` shows a finished prototype built on it.
 
+## Needs
+
+Before starting, run `python3 .pm-harness/pm_check.py needs build-prototype` and confirm each tool
+answers (preflight in `../../reference/connectors.md`).
+
+- `design-source` · optional · the design system behind `DESIGN.md` and the current screens of a
+  flow being changed; without it, `DESIGN.md` as it is, or a neutral and provisional system
+- `artifact-sharing` · optional · sharing the prototype for review (the `publish` skill)
+
 ## 1. Brief gate
 
 Before building, show the PM a five-line brief and wait for approval:
@@ -27,8 +36,13 @@ Before building, show the PM a five-line brief and wait for approval:
 - **Scenarios:** every `while` state and `if` condition from the trees that the scenario
   controls will switch.
 - **Fidelity:** by phase (`phases.md`); MLP prototypes use the real design tokens and copy.
-- **Design source:** `DESIGN.md`, or "neutral and provisional" if it is still the blank
-  template (say so; the PM may want it filled first).
+- **Design source:** `DESIGN.md`. If it is still the blank template and a `design-source`
+  tool answers, offer to fill it first, as `setup` does (Figma variables, a brand guide in
+  Google Drive, or the app's theme files), with the PM approving the values; never fill it from
+  the prototype. Otherwise say "neutral and provisional".
+- **Current screens:** if the item changes an existing flow, read today's screens from the
+  `design-source` tools (Figma frames, screenshots in Drive) so the variants start from what
+  users see now; say so if none could be read.
 
 ## 2. Build: `work/<item>/04-prototype/index.html`
 
@@ -107,7 +121,8 @@ structure, not that the design works.
 5. The prototype is approved only when the check passes with no open amendments. Then set
    `stage: prototype` in `01-idea.md` and offer the `create-eng-tickets` skill. If the team
    uses Figma for final design, say which screens of the chosen variant a designer should take
-   forward.
+   forward. If a Figma tool is in `design-source`, offer to put those screens into a Figma file;
+   it writes to an external tool, so only after the PM approves.
 
 **Sharing it:** stakeholders can click through it as a Claude artifact (`publish` skill,
 "Prototype"), where **Comment on this screen** sends their notes to Claude; or open the file

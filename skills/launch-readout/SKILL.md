@@ -6,17 +6,31 @@ description: Use when the user wants to know how a launched feature or experimen
 # Launch readout
 
 Closes the loop: did the thing we built do the job we said it would? Read
-`../../reference/evidence-rules.md` first; rules 4–6 matter most here.
+`../../reference/evidence-rules.md` first; rules 4–6 and 9 matter most here.
+
+## Needs
+
+Before starting, run `python3 .pm-harness/pm_check.py needs launch-readout` and confirm each tool
+answers (preflight in `../../reference/connectors.md`).
+
+- `governed-metrics` or `product-analytics` · required · actual values of the PRD §7 metrics and
+  guardrails
+- `support-feedback`, `team-chat` or `meeting-notes` · optional · what users said since launch
+- `market-data` or `web-research` · optional · market moves and outside benchmarks that may
+  explain a result, labelled external
 
 ## Steps
 
 1. Read `work/<item>/02-prd.md` (§7 success metrics, targets, guardrails and the phase's
    gate) and `05-tickets.md` (analytics events, launch date).
 2. For each metric, pull the actual value for the agreed window using the governed definitions
-   in `context/metrics.md`. Show each query or dashboard. Compare with the baseline and target.
+   in `context/metrics.md`, from the tool `context/tools.md` trusts for that metric. Show each
+   query or dashboard. Compare with the baseline and target.
 3. Check guardrails. A guardrail breach is reported first, even if the primary metric won.
 4. Look for confounders: other launches, seasonality, marketing pushes, outages in the same
-   window. Say how confident the comparison is.
+   window, and outside moves (a market swing, a competitor's launch) from the `market-data` or
+   `web-research` tools, labelled external with their source and date. Say how confident the
+   comparison is.
 5. Pull qualitative signals since launch (support, chat, meeting notes) about the feature.
 6. **Apply the phase's gate** from §7: for an MVP, continue or stop; for an MMP or MLP, whether
    the next rollout stage's launch gate is met.
@@ -33,8 +47,9 @@ Closes the loop: did the thing we built do the job we said it would? Read
 | Guardrails | … |
 
 ## What users said
-## Confounders and confidence
+## Confounders and confidence   (outside moves labelled external, with URL and date)
 ## What we learned
+## Not measured                  (needs or tools that did not answer)
 ```
 
 Then propose a decision-log entry and context updates (via the `update-context` skill), set

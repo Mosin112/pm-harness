@@ -9,6 +9,14 @@ disable-model-invocation: true
 The workspace is the harness's memory. Every other skill reads it, so a good setup is the
 single biggest lever on output quality. Take the time to do it properly.
 
+## Needs
+
+Setup is where each need gets its tools (section 3), so nothing is required up front.
+
+- `docs` · optional · company, strategy and product documents to fill `context/`
+- `governed-metrics` · optional · linking each metric to its governed definition
+- `design-source` · optional · filling `DESIGN.md`
+
 ## 1. Find or create the workspace
 
 - If the current folder's `AGENTS.md` or `CLAUDE.md` contains `<!-- pm-harness-workspace -->`,
@@ -49,11 +57,47 @@ To use the workspace from Codex, Cursor, GitHub Copilot or Gemini CLI as well, t
 run `npx github:Mosin112/pm-harness init` in the workspace and pick those tools; it adds the
 skills to `.agents/skills/` without touching their context.
 
-## 3. Interview the PM to fill the context
+## 3. Connectors: give every need its tools
+
+Do this before the interview, so the interview can read from the PM's own sources. The plugin
+and installer ship no connectors; this step maps the ones the PM has
+(`../../reference/connectors.md`).
+
+1. **Show what the skills need:** run `python3 .pm-harness/pm_check.py needs all`. It lists every
+   need, whether some skill requires it, and which skills use it.
+2. **Start from what is connected.** List the connectors (MCP servers) and tools in this session
+   and propose rows for `context/tools.md`, **one row per tool**, so a need can have several:
+   Granola → `meeting-notes`; Slack → `team-chat`; Mixpanel and Amplitude → `product-analytics`
+   (one `main`, the other `also`); Metabase or a warehouse → `governed-metrics` (and link each
+   metric in `context/metrics.md` to its definition there); Confluence, Notion and Google Drive →
+   `docs`; Figma and a brand folder in Google Drive → `design-source`; Firecrawl (`main`) and
+   the AI tool's web search (`fallback`) → `web-research`; Jira or Linear → `issue-tracker`;
+   Confluence → `prd-publishing` (ask for the space and parent page); the Artifact tool →
+   `artifact-sharing`. For each row confirm the role, whether it is internal or external, what it
+   is trusted for, and the Notes (project, channel, space, folder). Ask rather than guess.
+3. **Probe each tool** with one harmless read call (the probe table in `connectors.md`). Report
+   which answer, which fail, and which needs have no tool. Do not write anything to an external
+   tool during setup.
+4. **Suggest what is missing.** For each need a skill requires that has no answering tool, say
+   which skills it blocks and suggest connectors to add: in Claude, from the connector
+   directory; in other tools, an MCP server in that tool's settings. Mention uncovered optional
+   needs in one line. Never install or authorise anything yourself.
+5. **Write `context/tools.md`** with the approved rows and check it with
+   `python3 .pm-harness/pm_check.py workspace .`.
+6. **Approval rules (Claude Code).** List every connected tool whose name says it creates,
+   updates, sends, posts, publishes, moves or deletes something (`createJiraIssue`,
+   `updateConfluencePage`, `slack_send_message`, `send_message`, `create_event`, `update_file`,
+   `notion-create-pages`, `Create-Cohort`, `publish_artifact`…). Show the list, and on approval
+   write the exact tool names (`mcp__<server>__<tool>`, matching case) to `permissions.ask` in
+   `.claude/settings.json`, keeping what is already there. Other tools rely on rule 2 in
+   `AGENTS.md`: never write externally without the PM approving the exact content.
+
+## 4. Interview the PM to fill the context
 
 Fill the `context/` files through a short conversation, **one file at a time**, asking at most
-three questions per file. Prefer pulling from existing sources (wiki pages, strategy docs,
-metric dictionaries) over asking: ask the PM where those live and read them.
+three questions per file. Prefer pulling from existing sources over asking: read the `docs`
+tools from step 3 (often several: Confluence, Notion, Google Drive), plus the chat channels or
+meetings the PM points to, and note where each fact came from.
 
 | File | What it must contain |
 |---|---|
@@ -64,35 +108,13 @@ metric dictionaries) over asking: ask the PM where those live and read them.
 | `metrics.md` | The hierarchy (north star, L1, L2), and for each metric its plain definition, owner, target and where its governed definition or query lives |
 | `stakeholders.md` | Who decides what, who must review what, how each person likes updates |
 | `constraints.md` | Regulatory, risk, legal, brand and platform constraints every PRD must respect |
-| `tools.md` | Which connector to use for meetings, chat, analytics, research, warehouse, tracker, wiki, design |
 | `glossary.md` | Internal terms and acronyms, and the words to avoid |
 | `writing-style.md` | Tone, length limits, formats the team expects |
 | `definition-of-done.md` | The team's checklist for a finished engineering story; start from the template and ask engineering what to add |
-| `../DESIGN.md` (workspace root) | The product's design system in the DESIGN.md format: colour, type, radius and spacing tokens, components and their states, do's and don'ts. Fill it from the design source rather than by hand: Figma variables and styles through the design connector, the app's theme or CSS token files, or the brand guide. Keep values exact; leave a section out rather than invent it. Check with `python3 .pm-harness/pm_check.py design DESIGN.md`. |
+| `../DESIGN.md` (workspace root) | The product's design system in the DESIGN.md format: colour, type, radius and spacing tokens, components and their states, do's and don'ts. Fill it from the `design-source` tools rather than by hand: Figma variables and styles, a brand guide in Google Drive, or the app's theme or CSS token files; when several exist, Figma or the code wins for exact values and the brand guide for the do's and don'ts. Keep values exact; leave a section out rather than invent it. Check with `python3 .pm-harness/pm_check.py design DESIGN.md`. |
 
 Keep each file under ~150 lines (`DESIGN.md` may be longer). If a file grows past that, split it and add the new file to
 the routing index in `AGENTS.md` (above the managed block).
-
-## 4. Connectors and approval rules
-
-1. **Start from what is connected.** List the connectors (MCP servers) and tools available in
-   this session and propose a row of `context/tools.md` for each need they cover, for example:
-   Jira → issue tracker; Confluence → wiki and **PRD publishing** (ask for the space and parent
-   page); Granola or another notetaker → meeting notes; Slack → team chat; Mixpanel or Amplitude
-   → product analytics; a warehouse or metrics connector → governed metrics (and link each
-   metric in `context/metrics.md` to its definition there); Figma → design; web search or
-   Firecrawl → research; the Artifact tool → **prototype and trees sharing**. Confirm each row
-   with the PM rather than guessing what they use.
-2. **Verify each one** with one harmless read call (search one meeting, read one ticket, list
-   one dashboard, run one web search). Report which work and which need connecting. Do not write
-   anything to an external tool during setup.
-3. **Approval rules (Claude Code).** List every connected tool whose name says it creates,
-   updates, sends, posts, publishes, moves or deletes something (`createJiraIssue`,
-   `updateConfluencePage`, `slack_send_message`, `send_message`, `create_event`, `update_file`,
-   `notion-create-pages`, `Create-Cohort`, `publish_artifact`…). Show the list, and on approval
-   write the exact tool names (`mcp__<server>__<tool>`, matching case) to `permissions.ask` in
-   `.claude/settings.json`, keeping what is already there. Other tools rely on rule 2 in
-   `AGENTS.md`: never write externally without the PM approving the exact content.
 
 ## 5. Repair mode
 
@@ -100,7 +122,9 @@ On an existing workspace: report missing folders or files and restore them from
 `../../templates/workspace/` without overwriting; refresh `.pm-harness/` (step 2, or
 `npx github:Mosin112/pm-harness update` for an installer-managed workspace); list context
 files older than 90 days and offer to review them with the PM; run
-`python3 .pm-harness/pm_check.py workspace .`.
+`python3 .pm-harness/pm_check.py workspace .`. If it reports that `context/tools.md` uses the old
+one-row-per-need format, offer to convert it to the registry (step 3), keeping every tool and
+note, and splitting cells that name several tools into one row each.
 
 A workspace from PM Harness 0.1 keeps everything in `CLAUDE.md`. Offer to move that content
 into `AGENTS.md` (so other tools can read it) and leave `CLAUDE.md` as the two-line import from
@@ -108,6 +132,6 @@ the template. Do it only with the PM's approval.
 
 ## 6. Finish
 
-Print a short summary: what was created, which context files are still thin, which connectors
-work. Suggest the first move: the `synthesize-signals` or `desktop-research` skill if there is
+Print a short summary: what was created, which context files are still thin, which needs have
+working tools, and which required needs still have none (and the skills they block). Suggest the first move: the `synthesize-signals` or `desktop-research` skill if there is
 evidence to gather, or the `capture-idea` skill if the PM already has an idea.

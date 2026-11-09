@@ -9,11 +9,21 @@ Stakeholders read the PRD in Confluence and click through the prototype as a Cla
 The workspace files stay the source of truth: publishing copies them out, and feedback comes back
 in through change control or `amendments.md`, never by editing the published copy.
 
-Read first: `context/tools.md` (the Confluence space and parent page for PRDs, how prototypes
-are shared), `context/stakeholders.md` (who reviews what), and the item's files.
+Read first: `context/tools.md` (the `prd-publishing` row: Confluence space and parent page;
+the `artifact-sharing` row: how prototypes and trees views are shared), `context/stakeholders.md` (who reviews what), and the item's files.
 
 **Every publish writes to an external tool, so show the PM what will be published and where,
 and wait for approval.** That includes updating a page that already exists.
+
+## Needs
+
+Before starting, run `python3 .pm-harness/pm_check.py needs publish` and confirm each tool
+answers (preflight in `../../reference/connectors.md`).
+
+- `prd-publishing` · required · publishing a PRD and reading its comments (check it only for that
+  job)
+- `artifact-sharing` · required · publishing a prototype or trees view and reading their comments
+  (check it only for that job)
 
 ## PRD → Confluence
 
@@ -26,7 +36,7 @@ and wait for approval.** That includes updating a page that already exists.
    artifact) and keep the change log at the end. Add one line at the top: *Source of truth:
    PM workspace `work/<item>/02-prd.md`. Comment here; edits to this page are not copied back.*
 4. Create the page in the space and under the parent from `context/tools.md` with the
-   Confluence connector (or update it). Title: `<Title> · PRD (<Phase>)`.
+   `prd-publishing` tool (or update it). Title: `<Title> · PRD (<Phase>)`.
 5. Record the URL in the PRD's `Links:` line (`Links: Confluence <url> · Prototype <url> ·
    Trees <url>`) and set `Updated:`.
 

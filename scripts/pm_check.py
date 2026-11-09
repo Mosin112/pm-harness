@@ -11,6 +11,7 @@ Usage:
   pm_check.py design <DESIGN.md>                         design tokens, references and section order
   pm_check.py board <workspace-dir>                      pipeline board for the start of a session
   pm_check.py plugin <plugin-dir>                        skills, agents, manifests and installer
+  pm_check.py needs <skill>... | all [--tools <tools.md>] what a skill needs and which tools serve it
 
 Generators:
   pm_check.py view <work/item>                           03-trees-view.html: the trees as a diagram to review
@@ -27,6 +28,7 @@ import hashlib
 import html.parser as html_parser
 import io
 import json
+import os
 import re
 import sys
 import time
@@ -877,6 +879,24 @@ def cmd_workspace(ws: str) -> int:
             st = LEGACY_STAGES.get(item_stage(idea) or "", item_stage(idea) or "")
             if st not in ("parked", "launched") and idea.parent.name not in text:
                 report.warn(f"work/{idea.parent.name} ({st}) is not on roadmap.md: run the roadmap skill")
+    tools_md = root / "context" / "tools.md"
+    if tools_md.is_file():
+        reg = parse_registry(tools_md)
+        if reg["format"] == "legacy":
+            report.warn("context/tools.md uses the 0.4 one-row-per-need format: run setup in repair mode to convert it")
+        elif reg["format"] is None:
+            report.warn("context/tools.md has no Need | Tool table (see reference/connectors.md)")
+        for e in reg["errors"]:
+            report.error(f"context/tools.md {e}")
+        for w in reg["warnings"]:
+            report.warn(f"context/tools.md: {w}")
+        skills = find_skills(base=root)
+        if reg["format"] and skills:
+            quiet = Report("")
+            for g in merged_needs(sorted(skills), skills, quiet):
+                if g["level"] == "required" and not any(tools_for(reg, n) for n in g["ids"]):
+                    report.warn(f"no tool for {join_or(g['ids'])} (required by "
+                                f"{', '.join(sorted(g['required_by']))}): add one to context/tools.md")
     design = root / "DESIGN.md"
     if not design.is_file():
         report.warn("missing DESIGN.md: prototypes have no design system (run setup in repair mode)")
@@ -904,6 +924,240 @@ def cmd_workspace(ws: str) -> int:
         for level, (key, label) in needs.items():
             if order >= level and not files[key].exists():
                 report.error(f"work/{item}: stage '{stage}' but {label} is missing")
+    return report.finish()
+
+
+# ---------------------------------------------------------------- needs and the tools registry
+
+NEEDS = {  # need id -> usual source; reference/connectors.md explains each one
+    "meeting-notes": "internal", "team-chat": "internal", "support-feedback": "internal",
+    "product-analytics": "internal", "governed-metrics": "internal", "web-research": "external",
+    "market-data": "external", "docs": "internal", "design-source": "internal",
+    "issue-tracker": "internal", "prd-publishing": "internal", "artifact-sharing": "internal",
+    "calendar": "internal", "email": "internal",
+}
+ROLES = ("main", "also", "fallback")
+SOURCES = ("internal", "external")
+NEED_LINE_RE = re.compile(r"^- (.+?) · (required|optional) · (.+)$")
+LEGACY_NEEDS = (  # 0.4 tools.md row labels -> need ids
+    ("meeting", ("meeting-notes",)), ("chat", ("team-chat",)), ("support", ("support-feedback",)),
+    ("analytics", ("product-analytics",)), ("research", ("web-research",)),
+    ("warehouse", ("governed-metrics",)), ("governed", ("governed-metrics",)),
+    ("tracker", ("issue-tracker",)), ("prd publishing", ("prd-publishing",)),
+    ("sharing", ("artifact-sharing",)), ("wiki", ("docs",)), ("design", ("design-source",)),
+    ("calendar", ("calendar", "email")),
+)
+
+
+def parse_needs(text: str) -> dict | None:
+    """The `## Needs` block of a SKILL.md: need groups, Includes:, or None."""
+    m = re.search(r"^## Needs\s*$(.*?)(?=^## |\Z)", text, re.M | re.S)
+    if not m:
+        return None
+    out = {"groups": [], "includes": [], "none": False, "errors": []}
+    lines: list[str] = []
+    for ln in m.group(1).splitlines():
+        prev = lines[-1] if lines else ""
+        if ln.strip() and (ln.startswith(" ") or ln.startswith("`")) and (
+                prev.startswith("- ") or prev.startswith("Includes:")):
+            lines[-1] += " " + ln.strip()
+        else:
+            lines.append(ln.strip())
+    for ln in lines:
+        if ln.lower().startswith("none"):
+            out["none"] = True
+        elif ln.startswith("Includes:"):
+            out["includes"] = re.findall(r"`([a-z0-9-]+)`", ln)
+        elif ln.startswith("- "):
+            lm = NEED_LINE_RE.match(ln)
+            ids = re.findall(r"`([a-z0-9-]+)`", lm.group(1)) if lm else []
+            rest = re.sub(r"`[a-z0-9-]+`|,|\bor\b", "", lm.group(1)).strip() if lm else "x"
+            if not lm or not ids or rest:
+                out["errors"].append(f"cannot read need line: {ln[:70]}")
+                continue
+            out["groups"].append({"ids": ids, "level": lm.group(2), "why": lm.group(3)})
+    return out
+
+
+def parse_registry(path: Path) -> dict:
+    """context/tools.md as rows of need, tool, role, source, trusted; also reads the 0.4 format."""
+    reg = {"rows": [], "format": None, "errors": [], "warnings": []}
+    if not path.is_file():
+        return reg
+    header, fenced = None, False
+    for n, raw in enumerate(read(path).splitlines(), 1):
+        ln = raw.strip()
+        if ln.startswith("```"):
+            fenced = not fenced
+            continue
+        if fenced:
+            continue
+        if not ln.startswith("|"):
+            if header is not None and reg["rows"]:
+                break
+            continue
+        cells = [c.strip() for c in ln.strip("|").split("|")]
+        if header is None:
+            low = [c.lower() for c in cells]
+            if low and low[0].startswith("need") and len(low) > 1 and low[1].startswith("tool"):
+                header = low
+                reg["format"] = "registry" if "role" in low and "source" in low else "legacy"
+            continue
+        if set(ln) <= set("|-: "):
+            continue
+        row = dict(zip(header, cells))
+        need, tool = row.get(header[0], ""), row.get(header[1], "")
+        if reg["format"] == "legacy":
+            label = need.lower()
+            ids = next((v for k, v in LEGACY_NEEDS if k in label), ())
+            tools = [t.strip() for t in re.split(r",|\band\b|\+|/", tool) if t.strip()]
+            for i, t in enumerate(tools):
+                for nid in ids:
+                    reg["rows"].append({"need": nid, "tool": t, "role": "main" if i == 0 else "also",
+                                        "source": NEEDS[nid], "trusted": "", "line": n})
+            continue
+        role = (row.get("role") or "").lower()
+        source = (row.get("source") or "").lower()
+        if need not in NEEDS:
+            reg["errors"].append(f"line {n}: unknown need '{need}' (see reference/connectors.md)")
+            continue
+        if not tool:
+            continue
+        if role not in ROLES:
+            reg["errors"].append(f"line {n}: {need} · {tool}: role must be one of {', '.join(ROLES)}")
+        if source not in SOURCES:
+            reg["errors"].append(f"line {n}: {need} · {tool}: source must be internal or external")
+        trusted = next((v for k, v in row.items() if k.startswith("trusted")), "")
+        reg["rows"].append({"need": need, "tool": tool, "role": role, "source": source,
+                            "trusted": trusted, "line": n})
+    if reg["format"] == "registry":
+        for nid in NEEDS:
+            roles = [r["role"] for r in reg["rows"] if r["need"] == nid]
+            if roles.count("main") > 1:
+                reg["warnings"].append(f"{nid}: {roles.count('main')} tools are 'main'; make the others 'also'")
+            if roles and "main" not in roles:
+                reg["warnings"].append(f"{nid}: has tools but no 'main' one")
+    return reg
+
+
+def join_or(ids: list[str]) -> str:
+    return ids[0] if len(ids) == 1 else ", ".join(ids[:-1]) + " or " + ids[-1]
+
+
+def tools_for(reg: dict, need: str) -> list[dict]:
+    rows = [r for r in reg["rows"] if r["need"] == need]
+    return sorted(rows, key=lambda r: ROLES.index(r["role"]) if r["role"] in ROLES else 9)
+
+
+def skill_dirs(extra: str | None = None, base: Path = Path(".")) -> list[Path]:
+    """Where SKILL.md files may live: given, workspace, this script's repo, the Claude plugin."""
+    here = Path(__file__).resolve().parent
+    cands = [Path(extra)] if extra else []
+    cands += [base / ".agents" / "skills", base / ".claude" / "skills", here.parent / "skills"]
+    if os.environ.get("CLAUDE_PLUGIN_ROOT"):
+        cands.append(Path(os.environ["CLAUDE_PLUGIN_ROOT"]) / "skills")
+    plugins = Path.home() / ".claude" / "plugins"
+    if plugins.is_dir():
+        found = [d for pattern in ("cache/*/pm-harness/*/skills", "marketplaces/pm-harness/skills")
+                 for d in plugins.glob(pattern) if (d / "capture-idea" / "SKILL.md").is_file()]
+        cands += sorted(found, key=lambda d: d.stat().st_mtime, reverse=True)
+    return [d for d in cands if d.is_dir()]
+
+
+def find_skills(extra: str | None = None, base: Path = Path(".")) -> dict[str, Path]:
+    found: dict[str, Path] = {}
+    for d in skill_dirs(extra, base):
+        for s in sorted(d.glob("*/SKILL.md")):
+            found.setdefault(s.parent.name, s)
+    return found
+
+
+def merged_needs(names: list[str], skills: dict[str, Path], report: Report) -> list[dict]:
+    """The need groups of the named skills (Includes: expanded), strongest level wins."""
+    merged: dict[tuple, dict] = {}
+    seen: set[str] = set()
+
+    def visit(name: str, top: str) -> None:
+        if name in seen:
+            return
+        seen.add(name)
+        path = Path(name) if name.endswith(".md") or "/" in name else skills.get(name)
+        if path and path.is_dir():
+            path = path / "SKILL.md"
+        if not path or not path.is_file():
+            report.error(f"skill '{name}' not found; pass the path to its SKILL.md")
+            return
+        label = path.parent.name
+        block = parse_needs(read(path))
+        if block is None:
+            report.warn(f"{label}: SKILL.md has no ## Needs section")
+            return
+        for e in block["errors"]:
+            report.error(f"{label}: {e}")
+        for g in block["groups"]:
+            for nid in g["ids"]:
+                if nid not in NEEDS:
+                    report.error(f"{label}: unknown need '{nid}' (reference/connectors.md)")
+            key = tuple(g["ids"])
+            m = merged.setdefault(key, {"ids": g["ids"], "level": "optional", "users": [],
+                                        "required_by": [], "why": g["why"]})
+            if g["level"] == "required":
+                m["level"] = "required"
+                if label not in m["required_by"]:
+                    m["required_by"].append(label)
+            if label not in m["users"]:
+                m["users"].append(label)
+        for inc in block["includes"]:
+            visit(inc, top)
+
+    for n in names:
+        visit(n, n)
+    return sorted(merged.values(), key=lambda g: (g["level"] != "required", g["ids"]))
+
+
+def cmd_needs(*args: str) -> int:
+    names, tools, extra = [], "context/tools.md", None
+    it = iter(args)
+    for a in it:
+        if a == "--tools":
+            tools = next(it, tools)
+        elif a == "--skills":
+            extra = next(it, None)
+        else:
+            names.append(a)
+    if not names:
+        print(__doc__)
+        return 2
+    skills = find_skills(extra, Path(tools).resolve().parent.parent)
+    if names == ["all"]:
+        names = sorted(skills)
+    report = Report(f"needs {' '.join(names) if len(names) < 4 else f'{len(names)} skills'}")
+    reg = parse_registry(Path(tools))
+    if reg["format"] is None:
+        report.warn(f"{tools} not found or has no Need | Tool table: every need is unconfigured")
+    elif reg["format"] == "legacy":
+        report.warn(f"{tools} uses the 0.4 one-row-per-need format: run setup in repair mode to convert it")
+    for e in reg["errors"]:
+        report.error(f"{tools} {e}")
+    for w in reg["warnings"]:
+        report.warn(f"{tools}: {w}")
+    groups = merged_needs(names, skills, report)
+    wide = max((len(join_or(g["ids"])) for g in groups), default=10)
+    for g in groups:
+        parts = []
+        for nid in g["ids"]:
+            ts = tools_for(reg, nid)
+            shown = ", ".join(f"{t['tool']} ({t['role']}{', external' if t['source'] == 'external' else ''})" for t in ts)
+            parts.append(f"{nid}: {shown or 'no tool'}" if len(g["ids"]) > 1 else (shown or "no tool"))
+        users = f"  [{', '.join(g['users'])}]" if len(names) > 1 or g["users"] != names else ""
+        report.note(f"{g['level']:<8}  {join_or(g['ids']):<{wide}}  {' · '.join(parts)}{users}")
+        if g["level"] == "required" and not any(tools_for(reg, nid) for nid in g["ids"]):
+            report.error(f"required {join_or(g['ids'])} has no tool in {tools}: "
+                         f"connect one (setup) or plan to finish {', '.join(g['required_by'])} by hand")
+    if not groups:
+        report.note("no outside needs: works from the workspace files")
+    else:
+        report.note("next: confirm each tool answers with one read call (reference/connectors.md, preflight)")
     return report.finish()
 
 
@@ -973,6 +1227,17 @@ def cmd_board(ws: str) -> int:
         stale = sorted(str(p.relative_to(root)) for p in ctx.glob("*.md") if p.stat().st_mtime < cutoff)
         if stale:
             print("Context files not updated in 90+ days (offer to review them): " + " ".join(stale))
+    reg = parse_registry(ctx / "tools.md")
+    skills = find_skills(base=root) if reg["format"] else {}
+    if skills:
+        quiet = Report("")
+        missing = [join_or(g["ids"]) for g in merged_needs(sorted(skills), skills, quiet)
+                   if g["level"] == "required" and not any(tools_for(reg, n) for n in g["ids"])]
+        if missing:
+            print(f"Needs with no tool in context/tools.md: {'; '.join(missing)} "
+                  "(run pm_check.py workspace . for the skills they block)")
+        if reg["format"] == "legacy":
+            print("context/tools.md uses the old format: offer to convert it (setup, repair mode)")
     print("Reminders: follow AGENTS.md and the evidence rules; never write to an external tool "
           "without the PM's approval; run done at the end of a useful session.")
     return 0
@@ -1118,6 +1383,9 @@ def cmd_contracts(item_dir: str) -> int:
     """Write work/<item>/05-contracts/<subject>.contract.md for the engineering harness."""
     folder = Path(item_dir)
     report = Report(f"contracts for {folder.name}")
+    if not folder.is_dir():
+        report.error(f"{folder} is not an item folder")
+        return report.finish()
     files = item_files(folder)
     trees = load_trees(files["trees"], report)
     prd = parse_prd(files["prd"], Report("(prd parse)")) if files["prd"].is_file() else None
@@ -1651,6 +1919,24 @@ def cmd_plugin(plugin_dir: str) -> int:
         for other in re.findall(r"the `([a-z0-9-]+)` skill", text):
             if other not in names:
                 report.error(f"skills/{name}: refers to unknown skill `{other}`")
+        block = parse_needs(text)
+        if block is None:
+            report.error(f"skills/{name}: no ## Needs section (reference/connectors.md §5)")
+        else:
+            for e in block["errors"]:
+                report.error(f"skills/{name}: {e}")
+            for g in block["groups"]:
+                for nid in g["ids"]:
+                    if nid not in NEEDS:
+                        report.error(f"skills/{name}: unknown need '{nid}'")
+            for inc in block["includes"]:
+                if inc not in names:
+                    report.error(f"skills/{name}: Includes unknown skill '{inc}'")
+            if not (block["groups"] or block["none"] or block["includes"]):
+                report.error(f"skills/{name}: ## Needs is empty; write 'None: …' if it has no outside needs")
+            for other in re.findall(r"pm_check\.py needs ([a-z0-9-]+)", text):
+                if other not in (name, "all"):
+                    report.error(f"skills/{name}: its preflight runs 'needs {other}'")
     agents = sorted((root / "agents").glob("*.md"))
     for a in agents:
         fm = frontmatter(a)
@@ -1658,6 +1944,11 @@ def cmd_plugin(plugin_dir: str) -> int:
             report.error(f"agents/{a.name}: needs name and description frontmatter")
         elif fm["name"] != a.stem:
             report.error(f"agents/{a.name}: name '{fm['name']}' must equal file name")
+    for doc in ("reference/connectors.md", "templates/workspace/context/tools.md"):
+        if (root / doc).is_file():
+            missing = [n for n in NEEDS if f"`{n}`" not in read(root / doc) and f"| {n} |" not in read(root / doc)]
+            if missing:
+                report.error(f"{doc} does not list need(s): {', '.join(missing)}")
     template = root / "templates" / "workspace"
     if template.is_dir() and not is_workspace(template):
         report.error(f"templates/workspace: AGENTS.md or CLAUDE.md needs the {MARKER} marker")
@@ -1679,8 +1970,10 @@ def main(argv: list[str]) -> int:
         "design": (cmd_design, (1,)),
         "board": (cmd_board, (1,)),
         "plugin": (cmd_plugin, (1,)),
+        "needs": (cmd_needs, None),
     }
-    if len(argv) < 2 or argv[1] not in commands or len(argv) - 2 not in commands[argv[1]][1]:
+    if len(argv) < 2 or argv[1] not in commands or (
+            commands[argv[1]][1] is not None and len(argv) - 2 not in commands[argv[1]][1]):
         print(__doc__)
         return 2
     fn, _ = commands[argv[1]]

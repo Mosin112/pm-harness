@@ -8,6 +8,10 @@ description: Use when the user wants feedback on, a critique of, or a review of 
 A reviewer that wrote the draft defends it. This skill gets independent critique by running
 each reviewer in a fresh context that has not seen the drafting conversation.
 
+## Needs
+
+None: works from the workspace files.
+
 ## Steps
 
 1. Identify the document(s) to review, usually `work/<item>/02-prd.md` and, if present, the

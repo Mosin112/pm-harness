@@ -12,6 +12,14 @@ audit trail: every piece of feedback ends up as a PRD change, a tree change, a p
 Read first: `work/<item>/04-prototype/amendments.md`, the prototype's `prototype-variants` and
 `tree-coverage` blocks, the PRD and the trees.
 
+## Needs
+
+Before starting, run `python3 .pm-harness/pm_check.py needs review-prototype` and confirm each tool
+answers (preflight in `../../reference/connectors.md`).
+
+- `artifact-sharing` · optional · artifact comments sent to Claude
+- `meeting-notes` · optional · prototype feedback given in meetings
+
 ## Amendment format
 
 Feedback arrives from the walkthrough; from comments on the prototype artifact (their anchor,

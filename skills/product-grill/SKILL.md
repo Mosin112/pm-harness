@@ -24,6 +24,10 @@ report or a document generator.
 - Record terms and decisions only once they have settled, and only with approval.
 - Do not write the PRD here; hand over to `write-prd` when the PM is ready.
 
+## Needs
+
+None: works from the workspace files.
+
 ## Start here
 
 Read before the first question: `work/<item>/01-idea.md` (if it exists),

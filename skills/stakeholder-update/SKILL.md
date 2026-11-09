@@ -5,11 +5,19 @@ description: Use when the user wants a status update, weekly update, roadmap upd
 
 # Stakeholder update
 
+## Needs
+
+Before starting, run `python3 .pm-harness/pm_check.py needs stakeholder-update` and confirm each tool
+answers (preflight in `../../reference/connectors.md`).
+
+- `issue-tracker` · optional · ticket progress and blockers
+- `team-chat` or `email` · optional · sending the update once the PM approves the exact text
+
 ## Steps
 
 1. Ask (or infer from `context/stakeholders.md`) the **audience** and **period**.
 2. Gather: the board (`python3 .pm-harness/pm_check.py board .`) for each item's stage, phase
-   and open findings; ticket progress from the tracker connector; new decisions in the
+   and open findings; ticket progress from the `issue-tracker` tool; new decisions in the
    decision log; launch readouts and gate results; the chosen prototype variant; and blockers.
    Link the published PRD (Confluence) and prototype (artifact) from each PRD's `Links:` line.
    Use `roadmap.md` for what moved between Now, Next and Later, and the latest metrics review
