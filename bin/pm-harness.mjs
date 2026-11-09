@@ -317,7 +317,7 @@ async function init(args, out) {
     out(`\nInstalled PM Harness ${PKG.version} in ${ws}.`);
     const py = python();
     if (!py?.ok) out("! Python 3.8+ was not found. The checks need it: install Python 3, then run doctor.");
-    out("\nNext: open the folder in your AI tool and run the setup skill to fill in your context:");
+    out("\nNext: open the folder in your AI tool and run the setup skill to map your connectors and fill in your context:");
     for (const id of tools) {
       const label = TOOLS.find((t) => t.id === id).label;
       const how = id === "claude-code" ? (claudeMode === "plugin" ? "/pm-harness:setup" : "/setup")

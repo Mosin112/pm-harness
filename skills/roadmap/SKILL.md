@@ -12,7 +12,14 @@ they are logged. Structure adapted from Anthropic's product-management plugin (A
 Read first: `roadmap.md` (if it exists), every `work/*/01-idea.md` (stage, phase, evidence,
 opportunity scores, lineage), each item's PRD §7 gate and §8.2 dependencies, `context/strategy.md`
 (themes, bets, what is explicitly not a priority), `decisions/decision-log.md`, and the tracker
-(through the connector in `context/tools.md`) for epics' status and dates.
+(the `issue-tracker` tool in `context/tools.md`) for epics' status and dates.
+
+## Needs
+
+Before starting, run `python3 .pm-harness/pm_check.py needs roadmap` and confirm each tool
+answers (preflight in `../../reference/connectors.md`).
+
+- `issue-tracker` · optional · epics' status and dates; without it, dates come from the PM
 
 ## What to do
 

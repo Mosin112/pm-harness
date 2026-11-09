@@ -16,6 +16,15 @@ Read first: `../../reference/prd-guide.md` (the eight sections), `../../referenc
 from the workspace `context/users.md`, `strategy.md`, `metrics.md`, `constraints.md`,
 `glossary.md`, `writing-style.md` and `decisions/decision-log.md`.
 
+## Needs
+
+Before starting, run `python3 .pm-harness/pm_check.py needs write-prd` and confirm each tool
+answers (preflight in `../../reference/connectors.md`).
+
+- `governed-metrics` or `product-analytics` · optional · baselines for §7; without them a baseline
+  is marked *to measure*
+- `docs` · optional · related specs and past PRDs to link
+
 ## Steps
 
 1. **Settle the phase.** If the PM has not said, recommend `MVP`, `MMP`, `MLP` or
@@ -37,8 +46,10 @@ from the workspace `context/users.md`, `strategy.md`, `metrics.md`, `constraints
      naming the tree that will hold its behaviour.
    - In §6.3, state the prototype decision: the one trade-off the prototype variants will
      argue about. Take it from `01-grill.md` when the grill settled it.
-   - In §7, define each metric with `context/metrics.md` and take baselines from data where
-     available, showing the source.
+   - In §7, define each metric with `context/metrics.md` and take baselines from the tool
+     trusted for that metric where available, showing the source; mark the rest *to measure*.
+     An outside benchmark may justify a target only when labelled external with its URL and
+     date (evidence rule 9).
    - In §8, go through every item in `context/constraints.md` and say how the PRD respects it.
 4. **Cut to the phase.** Remove anything that does not change a decision for this phase. Keep
    within the phase's length guide; one line is enough for a section that barely applies.

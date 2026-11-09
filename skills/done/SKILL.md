@@ -9,6 +9,10 @@ One correction is a task instruction; the same correction across sessions is a g
 context or in a skill. This skill finds those gaps and proposes the smallest fix for each.
 `update-context` captures what one session learned; `done` looks across sessions for patterns.
 
+## Needs
+
+None: works from the workspace files and local session transcripts.
+
 ## 1. Load what is already recorded
 
 Read `AGENTS.md` (or a 0.1 workspace's `CLAUDE.md`), every file in `context/` (including

@@ -16,6 +16,12 @@ $C tickets $E/03-trees $E/05-tickets.md $E/02-prd.md
 $C item $E | tail -n 1
 $C board templates/workspace >/dev/null
 $C design templates/workspace/DESIGN.md >/dev/null
+$C needs one-shot --tools $F/tools.md >/dev/null
+$C needs all --tools $F/tools.md | grep -q 'required  issue-tracker .*Jira (main)' \
+  || { echo "FAIL  needs all does not resolve issue-tracker from the registry"; exit 1; }
+$C needs launch-readout --tools $F/legacy-tools.md | grep -q 'Mixpanel (main), Amplitude (also)' \
+  || { echo "FAIL  needs does not read a 0.4 tools.md"; exit 1; }
+echo "PASS  needs resolves skills against the tools registry (new and 0.4 formats)"
 if $C prototype $E/03-trees $E/04-prototype/index.html | grep -q '^  ! '; then
   echo "FAIL  the worked example prototype has craft or coverage warnings"; exit 1
 fi
@@ -65,6 +71,16 @@ expect_fail "a manifest whose chosen variant disagrees with the PRD" \
   $C prototype $E/03-trees "$tmp/price-alerts/04-prototype/index.html"
 expect_fail "tickets without a Definition of done" $C tickets $E/03-trees "$tmp/tickets-no-dod.md"
 expect_fail "tickets that miss a PRD metric" $C tickets $E/03-trees "$tmp/tickets-no-metric.md" $E/02-prd.md
+
+expect_fail "a tools registry with an unknown need, role and source" \
+  $C needs metrics-review --tools $F/bad-tools.md
+expect_fail "a required need with no tool" $C needs create-eng-tickets --tools templates/workspace/context/tools.md
+mkdir -p "$tmp/skill/skills/broken"
+printf -- '---\nname: broken\ndescription: Use when testing.\n---\n# Broken\n\n## Needs\n\n- `analytics` · required · nothing\n' \
+  > "$tmp/skill/skills/broken/SKILL.md"
+{ $C needs broken --skills "$tmp/skill/skills" --tools $F/tools.md || true; } | grep -q "unknown need 'analytics'" \
+  || { echo "FAIL  needs accepted a skill that names an unknown need"; exit 1; }
+echo "PASS  checker rejects a skill whose Needs block names an unknown need"
 
 bash -n hooks/session-start.sh && echo "PASS  hook script syntax"
 echo "All self-tests passed."

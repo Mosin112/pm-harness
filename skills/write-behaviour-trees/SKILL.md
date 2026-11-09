@@ -11,6 +11,10 @@ in the engineering harness, so every line must be observable and testable.
 Read first: `../../reference/tree-grammar.md`, `../../reference/phases.md`, the approved
 `work/<item>/02-prd.md` and its review, and `context/constraints.md` and `context/glossary.md`.
 
+## Needs
+
+None: works from the workspace files.
+
 ## Steps
 
 1. **Take the capabilities from the PRD.** Each `### 5.N` capability names its tree with

@@ -8,6 +8,16 @@ description: Use when the user has a new product idea, feature request or "what 
 Turns a loose idea into an idea card the rest of the pipeline can build on. Read
 `../../reference/evidence-rules.md` first.
 
+## Needs
+
+Before starting, run `python3 .pm-harness/pm_check.py needs capture-idea` and confirm each tool
+answers (preflight in `../../reference/connectors.md`).
+
+- `meeting-notes`, `team-chat` or `support-feedback` · optional · a first look for evidence of the
+  problem; without any, the grade rests on what the PM brings
+- `product-analytics` · optional · how many users the problem touches
+- `docs` · optional · earlier specs and research on the same idea
+
 ## Steps
 
 1. **Restate** the idea in one sentence and ask the PM to confirm or correct it. Ask at most
@@ -21,9 +31,10 @@ Turns a loose idea into an idea card the rest of the pipeline can build on. Read
 3. **Check history.** Search `decisions/decision-log.md`, `signals/` and other `work/` items
    for the same or a similar idea. If it was rejected or parked before, quote the decision and
    its "revisit if" condition, and ask whether that condition is now met.
-4. **Find evidence.** Search the sources in `context/tools.md` (meeting notes, chat, support,
-   analytics) for evidence of the underlying problem. Spend a few searches, not an hour; this
-   is a first look.
+4. **Find evidence.** Search the tools for the needs above (the `main` and `also` tools in
+   `context/tools.md`: meeting notes, chat, support, analytics) for evidence of the underlying
+   problem. Spend a few searches, not an hour; this is a first look. Note any that did not
+   answer.
 5. **Grade** the evidence `strong`, `some` or `hunch`. A hunch is fine; it is just labelled.
 6. **Write** `work/<slug>/01-idea.md` using the format below.
 

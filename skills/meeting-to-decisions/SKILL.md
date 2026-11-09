@@ -5,9 +5,16 @@ description: Use after a meeting when the user wants notes turned into decisions
 
 # Meeting → decisions
 
+## Needs
+
+Before starting, run `python3 .pm-harness/pm_check.py needs meeting-to-decisions` and confirm each tool
+answers (preflight in `../../reference/connectors.md`).
+
+- `meeting-notes` · optional · the notes or transcript (or the PM pastes them)
+
 ## Steps
 
-1. Find the meeting's notes or transcript with the meeting-notes connector from
+1. Find the meeting's notes or transcript with the `meeting-notes` tool from
    `context/tools.md` (or use what the PM pastes). Prefer the transcript for exact numbers,
    names and commitments; the summary leaves details out.
 2. Extract:

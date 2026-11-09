@@ -12,11 +12,19 @@ says what "finished" means for every story.
 
 Read first: `work/<item>/02-prd.md` (phase, §6.3 chosen variant, §7 metrics, §8 constraints),
 every tree in `work/<item>/03-trees/`, the prototype and its `amendments.md`,
-`context/definition-of-done.md`, `../../reference/phases.md` and `context/tools.md` (which
-tracker and project to use).
+`context/definition-of-done.md`, `../../reference/phases.md` and `context/tools.md` (the
+`issue-tracker` tool and its project).
 
 Before starting, confirm the prototype check passes with no open amendments. If it does not,
 stop and offer the `review-prototype` skill.
+
+## Needs
+
+Before starting, run `python3 .pm-harness/pm_check.py needs create-eng-tickets` and confirm each tool
+answers (preflight in `../../reference/connectors.md`).
+
+- `issue-tracker` · required · creating the epic and stories after approval; without it, the
+  approved draft is the hand-off and the PM creates them
 
 ## Steps
 
@@ -47,7 +55,7 @@ stop and offer the `review-prototype` skill.
    analytics story, or there is no Definition of done with at least three items. Fix until it
    passes, then run `python3 .pm-harness/pm_check.py item work/<item>` for the whole item.
 8. **Show the PM the full draft and ask for approval** to create the tickets.
-9. **Only after approval,** create the epic and stories with the tracker connector, attaching
+9. **Only after approval,** create the epic and stories with the `issue-tracker` tool, attaching
    or linking the trees and prototype. Record the created ticket keys in `05-tickets.md`.
    If creation partly fails, report exactly which tickets exist and which do not.
 

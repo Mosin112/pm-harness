@@ -27,7 +27,7 @@ pipeline, one folder per idea under `work/`:
 | Any number or metric | `context/metrics.md` |
 | Who decides, who reviews, how they like updates | `context/stakeholders.md` |
 | Regulatory, legal, risk, brand or platform limits | `context/constraints.md` |
-| Which connector to use for what | `context/tools.md` |
+| Which tools serve each need (several per need allowed) | `context/tools.md` |
 | Internal terms | `context/glossary.md` |
 | Tone, length, formats | `context/writing-style.md` |
 | What "done" means for engineering tickets | `context/definition-of-done.md` |
@@ -38,8 +38,8 @@ pipeline, one folder per idea under `work/`:
 ## Rules
 
 1. Follow the evidence rules in `.pm-harness/reference/evidence-rules.md`: count sources, quote
-   real customer words only, grade evidence, take numbers from governed metric definitions and
-   show where every number came from.
+   real customer words only, grade evidence, take numbers from governed metric definitions,
+   show where every number came from, and keep external numbers apart as labelled benchmarks.
 2. Never write to an external tool (tracker, wiki, chat, email) without the PM approving the
    exact content first.
 3. Never rewrite a context file silently. Propose edits; apply only approved ones.
@@ -78,6 +78,11 @@ is approved only when its check passes and the PM says so.
 
 **Reviewers** for `spec-review` are defined in `.pm-harness/agents/` (and registered as
 subagents in Claude Code). Tools without subagents run them one at a time.
+
+**Connectors.** Skills name needs, not tools; `context/tools.md` maps each need to one or more
+tools. Before a skill starts, run `python3 .pm-harness/pm_check.py needs <skill>`, confirm each
+tool answers with one read call, and say which sources are missing instead of quietly working
+around them (`.pm-harness/reference/connectors.md`).
 
 **Checks** (`python3 .pm-harness/pm_check.py <command>`): `item work/<item>` runs every check
 that applies to an item; `prd`, `trees`, `prototype`, `tickets`, `workspace` and `board` run one.
