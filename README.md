@@ -241,7 +241,7 @@ skills/<name>/SKILL.md 22 skills
 agents/                5 reviewer definitions used by spec-review
 hooks/                 SessionStart hook: pipeline board + keeps .pm-harness/ current
 scripts/pm_check.py    the checker behind the gates, plus the trees view, contracts and artifact generators (stdlib Python)
-bin/pm-harness.mjs     the installer for any AI tool (no dependencies)
+cli/pm-harness.mjs     the installer for any AI tool (no dependencies)
 reference/             PRD guide, phases, prototype craft, connectors, tree grammar, evidence rules, JTBD cheat sheet
 templates/workspace/   the PM workspace that setup and the installer create
 templates/prototype/   the prototype shell with the shared runtime
