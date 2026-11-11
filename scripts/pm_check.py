@@ -1890,6 +1890,9 @@ def cmd_plugin(plugin_dir: str) -> int:
                     report.error(f"package.json bin '{name}' points at missing {rel}")
     if len(set(versions.values())) > 1:
         report.error("versions differ: " + ", ".join(f"{k}={v}" for k, v in versions.items()))
+    if (root / "bin").is_dir():
+        report.error("top-level bin/ directory: claude.ai and Cowork refuse to install a plugin that has one "
+                     "(keep executables elsewhere, e.g. cli/ or scripts/)")
     skills = sorted((root / "skills").glob("*/SKILL.md"))
     if not skills:
         report.error("no skills found")

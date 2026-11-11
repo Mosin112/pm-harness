@@ -5,7 +5,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { main, rewriteSkill, withBlock } from "../bin/pm-harness.mjs";
+import { main, rewriteSkill, withBlock } from "../cli/pm-harness.mjs";
 
 const run = async (...argv) => {
   const lines = [];
