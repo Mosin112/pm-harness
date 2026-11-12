@@ -48,7 +48,8 @@ Around the pipeline:
 - **Share:** `publish` puts the PRD on Confluence and the prototype and trees view up as Claude
   artifacts, and brings comments back as proposed changes
 - **Discover:** `synthesize-signals` (your customers' evidence), `desktop-research` (the web:
-  communities, app reviews, competitors, news, regulators), `opportunity-brief` (sizing), and
+  communities, app reviews, competitors, news, regulators; time-boxed at ~10, ~20 or ~30–40
+  minutes, with parallel researchers at the thorough depth), `opportunity-brief` (sizing), and
   `product-grill`, which explores an open problem (How Might We, opportunity solution tree,
   riskiest assumption) before it converges
 - **Plan:** `roadmap` keeps a Now / Next / Later view in step with the items, their evidence and
