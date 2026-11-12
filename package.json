@@ -1,6 +1,6 @@
 {
   "name": "pm-harness",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "A product-management harness for AI tools: idea → PRD → behaviour trees → prototype variants → engineering-ready tickets, with checks and approval gates.",
   "license": "MIT",
   "author": "Mohsin Hafeez",

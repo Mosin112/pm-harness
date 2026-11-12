@@ -1,6 +1,6 @@
 ---
 name: desktop-research
-description: Use when the user wants to research a product, feature, competitor, market or regulation on the public web, asks "what do people online say about X", "how do competitors do X", "look into X" or wants market evidence before writing a PRD (for the company's own customer evidence, use synthesize-signals). Runs scoped web research and writes an evidence-counted research report with cited sources and stated gaps.
+description: Use when the user wants to research a product, feature, competitor, market or regulation on the public web, asks "what do people online say about X", "how do competitors do X", "look into X" or wants market evidence before writing a PRD (for the company's own customer evidence, use synthesize-signals). Runs time-boxed web research (quick ~10 min, standard ~20, thorough ~30–40 with parallel researchers) and writes an evidence-counted research report with cited sources and stated gaps.
 ---
 
 # Desktop research
@@ -20,14 +20,31 @@ answers (preflight in `../../reference/connectors.md`).
 - `market-data` · optional · structured outside figures when numbers are in scope; they stay
   external (evidence rule 9)
 
+## Time boxes
+
+Research is time-boxed. Pick the depth with the PM; each has a budget of searches, pages read
+and time, and the search stops when the budget or the time box runs out, whichever comes first.
+
+| Depth | Use when | Source types | Searches | Pages read | Time box |
+|---|---|---|---|---|---|
+| `quick` | A fast read before a grill or one PRD section | 1–2 | ≤ 6 | ≤ 5 | ~10 min |
+| `standard` (default) | Pre-PRD discovery | up to 3 | ≤ 12 | ≤ 10 | ~20 min |
+| `thorough` | A competitor teardown, or a decision that needs the depth | up to 6, in parallel | ≤ 6 per type | ≤ 5 per type | ~30–40 min |
+
+Never extend a budget silently. If the evidence is thin when it runs out, say so in the report
+and offer another round after the PM has seen the TL;DR.
+
 ## 1. Agree the brief
 
-Ask for whatever is missing, in one message:
+Propose the whole brief in **one** message, filled in from the request (topic, goal, source
+types, depth with its time box, exclusions), and ask the PM to confirm or change it. If the
+request already settles all of it, confirm in one line and start.
 
 - **Topic:** the product, feature, competitor set, market or regulation.
 - **Goal:** why: pre-PRD discovery, a competitor teardown, testing a hypothesis, user pains,
   a regulatory check.
-- **Sources:** pick from the menu (default 1–4):
+- **Sources:** the types that answer the goal, no more than the depth allows. Recommend them:
+  user pains → 1 and 2; positioning and pricing → 3; a rule → 5.
 
 | # | Source type | Reveals | Misses |
 |---|---|---|---|
@@ -38,10 +55,12 @@ Ask for whatever is missing, in one message:
 | 5 | Regulators and official data: regulators' sites, central banks, statistics offices | Rules, licences, official figures | How rules are applied in practice |
 | 6 | Research: papers, surveys, industry reports | Systematic data | Recency; often paywalled |
 
-- **Depth:** quick scan (3–5 sources) or thorough (8–12+).
+- **Depth:** `quick`, `standard` or `thorough` (the time boxes above).
 - **Exclusions:** competitors, regions or angles to leave out.
 
-Do not start searching until the PM confirms the brief.
+**Reuse before you search.** Look in `signals/` for research on the same topic from the last 90
+days. If there is some, offer to update it (only the gaps it lists, and anything newer than its
+date) instead of starting again.
 
 ## 2. Search
 
@@ -51,15 +70,31 @@ none is configured, the web search and fetch tools available in this session. If
 answers, stop and say so instead of answering from memory. Every figure you report follows
 evidence rule 9: URL, publication date, date read, labelled external.
 
-- Run several targeted queries per source type, varying the wording: product names, category
-  terms, the pain in users' words, competitor names. Use site-scoped searches where they help
-  (`site:reddit.com <topic>`, `site:apps.apple.com <competitor>`).
-- For reviews, read both positive and critical ones.
-- Prefer recent sources unless history is the point; note every source's date.
-- Read the page itself before citing it; a search snippet is not a source.
-- Keep an evidence log as you go: source type, name and URL, date, one or two takeaways, and
-  any quote or number worth citing.
-- Do not use content you were refused or that sits behind a login you were not given.
+1. **Plan the queries first.** Write two or three queries per source type: product names,
+   category terms, the pain in users' words, competitor names, and site-scoped searches where
+   they help (`site:reddit.com <topic>`, `site:apps.apple.com <competitor>`).
+2. **Run a source type's searches together,** in one turn, not one after another. Use the
+   search tool's normal mode; use a slower, deeper mode only for a query whose results come
+   back thin or stale.
+3. **Triage from the results.** Pick the pages worth reading from titles, snippets and dates.
+   Read only pages you expect to cite, each once. Prefer pages that gather many data points (a
+   review listing sorted by most recent, a pricing page, a regulator's notice) over many single
+   items. For reviews, read both positive and critical ones. A snippet can decide what to
+   read; it is never cited. Only pages you read are sources.
+4. **Stop early.** Stop a source type when two pages in a row add nothing new, or its budget is
+   used. Stop the search when every theme has sources of at least two types, or 75% of the
+   time box has gone: then synthesise with what you have.
+5. **Thorough depth runs in parallel.** If your tool can start subagents, start one
+   `web-researcher` (`../../agents/web-researcher.md`) per source type, all at once, each
+   with the brief, its queries and its share of the budget. Each returns an evidence log;
+   you synthesise. If your tool cannot start subagents, run the source types one after another
+   with the same budgets.
+
+Keep one evidence log for the whole run (in memory or one scratch file) and write the report
+once, at the end: source type, name and URL, date, one or two takeaways, and any quote or
+number worth citing. Prefer recent sources unless history is the point, and note every
+source's date. Do not use content you were refused or that sits behind a login you were not
+given.
 
 ## 3. Synthesise
 
@@ -80,7 +115,8 @@ evidence rule 9: URL, publication date, date read, labelled external.
 
 ```
 # Research: <topic> (YYYY-MM-DD)
-**Goal:** <one sentence> · **Depth:** quick | thorough · **Evidence:** strong | some | hunch
+**Goal:** <one sentence> · **Depth:** quick | standard | thorough · **Evidence:** strong | some | hunch
+**Budget used:** 11 of 12 searches · 9 of 10 pages · ~18 min (stopped: themes covered | budget | time box)
 **Sources read:** 6 Reddit threads, 14 app reviews, 4 competitor sites, 2 articles
 **Not reachable:** <anything blocked, paywalled or missing>
 

@@ -11,7 +11,7 @@
       "name": "pm-harness",
       "source": "./",
       "description": "Idea → PRD → behaviour trees → prototype variants → engineering-ready tickets, with review, checks and approval gates.",
-      "version": "0.6.0"
+      "version": "0.6.1"
     }
   ]
 }
