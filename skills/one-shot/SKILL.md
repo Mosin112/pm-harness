@@ -41,7 +41,7 @@ Includes: `capture-idea`, `product-grill`, `write-prd`, `spec-review`, `write-be
    |---|---|---|
    | 1 `capture-idea` | continue, grill, size first, or park | — |
    | `product-grill` (if the idea is fuzzy) | PM ends the grill; phase and prototype decision agreed | — |
-   | 2 `write-prd` + `spec-review` | PRD approved; no open blocking findings | `pm_check.py prd` |
+   | 2 `write-prd` + `spec-review` | PRD `pm-approved` or `approved`; no open blocking findings | `pm_check.py prd` |
    | 3 `write-behaviour-trees` | trees approved after the PM reviews the diagram (`pm_check.py view`) | `pm_check.py trees` and `prd` with trees |
    | 4 brief for `build-prototype` | variants and hypotheses approved | — |
    | 4 `build-prototype` + `review-prototype` | variant chosen; no open amendments | `pm_check.py prototype` |

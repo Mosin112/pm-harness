@@ -39,6 +39,12 @@ If the workspace answers a question, use that answer and say where it came from.
 is too thin to start, ask only for the smallest useful brief: the idea, who it is for, and when
 a decision is needed.
 
+**Never ask twice.** Keep a running list of settled points (the *Settled* list that goes into
+`01-grill.md`). Before every question, check it, the idea card and what the PM has already
+said. Ask about a settled point again only when new evidence has appeared, and say what it is.
+A risk the idea card already records (a past decision, an evidence gap) is built on, not
+raised again.
+
 ## Explore mode
 
 Keep it to one sitting and a handful of exchanges; the aim is better options, not more notes.
@@ -76,6 +82,10 @@ Privately pick the riskiest unresolved ambiguity, then ask exactly one question 
 Then stop and wait. Prefer questions that force a decision over open brainstorming. Never send
 a questionnaire. When the PM answers, restate the settled point in one line before moving on.
 
+When a constraint, a past decision or the capacity rules an option out, recommend the cut
+plainly. Do not offer a narrower version of the ruled-out option unless the PM asks for one: a
+pre-offered fallback turns a settled point into a negotiation.
+
 ## What to challenge, in rough priority
 
 1. **Problem and job:** is it a real problem in the customer's terms, or a solution looking for
@@ -103,13 +113,24 @@ alert: what do they see?").
 - **Decision log:** propose an entry in `decisions/decision-log.md` (its existing format) only
   when the decision is all three: **durable** (shapes more than one artefact or conversation),
   **non-obvious** (a future reader would ask why), and **trade-off based** (real alternatives
-  existed). Most answers belong in the PRD instead.
+  existed). Most answers belong in the PRD instead. A decision that needs someone else's
+  agreement (a past decision to supersede, an exception) is written with `Status: proposed`
+  and becomes `accepted` when they agree.
 - **Prototype decision:** capture it word for word; `write-prd` puts it in §6.3 and
   `build-prototype` builds one variant per side.
 
 Never write to the glossary or the decision log without the PM approving the exact text.
 
 ## Stop and hand over
+
+Before you hand over, run two short checks and settle or record what they find:
+
+1. **Scope against capacity.** List what is now in scope and compare it with the capacity in
+   `context/strategy.md` or the sources (people, weeks, other commitments of the teams named).
+   If it does not fit, recommend what to cut first.
+2. **Pre-mortem.** "It is 30 days after launch and this failed or was abused. What happened?"
+   Name the top three answers: abuse and fraud paths, a constraint broken, adoption that never
+   came. Each becomes a settled point, an open question or a risk for the PRD.
 
 When the PM is ready to stop (or the riskiest ambiguities are settled), write
 `work/<item>/01-grill.md`. If there is no item yet, run `capture-idea` first so the grill has a
@@ -125,6 +146,11 @@ home; if the request may never become an item (a stakeholder ask you are only ex
 - <point> (→ PRD §<n>)
 ## Directions explored (if explore mode ran)
 - <direction>: <taken / not taken, and why> · riskiest assumption and its test
+
+## Scope and capacity
+<what is in scope · the capacity it needs · the cut order if it does not fit>
+## Pre-mortem
+- <failure or abuse path> → <settled / open question / PRD risk>
 
 ## Still open
 | Question | Owner |

@@ -5,3 +5,4 @@
 - **Markets / regions:**
 - **Business model:**
 - **Stage and size:**
+- **Licences and regulators:** <!-- per market: regulator and licence type, as the PM gave them; or "None" -->

@@ -31,3 +31,7 @@ summary of thin evidence is the most common way AI-assisted product work goes wr
    approves it (log that decision). When it disagrees with a governed internal number, the
    internal number stands and the gap is noted. Say when an external figure is more than a
    year old.
+10. **Keep what a source requires.** When a source document names a requirement or a control
+    (a post-mortem recommendation, a compliance rule), the PRD keeps it in its own words, or
+    says `replaces <control>` with the reason and the owner who must agree. A rule the PRD
+    attributes to the company names the file it comes from.

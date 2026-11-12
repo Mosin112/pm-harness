@@ -37,7 +37,9 @@ Tree: functional/<capability-subject>
 ```
 
 Header values: `Phase` is `MVP`, `MMP`, `MLP` or `Enhancement`. `Status` is `draft`,
-`in review` or `approved`. `Evidence` is the grade from the idea card. `Links:` is added by the
+`in review`, `pm-approved` (the PM has approved it; a decision named in §1 still sits with
+someone else, and trees can start) or `approved` (those decision-makers have agreed).
+`Evidence` is the grade from the idea card. `Links:` is added by the
 `publish` skill once the PRD, prototype or trees view are published (leave it out until then).
 
 ## Sections
@@ -73,7 +75,9 @@ One subsection per **capability**, numbered `5.1`, `5.2`… with a priority in t
 *Later*). Each subsection:
 
 - one line on what the capability lets the user do;
-- the rules that shape it, in plain language (limits, eligibility, timing, wording rules);
+- the rules that shape it, in plain language (limits, eligibility, timing, wording rules), as a
+  numbered list so anyone can cite one (`§5.2 rule 3`). States, edge cases and exact copy go in
+  the trees, not here;
 - `Seam: <where it is observed>`: the screen, endpoint or message engineering will test it
   through (confirm with the engineering lead; it becomes the contract's seam at handoff);
 - `Tree: functional/<subject>`: the Functional tree that will hold its exact behaviour. One
@@ -103,6 +107,13 @@ them.
 One primary metric tied to the job's outcome, one or two guardrails, defined using
 `context/metrics.md`. Then the gate for this phase: **continue / stop** for an MVP; a
 **launch gate** per rollout stage for MMP and MLP (what must be true to go from 5% to 50%, say).
+Give each gate numeric bands (continue, rethink, stop).
+
+- **Cause, not just correlation.** When the question is whether the feature changes behaviour,
+  say how you will tell: each adopter's before and after, a small holdout that does not see
+  the entry point, or a staged rollout.
+- **Read the gate after the window closes.** Date the gate after every measurement window it
+  depends on has ended (a claim or acceptance window, a trial, a month of runs).
 Analytics events are not written into the trees; `create-eng-tickets` turns each metric into
 events in an analytics story, and the tickets check makes sure every metric here is named there.
 
@@ -114,12 +125,16 @@ split, and how long it runs before a decision.
 - **8.1 Constraints:** each item in `context/constraints.md` that applies, and how the PRD
   respects it.
 - **8.2 Risks and dependencies:** product, technical, adoption and third-party risks; other
-  teams or systems this depends on. If AI is part of the behaviour, add its failure modes and
-  guardrails here.
-- **8.3 Open questions:** | Question | Owner | Due |. Every question has an owner.
+  teams or systems this depends on, and whether their owners have the capacity. If AI is part
+  of the behaviour, add its failure modes and guardrails here. **Delivery:** a dated path from
+  decision to launch (reviews by Compliance or a board run alongside the build where they
+  can), the last safe date to call it off, and the cut order if time runs short.
+- **8.3 Open questions:** | Question | Proposed answer | Owner | Due |. Every question has an
+  owner, and a proposed answer marked `Proposed` unless no sound default exists.
 
 ### Change log (unnumbered, after §8)
-Starts empty. Once the PRD is `approved`, every change adds a row:
+Starts empty. Revisions after a review add a row per batch of fixes (source: the review round
+and finding numbers). Once the PRD is `pm-approved` or `approved`, every change adds a row:
 `| Date | Section | Change | Source | Re-reviewed by |`. The source is what prompted it: an
 amendment (`A3`), a Confluence comment, a meeting, a launch readout. A change to §4 scope,
 §5 requirements or §7 metrics and gates is re-reviewed by the reviewers it affects (`spec-review`

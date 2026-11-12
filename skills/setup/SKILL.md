@@ -1,7 +1,6 @@
 ---
 name: setup
-description: Use when the user wants to set up, initialise or repair a PM Harness workspace, or says "set up the PM harness". Creates the context library, decision log, work folders, approval rules and the checker, then interviews the PM to fill the context files.
-disable-model-invocation: true
+description: Use when the user wants to set up, initialise or repair a PM Harness workspace, says "set up the PM harness", or when another skill or the workspace check finds the context files still blank. Creates the context library, decision log, work folders, approval rules and the checker, then interviews the PM to fill the context files (a quick mode of about eight questions, or the full interview).
 ---
 
 # Set up a PM Harness workspace
@@ -94,20 +93,49 @@ and installer ship no connectors; this step maps the ones the PM has
 
 ## 4. Interview the PM to fill the context
 
-Fill the `context/` files through a short conversation, **one file at a time**, asking at most
-three questions per file. Prefer pulling from existing sources over asking: read the `docs`
-tools from step 3 (often several: Confluence, Notion, Google Drive), plus the chat channels or
-meetings the PM points to, and note where each fact came from.
+Ask the PM which mode to use, and recommend one: **quick** when no `docs` tool is connected or
+the PM wants to start on an idea today; **full** when company documents are connected.
+
+**Quick mode: two rounds, about eight questions.** Ask each round as one short message.
+1. *Company and product:* what the company does and for whom; markets and languages;
+   platforms; the regulatory profile (below); the tech stack in one line.
+2. *Goals and people:* this quarter's goals and what is explicitly not a priority; the north
+   star metric and its current value; who decides and who must review, and what each cares
+   about; the three constraints a PRD most often trips over.
+
+Write what you learned into the files below, leave anything not answered as the template
+placeholder, and tell the PM which files are still thin. They fill up later through
+`update-context` or setup's repair mode, and the workspace check keeps reminding.
+
+**Full mode:** fill the `context/` files through a short conversation, **one file at a time**,
+asking at most three questions per file. Prefer pulling from existing sources over asking: read
+the `docs` tools from step 3 (often several: Confluence, Notion, Google Drive), plus the chat
+channels or meetings the PM points to, and note where each fact came from.
+
+**Regulatory profile (both modes).** Ask these exactly as written, in this order, and record
+the answers word for word. Offer no default and no example, and never infer an answer from the
+markets, the industry or anything else in the conversation.
+1. "Does the company hold a licence or registration from a financial, health, telecoms or
+   other sector regulator for the products this workspace covers?" (Yes / No / Not sure)
+2. Only if yes: "For each market, which regulator, and what type of licence or registration?"
+   (free text) → `company.md`, **Licences and regulators**.
+3. "Which data-protection laws apply to the company?" Several may apply: EU GDPR · UK GDPR ·
+   US state privacy laws · UAE PDPL · Other (name them) · None · Not sure → `constraints.md`,
+   **Data protection**. `None` stands alone; if it is picked with another answer, ask which
+   was meant.
+
+Ask rather than guess everywhere: never pre-fill a country, a regulator or a licence type from
+other answers. A blank field is better than a wrong one.
 
 | File | What it must contain |
 |---|---|
-| `company.md` | What the company does, for whom, markets, business model, stage |
-| `product.md` | Product areas, platforms, key flows, what shipped recently, design tokens |
+| `company.md` | What the company does, for whom, markets, business model, stage, licences and regulators (regulatory profile) |
+| `product.md` | Product areas, platforms, key flows, what shipped recently, **tech stack** and **integration points** (payments, identity, notifications, analytics, other third parties features usually touch), design tokens |
 | `strategy.md` | Current goals or OKRs, this quarter's bets, what is explicitly not a priority |
 | `users.md` | Segments, top jobs-to-be-done already known, key pains |
 | `metrics.md` | The hierarchy (north star, L1, L2), and for each metric its plain definition, owner, target and where its governed definition or query lives |
-| `stakeholders.md` | Who decides what, who must review what, how each person likes updates |
-| `constraints.md` | Regulatory, risk, legal, brand and platform constraints every PRD must respect |
+| `stakeholders.md` | Who decides what, who must review what, what each person cares about, how each likes updates |
+| `constraints.md` | Data-protection laws (regulatory profile), then the regulatory, risk, legal, brand and platform constraints every PRD must respect |
 | `glossary.md` | Internal terms and acronyms, and the words to avoid |
 | `writing-style.md` | Tone, length limits, formats the team expects |
 | `definition-of-done.md` | The team's checklist for a finished engineering story; start from the template and ask engineering what to add |
@@ -132,6 +160,8 @@ the template. Do it only with the PM's approval.
 
 ## 6. Finish
 
-Print a short summary: what was created, which context files are still thin, which needs have
-working tools, and which required needs still have none (and the skills they block). Suggest the first move: the `synthesize-signals` or `desktop-research` skill if there is
-evidence to gather, or the `capture-idea` skill if the PM already has an idea.
+Run `python3 .pm-harness/pm_check.py workspace .` and print a short summary: what was created,
+which context files are still blank or thin, which needs have working tools, and which
+required needs still have none (and the skills they block). Suggest the first move: the
+`synthesize-signals` or `desktop-research` skill if there is evidence to gather, or the
+`capture-idea` skill if the PM already has an idea.

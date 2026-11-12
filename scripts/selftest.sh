@@ -82,5 +82,48 @@ printf -- '---\nname: broken\ndescription: Use when testing.\n---\n# Broken\n\n#
   || { echo "FAIL  needs accepted a skill that names an unknown need"; exit 1; }
 echo "PASS  checker rejects a skill whose Needs block names an unknown need"
 
+# blank context is reported, and routes the board to setup
+[[ "$($C workspace templates/workspace | grep -c 'context/.*is still the blank template')" == 7 ]] \
+  || { echo "FAIL  workspace does not report all seven blank context files"; exit 1; }
+grep -q 'run the setup skill first' <<<"$($C board templates/workspace)" \
+  || { echo "FAIL  board does not route a blank workspace to setup"; exit 1; }
+echo "PASS  blank context is reported and the board routes to setup"
+
+# length and P0 guides: past 1.5x or past the P0 guide fails unless §2 says why
+cp -r $E "$tmp/long"
+python3 - "$tmp/long/02-prd.md" <<'PY'
+import sys, re
+p = sys.argv[1]; t = open(p).read()
+filler = "\n" + " ".join(["The investor sees the alert in the app and reads it."] * 120) + "\n"
+t = t.replace("## 4.", filler + "\n## 4.", 1)
+open(p, "w").write(t)
+PY
+expect_fail "an MVP PRD more than 1.5x its word guide" $C prd "$tmp/long/02-prd.md"
+python3 - "$tmp/long/02-prd.md" <<'PY'
+import sys, re
+p = sys.argv[1]; t = open(p).read()
+t = re.sub(r"^(## 2\..*)$", r"\1\nOver length: the PM keeps the full journey for this test.", t, count=1, flags=re.M)
+open(p, "w").write(t)
+PY
+$C prd "$tmp/long/02-prd.md" >/dev/null || { echo "FAIL  an 'Over length:' line in §2 does not lift the error"; exit 1; }
+echo "PASS  an 'Over length:' line in §2 turns the length error into a warning"
+cp -r $E "$tmp/wide"
+python3 - "$tmp/wide/02-prd.md" <<'PY'
+import sys
+p = sys.argv[1]; t = open(p).read()
+caps = "".join(f"### 5.{n} Extra capability {n} (P0)\nOne rule.\nSeam: a screen\nTree: functional/extra-{n}\n\n" for n in (7, 8, 9))
+t = t.replace("## 6.", caps + "## 6.", 1)
+open(p, "w").write(t)
+PY
+expect_fail "an MVP PRD with more P0 capabilities than its guide" $C prd "$tmp/wide/02-prd.md"
+
+# grill arrows must land in the PRD; pm-approved is a valid status
+echo "- An extra point (→ PRD §5.9)." >> "$tmp/price-alerts/01-grill.md"
+grep -q 'settles a point for §5.9' <<<"$($C prd "$tmp/price-alerts/02-prd.md")" \
+  || { echo "FAIL  prd does not flag a grill arrow to a missing section"; exit 1; }
+sed 's/Status: approved/Status: pm-approved/' $E/02-prd.md > "$tmp/pm-approved.md"
+$C prd "$tmp/pm-approved.md" >/dev/null || { echo "FAIL  pm-approved is not accepted as a status"; exit 1; }
+echo "PASS  grill arrows are checked and pm-approved is a valid status"
+
 bash -n hooks/session-start.sh && echo "PASS  hook script syntax"
 echo "All self-tests passed."
