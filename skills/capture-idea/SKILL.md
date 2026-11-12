@@ -18,10 +18,19 @@ answers (preflight in `../../reference/connectors.md`).
 - `product-analytics` · optional · how many users the problem touches
 - `docs` · optional · earlier specs and research on the same idea
 
+## Before you start
+
+If `python3 .pm-harness/pm_check.py workspace .` reports context files that are still the
+blank template, stop and offer the `setup` skill first (its quick mode asks about eight
+questions). An idea card and PRD written on empty context come out generic, and the risk
+reviewer has no constraints to check against.
+
 ## Steps
 
-1. **Restate** the idea in one sentence and ask the PM to confirm or correct it. Ask at most
-   two clarifying questions: who it is for, and what prompted it.
+1. **Restate** the idea in one sentence, with who it is for and what prompted it, taken from
+   the request and any sources the PM pointed to. Ask the PM to confirm or correct it in
+   **one** question. Ask a clarifying question only for what the request and sources do not
+   already answer.
 2. **Name the item** with a short kebab-case slug (`price-alerts`) and create `work/<slug>/`.
    If the folder exists, stop and ask whether to continue that item instead.
    **Next phase of a launched item** (a launch readout said continue): create a new item named
@@ -30,7 +39,15 @@ answers (preflight in `../../reference/connectors.md`).
    questions; its history is the previous item. The previous item stays as it was.
 3. **Check history.** Search `decisions/decision-log.md`, `signals/` and other `work/` items
    for the same or a similar idea. If it was rejected or parked before, quote the decision and
-   its "revisit if" condition, and ask whether that condition is now met.
+   its "revisit if" condition, and check the condition against the workspace before asking.
+   - **Condition met:** say so with the evidence and continue.
+   - **Condition not met:** say so plainly and recommend one of two routes. **Park** it, with
+     the date the condition may be met. Or **continue as a proposal to supersede** the
+     decision: the PRD then makes the case (why the decision was made, the risk that remains,
+     the cost of waiting, a recommendation and a fallback) and names who must agree, and a
+     `Status: proposed` entry goes in the decision log once the PM approves its text.
+   - Record the route in the idea card. Later skills build on it rather than raising the same
+     decision again, unless something has changed.
 4. **Find evidence.** Search the tools for the needs above (the `main` and `also` tools in
    `context/tools.md`: meeting notes, chat, support, analytics) for evidence of the underlying
    problem. Spend a few searches, not an hour; this is a first look. Note any that did not
@@ -70,7 +87,8 @@ phase: <MVP | MMP | MLP | Enhancement>             (optional, settled in the PRD
 
 ## Gate
 
-Ask the PM which way to go:
+Recommend one option with one line of reasoning (a past decision whose condition is unmet
+points to park or supersede, from step 3), then ask the PM which way to go:
 
 - **Continue:** run the `product-grill` skill if the problem is still open (it explores first)
   or the actors, states, scope or trade-offs are fuzzy; otherwise go straight to the `write-prd`

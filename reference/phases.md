@@ -16,6 +16,7 @@ Pick the phase with the PM before writing the PRD; recommend one and say why.
 | Step | MVP | MMP | MLP | Enhancement |
 |---|---|---|---|---|
 | PRD length (guide) | ~2 pages, ≤ 1,200 words | ~3 pages, ≤ 1,800 words | ~3 pages, ≤ 1,800 words | ~1.5 pages, ≤ 900 words |
+| P0 capabilities (guide) | ≤ 4 | ≤ 6 | ≤ 6 | ≤ 3 |
 | §3 Problem and job | Full job statement, forces, evidence | Same, plus market and competitor context | Same, plus the emotional side of the job | What changed since launch: usage data, complaints, requests |
 | §5 Requirements | P0 only; P1 goes to §4 Later | P0 and P1 | P0 and P1, each with polish criteria | The change only, plus a **Must not regress** list |
 | §6 Experience | One core journey, key error states | Core plus supporting journeys | Emotional moments, exact copy, accessibility | Changed steps only |
@@ -33,3 +34,7 @@ Pick the phase with the PM before writing the PRD; recommend one and say why.
    `decisions/decision-log.md` with the evidence that justified it.
 3. **Later is a list, not a graveyard.** Everything pushed out of scope for this phase goes to
    §4 *Later*, so the next phase starts from it.
+4. **Over the guide is a phase question.** The checker counts the PRD's prose (not headings,
+   table header rows, `Seam:` or `Tree:` lines, or the change log). Past the length guide it
+   warns. Past 1.5 times the guide, or past the P0 guide, it fails unless §2 has an
+   `Over length: <reason>` line: cut the scope, change the phase, or say why the PM keeps it.

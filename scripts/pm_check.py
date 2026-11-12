@@ -43,8 +43,10 @@ VAGUE = ("should", "properly", "correctly", "appropriately", "fast", "quickly", 
 STAGES = ("idea", "prd", "trees", "prototype", "tickets", "building", "launched", "parked")
 LEGACY_STAGES = {"concept": "prd"}
 PHASES = ("MVP", "MMP", "MLP", "Enhancement")
-PRD_STATUSES = ("draft", "in review", "approved")
+PRD_STATUSES = ("draft", "in review", "pm-approved", "approved")
 WORD_BUDGET = {"MVP": 1200, "MMP": 1800, "MLP": 1800, "Enhancement": 900}
+P0_BUDGET = {"MVP": 4, "MMP": 6, "MLP": 6, "Enhancement": 3}
+OVER_RATIO = 1.5  # past this multiple of the word guide, the PRD fails unless §2 says why
 AMENDMENT_STATUSES = ("open", "resolved", "dismissed")
 AMENDMENT_CLASSES = ("prd change", "tree change", "polish", "later", "dismiss")
 MARKER = "pm-harness-workspace"
@@ -234,6 +236,10 @@ SUBSECTION_RE = re.compile(r"^### (\d+)\.(\d+)\.?\s+(.+?)\s*$")
 PRIORITY_RE = re.compile(r"\((P[0-9])\)\s*$")
 SEAM_RE = re.compile(r"^\s*(?:[-*]\s+)?\**Seam:?\**:?\s*(.+?)\s*$")
 TREE_REF_RE = re.compile(r"^\s*(?:[-*]\s+)?\**Tree:?\**:?\s*`?(functional|journey)/([a-z0-9]+(?:-[a-z0-9]+)*)`?")
+TABLE_RULE_RE = re.compile(r"^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?\s*$")
+CHANGE_LOG_RE = re.compile(r"^##\s+Change log\b", re.I)
+GRILL_ARROW_RE = re.compile(r"→([^)\n]*)")
+SECTION_REF_RE = re.compile(r"§\s*(\d+)(?:\.(\d+))?")
 
 
 def strip_code(lines: list[str]) -> list[str]:
@@ -250,7 +256,7 @@ def strip_code(lines: list[str]) -> list[str]:
 def parse_prd(path: Path, report: Report) -> dict:
     lines = read(path).splitlines()
     prd = {"phase": None, "status": None, "sections": {}, "order": [], "capabilities": [],
-           "journeys": [], "words": 0, "journey_seam": None, "links": {}}
+           "journeys": [], "words": 0, "journey_seam": None, "links": {}, "subs": set()}
     for ln in lines[:12]:
         if re.match(r"^\**Links\**\s*:", ln):
             for label, url in re.findall(r"([A-Za-z][\w ]*?)\s*:?\s*<?(https?://[^\s>·|]+)", ln.split(":", 1)[1]):
@@ -272,14 +278,22 @@ def parse_prd(path: Path, report: Report) -> dict:
         prd["phase"] = match
         status = fields.get("status")
         if status is None:
-            report.warn("header has no 'Status:' (draft, in review or approved)")
+            report.warn("header has no 'Status:' (draft, in review, pm-approved or approved)")
         elif status.lower() not in PRD_STATUSES:
             report.error(f"status '{status}' must be one of {', '.join(PRD_STATUSES)}")
         prd["status"] = (status or "").lower()
 
     current = None
     sub = None
-    for raw in strip_code(lines):
+    body = strip_code(lines)
+    table_heads = {i for i in range(len(body) - 1)
+                   if body[i].lstrip().startswith("|") and TABLE_RULE_RE.match(body[i + 1])}
+    in_log = False
+    for i, raw in enumerate(body):
+        if CHANGE_LOG_RE.match(raw):
+            in_log = True  # the change log is a record, not part of the PRD's length
+        elif raw.startswith("## "):
+            in_log = False
         sm = SECTION_RE.match(raw)
         if sm:
             current = int(sm.group(1))
@@ -293,6 +307,7 @@ def parse_prd(path: Path, report: Report) -> dict:
         ss = SUBSECTION_RE.match(raw)
         if ss:
             sub = (int(ss.group(1)), int(ss.group(2)), ss.group(3))
+            prd["subs"].add(f"{sub[0]}.{sub[1]}")
             if current == 5 and sub[0] == 5:
                 pm = PRIORITY_RE.search(sub[2])
                 prd["capabilities"].append({"num": f"5.{sub[1]}", "title": sub[2],
@@ -315,7 +330,9 @@ def parse_prd(path: Path, report: Report) -> dict:
                 prd["journeys"].append(ref)
             elif current != 5:
                 report.warn(f"§{current}: functional tree '{ref}' is named outside §5 Requirements")
-        prd["words"] += len(re.findall(r"[A-Za-z0-9][\w'’-]*", raw))
+        if not (in_log or i in table_heads or raw.startswith("#") or TABLE_RULE_RE.match(raw)
+                or SEAM_RE.match(raw) or TREE_REF_RE.match(raw)):
+            prd["words"] += len(re.findall(r"[A-Za-z0-9][\w'’-]*", raw))
     return prd
 
 
@@ -380,24 +397,36 @@ def check_prd_structure(prd: dict, report: Report) -> None:
     if 6 in prd["sections"] and "prototype decision" not in s6 and phase != "Enhancement":
         report.warn("§6.3: state the prototype decision the variants will argue about")
 
-    in_questions = False  # inside a table whose first column is "Question"
+    owner_col = None  # inside a table whose first column is "Question": index of its Owner column
     for ln in prd["sections"].get(8, {}).get("lines", []):
         if not ln.strip().startswith("|"):
-            in_questions = False
+            owner_col = None
             continue
         cells = [c.strip() for c in ln.strip().strip("|").split("|")]
         if cells[0].lower() == "question":
-            in_questions = True
+            heads = [c.lower() for c in cells]
+            owner_col = heads.index("owner") if "owner" in heads else 1
             continue
-        if in_questions and len(cells) >= 2 and not set(cells[0]) <= set("-: "):
-            if cells[1].lower() in ("", "?", "tbd", "none", "-"):
+        if owner_col is not None and len(cells) > owner_col and not set(cells[0]) <= set("-: "):
+            if cells[owner_col].lower() in ("", "?", "tbd", "none", "-"):
                 report.warn(f"§8: open question has no owner: '{cells[0]}'")
 
     if phase:
         budget = WORD_BUDGET[phase]
-        if prd["words"] > budget:
+        justified = re.search(r"^\s*(?:[-*]\s+)?\**Over length\**:?\**\s*\S", section_text(prd, 2),
+                              re.M | re.I)
+        p0 = sum(1 for c in caps if c["priority"] == "P0")
+        if prd["words"] > budget * OVER_RATIO and not justified:
+            report.error(f"{prd['words']} words is more than {OVER_RATIO:g}× the {phase} guide of "
+                         f"~{budget}: cut the scope, change the phase (log it), or add an "
+                         "'Over length: <reason>' line to §2")
+        elif prd["words"] > budget:
             report.warn(f"{prd['words']} words is over the {phase} guide of ~{budget}; cut what "
-                        "does not change a decision")
+                        "does not change a decision, and move states and edge cases to the trees")
+        if p0 > P0_BUDGET[phase] and not justified:
+            report.error(f"{p0} P0 capabilities is more than the {phase} guide of {P0_BUDGET[phase]}: "
+                         "the scope reads like a bigger phase; cut it, change the phase (log it), "
+                         "or add an 'Over length: <reason>' line to §2")
 
 
 def cmd_prd(prd_path: str, trees_dir: str | None = None) -> int:
@@ -411,6 +440,17 @@ def cmd_prd(prd_path: str, trees_dir: str | None = None) -> int:
     caps = prd["capabilities"]
     report.note(f"phase {prd['phase'] or '?'}, status {prd['status'] or '?'}, {len(caps)} "
                 f"capabilities ({', '.join(c['priority'] or '?' for c in caps)}), ~{prd['words']} words")
+    grill = path.parent / "01-grill.md"
+    if grill.is_file():
+        missing = set()
+        refs = [r for seg in GRILL_ARROW_RE.findall(read(grill)) for r in SECTION_REF_RE.findall(seg)]
+        for sec, subsec in refs:
+            ref = f"{sec}.{subsec}" if subsec else sec
+            if (subsec and ref not in prd["subs"]) or (not subsec and int(sec) not in prd["sections"]):
+                missing.add(ref)
+        for ref in sorted(missing):
+            report.warn(f"01-grill.md settles a point for §{ref}, but the PRD has no §{ref}: "
+                        "carry it over (or fix the arrow)")
 
     if trees_dir:
         trees = load_trees(Path(trees_dir), Report("(tree parse)"))
@@ -827,6 +867,51 @@ CONTEXT_FILES = ("company", "product", "strategy", "users", "metrics", "stakehol
                  "constraints", "tools", "glossary", "writing-style")
 NEW_CONTEXT_FILES = ("definition-of-done",)
 FOLDERS = ("context", "decisions", "signals", "work", "meetings", "updates")
+BLANK_CHECK_FILES = ("company", "product", "strategy", "users", "metrics", "stakeholders",
+                     "constraints")
+CONTEXT_TEMPLATE_LINES = frozenset({  # the blank templates' lines (setup fills them in)
+    '(diagnostic, under an L1). `metrics-review` reviews them; PRDs pick their metrics from here.',
+    '(health: acquisition, activation, engagement, retention, revenue, satisfaction) or L2',
+    '- **Business model:**',
+    '- **Company goals this year:**',
+    "- **Design system:** in `DESIGN.md` at the workspace root (tokens, components, do's and don'ts);",
+    '- **Explicitly not a priority:**',
+    '- **For whom:**',
+    '- **Integration points:** (systems a feature usually touches: payments, identity and KYC,',
+    '- **Key user flows:**',
+    '- **Licences and regulators:**',
+    '- **Markets / regions:**',
+    '- **Platforms:** (iOS, Android, web, API)',
+    '- **Product areas and owners:**',
+    '- **Shipped in the last quarter:**',
+    '- **Stage and size:**',
+    '- **Tech stack:** (apps, backend, data, cloud and region)',
+    "- **This quarter's OKRs / bets:**",
+    '- **What we do:**',
+    '- When …, I want to …, so I can …  (evidence: …)',
+    'Every PRD and tree is checked against this list by the risk reviewer.',
+    'Every number in a product document must come from a definition here. Level: north star, L1',
+    'note here where the source lives (Figma library, theme file, brand guide)',
+    'notifications, analytics, support, third-party providers)',
+    '| Metric | Level | Plain definition | Owner | Target | Governed definition / query / dashboard |',
+    '| Person / role | Decides | Must review | Cares about | Prefers updates as |',
+    '| Segment | Who they are | Size (source) |',
+})
+
+
+def blank_context(root: Path) -> list[str]:
+    """Context files that still hold nothing but the setup template."""
+    blank = []
+    for f in BLANK_CHECK_FILES:
+        p = root / "context" / f"{f}.md"
+        if not p.is_file():
+            continue
+        text = re.sub(r"<!--.*?-->", "", read(p), flags=re.S)
+        content = [s for ln in text.splitlines() if (s := ln.strip()) and not s.startswith("#")
+                   and not TABLE_RULE_RE.match(s) and s not in CONTEXT_TEMPLATE_LINES]
+        if not content:
+            blank.append(f)
+    return blank
 
 
 def is_workspace(root: Path) -> bool:
@@ -872,6 +957,9 @@ def cmd_workspace(ws: str) -> int:
                 report.error(f"missing context file: context/{f}.md")
         elif len(read(p).splitlines()) > 150:
             report.warn(f"context/{f}.md is over 150 lines; consider splitting it")
+    for f in blank_context(root):
+        report.warn(f"context/{f}.md is still the blank template: run the setup skill "
+                    "(quick mode asks about eight questions)")
     roadmap = root / "roadmap.md"
     if roadmap.is_file():
         text = read(roadmap)
@@ -1173,6 +1261,12 @@ NEXT_STEP = {
     "launched": "launch-readout when the gate window ends; then the next phase or done",
     "parked": "parked; see the decision log",
 }
+NEXT_SKILLS = {  # the skills the board checks tools for, by stage
+    "idea": ("product-grill", "write-prd", "spec-review"), "prd": ("write-behaviour-trees",),
+    "trees": ("build-prototype",), "prototype": ("create-eng-tickets",),
+    "tickets": ("stakeholder-update",), "building": ("stakeholder-update",),
+    "launched": ("launch-readout",),
+}
 
 
 def open_blocking(review: Path) -> int:
@@ -1191,7 +1285,13 @@ def cmd_board(ws: str) -> int:
     if not is_workspace(root):
         return 0
     print("## PM Harness pipeline board")
+    blank = blank_context(root)
+    if blank:
+        print("Context is still blank (" + ", ".join(f"context/{f}.md" for f in blank) + "): run the "
+              "setup skill first (quick mode asks about eight questions), so ideas and PRDs are "
+              "written against the real company.")
     items = sorted((root / "work").glob("*/01-idea.md"))
+    next_skills: set[str] = set()
     for idea in items:
         text = read(idea)
         stage = item_stage(idea) or "?"
@@ -1207,6 +1307,9 @@ def cmd_board(ws: str) -> int:
                          if a.get("status", "").lower() == "open")
             if open_a:
                 flags.append(f"{open_a} open prototype amendment(s): review-prototype")
+        next_skills.update(NEXT_SKILLS.get(stage, ()))
+        if files["prd"].is_file() and re.search(r"\bStatus\s*:\s*\**\s*pm-approved", read(files["prd"]), re.I):
+            flags.append("PRD pm-approved: decisions named in §1 still sit with stakeholders")
         if stage != "parked":
             failed = [name for name, code, _ in item_checks(idea.parent) if code]
             if failed:
@@ -1220,7 +1323,9 @@ def cmd_board(ws: str) -> int:
             line += " | ⚠ " + "; ".join(flags)
         print(line)
     if not items:
-        print("- No items yet. Start with capture-idea, synthesize-signals or desktop-research.")
+        first = "Run setup, then start" if blank else "Start"
+        print(f"- No items yet. {first} with capture-idea, synthesize-signals or desktop-research.")
+        next_skills.add("capture-idea")
     ctx = root / "context"
     if ctx.is_dir():
         cutoff = time.time() - 90 * 86400
@@ -1231,11 +1336,13 @@ def cmd_board(ws: str) -> int:
     skills = find_skills(base=root) if reg["format"] else {}
     if skills:
         quiet = Report("")
-        missing = [join_or(g["ids"]) for g in merged_needs(sorted(skills), skills, quiet)
+        upcoming = sorted(s for s in next_skills if s in skills)
+        missing = [f"{join_or(g['ids'])} ({', '.join(sorted(g['required_by']))})"
+                   for g in merged_needs(upcoming, skills, quiet)
                    if g["level"] == "required" and not any(tools_for(reg, n) for n in g["ids"])]
         if missing:
-            print(f"Needs with no tool in context/tools.md: {'; '.join(missing)} "
-                  "(run pm_check.py workspace . for the skills they block)")
+            print(f"Next steps need a tool that context/tools.md does not have: {'; '.join(missing)} "
+                  "(pm_check.py workspace . lists every gap)")
         if reg["format"] == "legacy":
             print("context/tools.md uses the old format: offer to convert it (setup, repair mode)")
     print("Reminders: follow AGENTS.md and the evidence rules; never write to an external tool "

@@ -20,3 +20,11 @@ Look for:
 
 Return findings with `severity` (blocking, important, nit), the section (`§5.2`) or exact text, the
 problem, and a concrete suggested change. Do not praise.
+
+Also read the sources the document cites when you are given them (the idea card, the grill
+notes, research or compliance files), so you do not ask to "confirm" what they already say.
+
+Return **at most 8 findings**, most important first. **Blocking** means the document, as
+written, would be unsafe, unlawful, or impossible to build or test; use it at most 3 times
+(for an `MVP` or `Enhancement`). Mark a finding that only adds a state, an edge case or exact
+copy `→ trees`. End with one line: `Verdict: Go | No-go — <what would flip it>`.

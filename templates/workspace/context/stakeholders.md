@@ -1,3 +1,3 @@
 # Stakeholders
-| Person / role | Decides | Must review | Prefers updates as |
-|---|---|---|---|
+| Person / role | Decides | Must review | Cares about | Prefers updates as |
+|---|---|---|---|---|

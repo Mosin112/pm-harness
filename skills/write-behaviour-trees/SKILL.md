@@ -9,7 +9,8 @@ Trees are the *what*: the contract between product and engineering. Every line b
 in the engineering harness, so every line must be observable and testable.
 
 Read first: `../../reference/tree-grammar.md`, `../../reference/phases.md`, the approved
-`work/<item>/02-prd.md` and its review, and `context/constraints.md` and `context/glossary.md`.
+(`pm-approved` or `approved`) `work/<item>/02-prd.md` and its review, including every finding
+marked `→ trees`, and `context/constraints.md` and `context/glossary.md`.
 
 ## Needs
 

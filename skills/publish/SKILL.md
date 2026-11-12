@@ -32,8 +32,10 @@ answers (preflight in `../../reference/connectors.md`).
 2. If the PRD's `Links:` line already has a Confluence URL, this is an update: read the current
    page and its comments first (step 5), so nothing a stakeholder wrote is lost.
 3. Convert the PRD to the page body: keep the eight numbered sections, headings, tables and
-   section numbers as they are; turn `Tree:` lines into links to the trees (or the trees view
-   artifact) and keep the change log at the end. Add one line at the top: *Source of truth:
+   section numbers as they are. Move the `Seam:` and `Tree:` lines out of the body into a
+   **Traceability** table after §8 (capability · seam · tree, with each tree linked to the
+   trees or the trees view artifact), so stakeholders read clean sections. Keep the change log
+   at the end. Add one line at the top: *Source of truth:
    PM workspace `work/<item>/02-prd.md`. Comment here; edits to this page are not copied back.*
 4. Create the page in the space and under the parent from `context/tools.md` with the
    `prd-publishing` tool (or update it). Title: `<Title> · PRD (<Phase>)`.

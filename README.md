@@ -56,7 +56,9 @@ Around the pipeline:
 - **Deliver and learn:** `stakeholder-update`, `metrics-review` (weekly, monthly or quarterly
   review of the metric hierarchy from governed numbers), `launch-readout`
 - **Everyday:** `meeting-prep`, `meeting-to-decisions`
-- **Workspace:** `setup`, `update-context`, `done` (a session retrospective that turns repeated
+- **Workspace:** `setup` (a quick mode of about eight questions, including a fixed regulatory
+  profile, or a full interview that reads your docs first; the board sends you here while the
+  context is still blank), `update-context`, `done` (a session retrospective that turns repeated
   corrections into context and skill fixes)
 
 ## Phases: depth that fits the work
@@ -80,9 +82,14 @@ Every PRD declares a phase, and every later step sizes itself to it
 Each capability in §5 names the behaviour tree that will hold its exact behaviour
 (`Tree: functional/price-alert-creation`), and §6.3 names the one trade-off the prototype
 variants will argue about. The checker enforces the structure, the phase rules and the link
-between PRD and trees in both directions. Once approved, every change is a row in the PRD's change
-log with its source (an amendment, a Confluence comment, a meeting), and changes to scope,
-requirements or metrics are re-reviewed. See [`reference/prd-guide.md`](reference/prd-guide.md).
+between PRD and trees in both directions, and holds the PRD to its phase: past 1.5 times the
+length guide, or past the phase's number of P0 capabilities, the check fails until the scope is
+cut, the phase changes or §2 says why. The review leads with a one-screen summary (each
+reviewer's go/no-go, the blocking findings, then fix now / send to the trees / later), and the
+PM settles the decisions it raises on one sheet. A PRD is `pm-approved` while decisions still sit
+with stakeholders and `approved` once they agree. From then on, every change is a row in the
+PRD's change log with its source (an amendment, a Confluence comment, a meeting), and changes to
+scope, requirements or metrics are re-reviewed. See [`reference/prd-guide.md`](reference/prd-guide.md).
 
 ## Behaviour trees: the contract
 
